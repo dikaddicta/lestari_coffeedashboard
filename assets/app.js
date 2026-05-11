@@ -1239,25 +1239,54 @@
     };
   }
 
-  function saveCurrentBrewDraft() {
+  async function saveCurrentBrewDraft(event) {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+
+    const btn = $("saveCurrentBrew");
+    const originalText = btn?.textContent || "Simpan draft ke Brew Log";
+
+    if (!cloudReady || !supabaseClient) {
+      showMessage("Supabase belum tersambung. Cek konfigurasi database, lalu refresh halaman.", "error");
+      return;
+    }
+
     if (!canUseWorkspaceModules()) {
       showMessage("Masuk dan pilih workspace untuk menyimpan draft ke Brew Log.", "error");
       return;
     }
-    const log = currentBrewLogBase();
-    insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew)
-      .then(saved => {
-        state.cloudBrewLogs.unshift(saved);
-        renderBrewLogTable();
-        renderQABrewOptions();
-        renderRecipeOptions(computeBrew());
-        renderPublicBrewTable();
-        showMessage(`Draft ${saved.BrewID} tersimpan ke Brew Log. Lanjutkan verifikasi di menu Brew Log & QA.`, "success");
-      })
-      .catch(err => {
-        console.error(err);
-        showMessage(`Gagal menyimpan draft ke Supabase: ${err.message || err}`, "error");
-      });
+
+    try {
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Menyimpan draft...";
+      }
+      showMessage("Sedang menyimpan draft ke Brew Log...", "info");
+
+      const log = currentBrewLogBase();
+      const payload = toSnakeBrew(log);
+      const saved = await insertCloud("brew_logs", payload, fromSnakeBrew);
+
+      state.cloudBrewLogs.unshift(saved);
+      await syncFromCloud(false).catch(console.warn);
+
+      renderBrewLogTable();
+      renderQABrewOptions();
+      renderRecipeOptions(computeBrew());
+      renderPublicBrewTable();
+
+      showMessage(`Draft ${saved.BrewID} berhasil tersimpan. Buka Brew Log & QA lalu pilih BrewID tersebut untuk verifikasi.`, "success");
+    } catch (err) {
+      console.error("saveCurrentBrewDraft error", err);
+      const detail = err?.message || err?.details || err?.hint || String(err);
+      showMessage(`Gagal menyimpan draft ke Supabase: ${detail}`, "error");
+      alert(`Gagal menyimpan draft ke Supabase. Detail: ${detail}`);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
   }
 
   function computeQAFromForm() {
@@ -1673,8 +1702,8 @@
 
   function draftBrewLogsForQA() {
     return allBrewLogs()
-      .filter(log => log.Source === "Supabase")
-      .filter(log => !log.QA_Final && norm(log.QA_Status) !== "qa pass")
+      .filter(log => !log.QA_Final)
+      .filter(log => !log.QA_ID)
       .sort((a, b) => new Date(b.Date || 0) - new Date(a.Date || 0));
   }
 
@@ -1706,11 +1735,23 @@
 
   function bindEvents() {
     document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => showTab(btn.dataset.tab)));
+    document.addEventListener("click", e => {
+      const saveBtn = e.target.closest?.("#saveCurrentBrew,[data-action='save-brew-draft']");
+      if (saveBtn) {
+        saveCurrentBrewDraft(e);
+        return;
+      }
+      const applyBtn = e.target.closest?.("#applyBeanToBrew");
+      if (applyBtn) {
+        e.preventDefault();
+        applyTopBeanToBrew();
+      }
+    });
     ["brewVariety", "brewProcess", "brewRoast", "brewDripper", "brewMode", "switchValveMode", "brewGrinder", "brewWater", "brewDose", "pourPattern"].forEach(id => $(id).addEventListener("change", renderBrew));
     ["targetSweet", "targetAcid", "targetBody", "filterFlavor1", "filterFlavor2", "filterFlavor3", "filterVariety1", "filterVariety2", "filterBrew", "minStock"].forEach(id => $(id).addEventListener("change", renderBeansTable));
     ["targetSweet", "targetAcid", "targetBody", "minStock"].forEach(id => $(id).addEventListener("input", renderBeansTable));
-    $("saveCurrentBrew").addEventListener("click", saveCurrentBrewDraft);
-    $("applyBeanToBrew").addEventListener("click", applyTopBeanToBrew);
+    $("saveCurrentBrew")?.addEventListener("click", saveCurrentBrewDraft);
+    $("applyBeanToBrew")?.addEventListener("click", applyTopBeanToBrew);
     $("stockForm").addEventListener("submit", saveStock);
     $("qaForm").addEventListener("submit", saveQA);
     document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("input", renderQAPreview));
@@ -1788,6 +1829,21 @@
     if (canModerate()) loadModerationRows().catch(console.warn);
     else renderModerationTable?.();
   }
+
+
+  window.COFFEE_APP_DEBUG = {
+    getState: () => ({
+      cloudReady,
+      currentUser: currentUser?.email || null,
+      currentWorkspace: currentWorkspace?.name || null,
+      currentRole,
+      stockCount: state.cloudStock?.length || 0,
+      brewCount: state.cloudBrewLogs?.length || 0,
+      qaCount: state.cloudQA?.length || 0
+    }),
+    saveDraft: saveCurrentBrewDraft,
+    sync: () => syncFromCloud(true)
+  };
 
   document.addEventListener("DOMContentLoaded", async () => {
     hydrateSelects();

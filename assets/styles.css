@@ -493,3 +493,8 @@ tr:hover td { background: #fffaf0; }
 #qaVariableWrap.hidden {
   display: none !important;
 }
+
+button[disabled] {
+  opacity: .65;
+  cursor: wait;
+}

@@ -129,3 +129,13 @@ Mulai v15:
 - Saat belum login, tabel Brew Log pribadi disembunyikan. Guest tetap bisa mengisi form QA publik, dan hasilnya masuk ke feed publik jika QA minimal 6.5.
 - Menu Rekomendasi Biji Kopi hanya tampil saat user login dan memiliki workspace aktif.
 - Jalankan migration: `supabase/migration_v15_guest_public_brew_threshold_65.sql`
+
+
+## Catatan v16 — Perbaikan tombol draft Brew Log
+
+Mulai v16:
+- Tombol `Simpan draft ke Brew Log` punya loading state `Menyimpan draft...`.
+- Jika Supabase menolak insert, pesan error muncul sebagai toast dan alert.
+- Setelah draft berhasil tersimpan, app melakukan sync ulang agar BrewID langsung muncul di Brew Log & QA.
+- Event tombol dibuat lebih kuat dengan fallback event delegation.
+- Debug helper tersedia di browser console: `COFFEE_APP_DEBUG.getState()`.
