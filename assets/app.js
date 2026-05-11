@@ -52,8 +52,30 @@
   }
 
 
+  function getSupabaseProjectUrl() {
+    const raw = String(SUPABASE_CONFIG.url || "").trim();
+    if (!raw) return "";
+    let parsed;
+    try {
+      parsed = new URL(raw);
+    } catch (_err) {
+      throw new Error("Supabase URL tidak valid. Gunakan Project URL dari Supabase, contoh: https://xxxxx.supabase.co");
+    }
+    if (parsed.protocol !== "https:") {
+      throw new Error("Supabase URL harus diawali https://");
+    }
+    if (parsed.pathname && parsed.pathname !== "/") {
+      throw new Error("Supabase URL harus Project URL utama, tanpa tambahan path seperti /rest/v1 atau /auth/v1.");
+    }
+    return parsed.origin;
+  }
+
+  function getSupabaseAnonKey() {
+    return String(SUPABASE_CONFIG.anonKey || "").trim();
+  }
+
   function isSupabaseConfigured() {
-    return Boolean(SUPABASE_CONFIG.enabled !== false && SUPABASE_CONFIG.url && SUPABASE_CONFIG.anonKey && /^https:\/\//i.test(SUPABASE_CONFIG.url));
+    return Boolean(SUPABASE_CONFIG.enabled !== false && String(SUPABASE_CONFIG.url || "").trim() && getSupabaseAnonKey());
   }
 
   function updateDbStatus(kind, title, detail = "") {
@@ -245,8 +267,21 @@
     const password = $("authPassword").value;
     const displayName = $("authDisplayName").value.trim() || email.split("@")[0];
     if (!email || !password) return showMessage("Isi email dan password.");
-    const { error } = await supabaseClient.auth.signUp({ email, password, options: { data: { display_name: displayName } } });
-    if (error) return showMessage(`Pendaftaran gagal: ${error.message}`);
+    const redirectTo = `${window.location.origin}${window.location.pathname}`;
+    const { error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectTo,
+        data: { display_name: displayName }
+      }
+    });
+    if (error) {
+      const message = /Invalid path specified/i.test(error.message)
+        ? "Pendaftaran gagal: Supabase URL di assets/supabase-config.js kemungkinan salah. Pakai Project URL utama, contoh https://xxxxx.supabase.co, bukan URL dashboard, /rest/v1, atau /auth/v1."
+        : `Pendaftaran gagal: ${error.message}`;
+      return showMessage(message);
+    }
     showMessage("Pendaftaran berhasil. Jika konfirmasi email aktif, cek inbox untuk verifikasi.");
   }
 
@@ -519,13 +554,16 @@
     }
     try {
       updateDbStatus("syncing", "Menghubungkan ke Supabase...", "Membaca sesi pengguna, workspace, dan data publik yang sudah disetujui.");
-      supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+      const projectUrl = getSupabaseProjectUrl();
+      const anonKey = getSupabaseAnonKey();
+      supabaseClient = window.supabase.createClient(projectUrl, anonKey);
       cloudReady = true;
       await initAuth();
       await syncFromCloud(false);
       updateDbStatus("online", "Supabase online", `Data publik yang sudah disetujui tersinkron. Sinkron terakhir: ${new Date().toLocaleTimeString()}`);
     } catch (err) {
       cloudReady = false;
+      supabaseClient = null;
       updateDbStatus("offline", "Supabase gagal tersambung", err.message || "Cek config, schema, atau RLS policy.");
     }
   }
@@ -1309,6 +1347,13 @@
     $("librarySearch").addEventListener("input", renderLibrary);
     $("loginBtn")?.addEventListener("click", handleLogin);
     $("signupBtn")?.addEventListener("click", handleSignup);
+    $("authJumpLink")?.addEventListener("click", () => {
+      showTab("admin");
+      setTimeout(() => {
+        $("authDisplayName")?.focus();
+        document.querySelector("#tab-admin")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    });
     $("logoutBtn")?.addEventListener("click", handleLogout);
     $("workspaceForm")?.addEventListener("submit", createWorkspace);
     $("joinWorkspaceBtn")?.addEventListener("click", joinWorkspace);

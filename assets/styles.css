@@ -296,6 +296,20 @@ tr:hover td { background: #fffaf0; }
 }
 .auth-card strong { display: block; font-size: 18px; margin-bottom: 6px; }
 .auth-card small { opacity: .86; line-height: 1.45; }
+
+.auth-jump-link {
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff3d4;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.auth-jump-link:hover { color: white; }
+
 .workspace-mini {
   display: grid;
   gap: 8px;

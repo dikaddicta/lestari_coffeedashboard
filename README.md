@@ -37,3 +37,16 @@ Jangan pernah memasukkan `service_role key` ke frontend.
 - Data baru dari user masuk sebagai `pending`.
 - QA/Admin bertugas mengecek dan menyetujui data.
 - Untuk penggunaan komersial, resep sebaiknya baru disetujui setelah hasilnya konsisten, misalnya 2 dari 3 brew ulang tetap mendapatkan nilai QA minimal 8.6.
+
+
+## Troubleshooting Supabase
+
+Jika muncul pesan `Invalid path specified in request URL` saat daftar/login, biasanya nilai `url` di `assets/supabase-config.js` salah.
+
+Gunakan Project URL utama dari Supabase:
+
+```js
+url: "https://xxxxx.supabase.co"
+```
+
+Jangan gunakan URL dashboard, `/rest/v1`, `/auth/v1`, atau `service_role key`.
