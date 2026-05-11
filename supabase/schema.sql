@@ -212,7 +212,7 @@ create table if not exists public.stock_beans (
   price numeric default 0,
   roast_date date,
   active text default 'Yes',
-  visibility text not null default 'public',
+  visibility text not null default 'private',
   status text not null default 'pending',
   source_client_id text,
   workspace_id uuid references public.workspaces(id) default '00000000-0000-0000-0000-000000000001',
@@ -229,6 +229,7 @@ create table if not exists public.brew_logs (
   updated_at timestamptz not null default now(),
   brew_code text,
   brew_date date default current_date,
+  brewer_name text,
   bean_name text,
   origin text,
   variety text,
@@ -318,6 +319,7 @@ alter table public.stock_beans add column if not exists moderation_notes text;
 alter table public.stock_beans add column if not exists moderated_by uuid references auth.users(id) on delete set null;
 alter table public.stock_beans add column if not exists moderated_at timestamptz;
 
+alter table public.brew_logs add column if not exists brewer_name text;
 alter table public.brew_logs add column if not exists workspace_id uuid references public.workspaces(id) default '00000000-0000-0000-0000-000000000001';
 alter table public.brew_logs add column if not exists created_by uuid references auth.users(id) on delete set null;
 alter table public.brew_logs add column if not exists moderation_status text not null default 'pending';
@@ -554,3 +556,41 @@ CREATE POLICY "QA delete admin" ON public.qa_scores
 -- update public.workspace_members
 -- set role = 'qa'
 -- where workspace_id = '<workspace_uuid>' and user_id = '<user_uuid>';
+
+
+-- -----------------------------------------------------------------------------
+-- v8 migration: stok privat per akun/workspace, brew log approved tampil publik.
+-- Aman dijalankan di project yang sudah dibuat.
+-- -----------------------------------------------------------------------------
+alter table public.brew_logs add column if not exists brewer_name text;
+alter table public.stock_beans alter column visibility set default 'private';
+update public.stock_beans set visibility = 'private' where visibility = 'public';
+update public.stock_beans set moderation_status = 'approved' where moderation_status = 'pending';
+
+DROP POLICY IF EXISTS "Stock read approved own or moderator" ON public.stock_beans;
+DROP POLICY IF EXISTS "Stock insert member" ON public.stock_beans;
+DROP POLICY IF EXISTS "Stock update owner or moderator" ON public.stock_beans;
+DROP POLICY IF EXISTS "Stock delete admin" ON public.stock_beans;
+DROP POLICY IF EXISTS "Stock read private owner or admin" ON public.stock_beans;
+DROP POLICY IF EXISTS "Stock insert private member" ON public.stock_beans;
+DROP POLICY IF EXISTS "Stock update private owner or admin" ON public.stock_beans;
+DROP POLICY IF EXISTS "Stock delete private owner or admin" ON public.stock_beans;
+
+CREATE POLICY "Stock read private owner or admin" ON public.stock_beans
+  FOR SELECT USING (created_by = auth.uid() OR public.is_workspace_admin(workspace_id));
+
+CREATE POLICY "Stock insert private member" ON public.stock_beans
+  FOR INSERT WITH CHECK (
+    auth.uid() IS NOT NULL
+    AND created_by = auth.uid()
+    AND public.is_workspace_member(workspace_id)
+  );
+
+CREATE POLICY "Stock update private owner or admin" ON public.stock_beans
+  FOR UPDATE USING (created_by = auth.uid() OR public.is_workspace_admin(workspace_id))
+  WITH CHECK (created_by = auth.uid() OR public.is_workspace_admin(workspace_id));
+
+CREATE POLICY "Stock delete private owner or admin" ON public.stock_beans
+  FOR DELETE USING (created_by = auth.uid() OR public.is_workspace_admin(workspace_id));
+
+create index if not exists idx_brew_logs_public_feed on public.brew_logs (moderation_status, visibility, qa_final desc, created_at desc);

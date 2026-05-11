@@ -115,6 +115,10 @@
     return canModerate() ? "approved" : "pending";
   }
 
+  function currentBrewerName() {
+    return userProfile?.display_name || currentUser?.user_metadata?.display_name || currentUser?.email?.split("@")[0] || "Brewer";
+  }
+
   function showMessage(message) {
     alert(message);
   }
@@ -170,22 +174,23 @@
     }
 
     const last = localStorage.getItem(LAST_WORKSPACE_KEY);
-    currentWorkspace = joinedWorkspaces.find(ws => ws.id === last) || joinedWorkspaces[0] || publicWorkspaces[0] || null;
+    const preferredWorkspace = joinedWorkspaces.find(ws => ws.slug !== "public-brew-community") || joinedWorkspaces[0] || null;
+    currentWorkspace = joinedWorkspaces.find(ws => ws.id === last) || preferredWorkspace;
     const joined = joinedWorkspaces.find(ws => ws.id === currentWorkspace?.id);
     currentRole = joined?.role || (currentWorkspace ? "viewer" : "guest");
     renderWorkspaceUI();
   }
 
   function renderWorkspaceUI() {
-    const allKnown = uniq([...(joinedWorkspaces || []), ...(publicWorkspaces || [])].map(ws => ws.id))
-      .map(id => [...joinedWorkspaces, ...publicWorkspaces].find(ws => ws.id === id))
+    const allKnown = uniq([...(joinedWorkspaces || [])].map(ws => ws.id))
+      .map(id => joinedWorkspaces.find(ws => ws.id === id))
       .filter(Boolean);
 
     [$("activeWorkspaceSelect"), $("adminWorkspaceSelect")].forEach(sel => {
       if (!sel) return;
       sel.innerHTML = allKnown.length
         ? allKnown.map(ws => `<option value="${html(ws.id)}">${html(ws.name)}${joinedWorkspaces.find(j => j.id === ws.id) ? ` · ${html(joinedWorkspaces.find(j => j.id === ws.id).role)}` : " · hanya lihat"}</option>`).join("")
-        : `<option value="">No workspace</option>`;
+        : `<option value="">Belum ada workspace</option>`;
       if (currentWorkspace?.id) sel.value = currentWorkspace.id;
     });
 
@@ -339,9 +344,9 @@
       price: Number(bean.Price || 0),
       roast_date: bean.RoastDate || null,
       active: bean.Active || "Yes",
-      visibility: "public",
-      status: publicStatusForInsert() === "approved" ? "published" : "pending",
-      moderation_status: publicStatusForInsert(),
+      visibility: "private",
+      status: "private",
+      moderation_status: "approved",
       workspace_id: activeWorkspaceId(),
       created_by: currentUser?.id || null,
       moderated_by: canModerate() ? currentUser?.id : null,
@@ -376,6 +381,8 @@
       WorkspaceID: row.workspace_id,
       CreatedBy: row.created_by,
       ModerationStatus: row.moderation_status || row.status || "approved",
+      Visibility: row.visibility || "public",
+      WorkspaceName: row.workspaces?.name || row.workspace_name || "",
       Source: "Supabase"
     };
   }
@@ -384,6 +391,7 @@
     return {
       brew_code: log.BrewID,
       brew_date: log.Date || todayISO(),
+      brewer_name: log.BrewerName || currentBrewerName(),
       bean_name: log.BeanName || null,
       origin: log.Origin || null,
       variety: log.Variety || null,
@@ -422,7 +430,7 @@
       switch_valve_mode: log.SwitchValveMode || null,
       valve_plan: log.ValvePlan || null,
       visibility: "public",
-      status: publicStatusForInsert() === "approved" ? "published" : "pending",
+      status: publicStatusForInsert(),
       moderation_status: publicStatusForInsert(),
       workspace_id: activeWorkspaceId(),
       created_by: currentUser?.id || null,
@@ -437,6 +445,7 @@
       CloudID: row.id,
       BrewID: row.brew_code || `BL-${String(row.id || "").slice(0, 8)}`,
       Date: row.brew_date,
+      BrewerName: row.brewer_name || "Brewer",
       BeanName: row.bean_name,
       Origin: row.origin,
       Variety: row.variety,
@@ -477,6 +486,8 @@
       WorkspaceID: row.workspace_id,
       CreatedBy: row.created_by,
       ModerationStatus: row.moderation_status || row.status || "approved",
+      Visibility: row.visibility || "public",
+      WorkspaceName: row.workspaces?.name || row.workspace_name || "",
       Source: "Supabase"
     };
   }
@@ -568,23 +579,49 @@
     }
   }
 
+  function uniqueByCloudId(rows) {
+    const seen = new Set();
+    return (rows || []).filter(row => {
+      const key = row.CloudID || row.BrewID || row.QA_ID || JSON.stringify(row);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
   async function syncFromCloud(shouldRender = true) {
     if (!supabaseClient) throw new Error("Supabase belum aktif.");
-    updateDbStatus("syncing", "Menyinkronkan data dari Supabase...", "Mengambil data publik terbaru.");
-    const [stockRes, brewRes, qaRes] = await Promise.all([
-      supabaseClient.from("stock_beans").select("*").eq("visibility", "public").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(1000),
-      supabaseClient.from("brew_logs").select("*").eq("visibility", "public").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(1000),
-      supabaseClient.from("qa_scores").select("*").eq("visibility", "public").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(1000)
-    ]);
+    updateDbStatus("syncing", "Menyinkronkan data dari Supabase...", "Mengambil data privat workspace dan hasil seduhan publik terbaru.");
+
+    const empty = { data: [], error: null };
+    const workspaceId = activeWorkspaceId();
+
+    const stockPromise = currentUser && workspaceId
+      ? supabaseClient.from("stock_beans").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false }).limit(1000)
+      : Promise.resolve(empty);
+
+    const publicBrewPromise = supabaseClient.from("brew_logs").select("*").eq("visibility", "public").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(1000);
+
+    const workspaceBrewPromise = currentUser && workspaceId
+      ? supabaseClient.from("brew_logs").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false }).limit(1000)
+      : Promise.resolve(empty);
+
+    const workspaceQaPromise = currentUser && workspaceId
+      ? supabaseClient.from("qa_scores").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false }).limit(1000)
+      : Promise.resolve(empty);
+
+    const [stockRes, publicBrewRes, workspaceBrewRes, workspaceQaRes] = await Promise.all([stockPromise, publicBrewPromise, workspaceBrewPromise, workspaceQaPromise]);
     if (stockRes.error) throw stockRes.error;
-    if (brewRes.error) throw brewRes.error;
-    if (qaRes.error) throw qaRes.error;
+    if (publicBrewRes.error) throw publicBrewRes.error;
+    if (workspaceBrewRes.error) throw workspaceBrewRes.error;
+    if (workspaceQaRes.error) throw workspaceQaRes.error;
+
     state.cloudStock = (stockRes.data || []).map(fromSnakeStock);
-    state.cloudBrewLogs = (brewRes.data || []).map(fromSnakeBrew);
-    state.cloudQA = (qaRes.data || []).map(fromSnakeQA);
+    state.cloudBrewLogs = uniqueByCloudId([...(publicBrewRes.data || []).map(fromSnakeBrew), ...(workspaceBrewRes.data || []).map(fromSnakeBrew)]);
+    state.cloudQA = (workspaceQaRes.data || []).map(fromSnakeQA);
     cloudLastSync = new Date();
     cloudReady = true;
-    updateDbStatus("online", "Supabase online", `Data publik yang sudah disetujui tersinkron. Sinkron terakhir: ${cloudLastSync.toLocaleTimeString()}`);
+    updateDbStatus("online", "Supabase online", `Data workspace dan hasil seduhan publik tersinkron. Sinkron terakhir: ${cloudLastSync.toLocaleTimeString()}`);
     if (shouldRender) renderAll();
   }
 
@@ -595,28 +632,59 @@
     return mapper(data);
   }
 
-  function canSubmitOnline() {
-    return Boolean(cloudReady && supabaseClient && currentUser && activeWorkspaceId() && joinedWorkspaces.some(ws => ws.id === activeWorkspaceId()));
+  function isActiveWorkspaceMember() {
+    const workspaceId = activeWorkspaceId();
+    return Boolean(currentUser && workspaceId && joinedWorkspaces.some(ws => ws.id === workspaceId));
   }
 
-  function onlineSubmitHint() {
-    if (!cloudReady || !supabaseClient) return "Supabase belum aktif. Data disimpan lokal.";
-    if (!currentUser) return "Masuk diperlukan agar data masuk ke database publik. Data disimpan lokal sebagai draft.";
-    if (!activeWorkspaceId()) return "Pilih atau buat workspace terlebih dahulu. Data disimpan lokal sebagai draft.";
-    if (!joinedWorkspaces.some(ws => ws.id === activeWorkspaceId())) return "Kamu belum menjadi anggota workspace ini. Gabung terlebih dahulu untuk mengirim data publik.";
+  function canUseWorkspaceModules() {
+    return Boolean(cloudReady && supabaseClient && isActiveWorkspaceMember());
+  }
+
+  function canSubmitOnline() {
+    return canUseWorkspaceModules();
+  }
+
+  function privateModuleMessage(moduleName = "fitur ini") {
+    if (!cloudReady || !supabaseClient) return "Database belum tersambung. Hubungkan Supabase terlebih dahulu.";
+    if (!currentUser) return `Silakan masuk untuk menggunakan ${moduleName}.`;
+    if (!activeWorkspaceId()) return `Buat atau pilih workspace terlebih dahulu untuk menggunakan ${moduleName}.`;
+    if (!isActiveWorkspaceMember()) return `Kamu belum menjadi anggota workspace aktif. Gabung atau pilih workspace lain untuk menggunakan ${moduleName}.`;
     return "";
   }
 
+  function onlineSubmitHint() {
+    return privateModuleMessage("fitur ini");
+  }
+
+  function workspaceStock() {
+    if (!canUseWorkspaceModules()) return [];
+    const workspaceId = activeWorkspaceId();
+    return (state.cloudStock || []).filter(bean => bean.WorkspaceID === workspaceId || !bean.WorkspaceID);
+  }
+
+  function workspaceBrewLogs() {
+    if (!canUseWorkspaceModules()) return [];
+    const workspaceId = activeWorkspaceId();
+    return (state.cloudBrewLogs || []).filter(log => log.WorkspaceID === workspaceId);
+  }
+
+  function workspaceQA() {
+    if (!canUseWorkspaceModules()) return [];
+    const workspaceId = activeWorkspaceId();
+    return (state.cloudQA || []).filter(qa => qa.WorkspaceID === workspaceId);
+  }
+
   function allStock() {
-    return [...(DATA.stockBeans || []), ...(state.cloudStock || []), ...state.userStock];
+    return workspaceStock();
   }
 
   function allBrewLogs() {
-    return [...(DATA.brewLogsSeed || []), ...(state.cloudBrewLogs || []), ...state.userBrewLogs];
+    return workspaceBrewLogs();
   }
 
   function allQA() {
-    return [...(DATA.qaSeed || []), ...(state.cloudQA || []), ...state.userQA];
+    return workspaceQA();
   }
 
   function getBy(list, key, value) {
@@ -667,7 +735,7 @@
       [DATA.processes?.length || 0, "Proses"],
       [DATA.roasts?.length || 0, "Roast"],
       [DATA.waters?.length || 0, "Water"],
-      [allStock().length, "Stock Beans"]
+      [canUseWorkspaceModules() ? allStock().length : 0, "Stock Workspace"]
     ];
     $("libraryMetrics").innerHTML = metrics.map(([n, label]) => `<div class="metric"><strong>${html(n)}</strong><span>${html(label)}</span></div>`).join("");
   }
@@ -927,8 +995,18 @@
   }
 
   function renderBeansTable() {
-    const ranked = rankBeans();
     const tbody = $("beansTable").querySelector("tbody");
+    if (!canUseWorkspaceModules()) {
+      tbody.innerHTML = `<tr><td colspan="10">Masuk dan pilih workspace untuk melihat rekomendasi biji kopi dari stok pribadimu.</td></tr>`;
+      renderStockTable();
+      return [];
+    }
+    const ranked = rankBeans();
+    if (!ranked.length) {
+      tbody.innerHTML = `<tr><td colspan="10">Belum ada stok kopi yang cocok dengan filter. Tambahkan stok di menu Stok Kopi.</td></tr>`;
+      renderStockTable();
+      return [];
+    }
     tbody.innerHTML = ranked.map((row, idx) => {
       const bean = row.bean;
       const brew = suggestedBrew(bean);
@@ -939,10 +1017,33 @@
     return ranked;
   }
 
+  function setModuleLocked(sectionId, noticeId, locked, message) {
+    const section = $(sectionId);
+    const notice = $(noticeId);
+    if (notice) {
+      notice.classList.toggle("hidden", !locked);
+      notice.innerHTML = locked ? `${html(message)}<small>Data di menu ini bersifat privat per akun dan workspace. Hasil seduhan publik tersedia di menu Hasil Seduhan Publik.</small>` : "";
+    }
+    if (!section) return;
+    const forms = section.querySelectorAll("form");
+    forms.forEach(form => form.classList.toggle("module-disabled", locked));
+  }
+
   function renderStockTable() {
     const tbody = $("stockTable")?.querySelector("tbody");
     if (!tbody) return;
-    tbody.innerHTML = allStock().map(bean => `<tr><td><strong>${html(bean.CoffeeName)}</strong><br><small>${html(bean.Producer || "")}</small></td><td>${html(bean.Origin || "")}</td><td>${html(bean.Variety || "")}</td><td>${html(bean.Variety2_optional || "")}</td><td>${html(bean.Process || "")}</td><td>${html(bean.RoastProfile || "")}</td><td>${html(beanFlavorList(bean).join(" / "))}</td><td>${html(bean.Sweetness)}/${html(bean.Acidity)}/${html(bean.Body)}</td><td>${html(bean.Stock_g)}g</td><td>${html(bean.BestBrew || "Both")}</td><td>${html(bean.Active || "Yes")}</td></tr>`).join("");
+    const locked = !canUseWorkspaceModules();
+    setModuleLocked("tab-stock", "stockAccessNotice", locked, privateModuleMessage("Stok Kopi"));
+    if (locked) {
+      tbody.innerHTML = `<tr><td colspan="11">Masuk dan pilih workspace untuk melihat atau mengelola stok kopi.</td></tr>`;
+      return;
+    }
+    const rows = allStock();
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="11">Belum ada stok kopi di workspace ini.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map(bean => `<tr><td><strong>${html(bean.CoffeeName)}</strong><br><small>${html(bean.Producer || "")}</small></td><td>${html(bean.Origin || "")}</td><td>${html(bean.Variety || "")}</td><td>${html(bean.Variety2_optional || "")}</td><td>${html(bean.Process || "")}</td><td>${html(bean.RoastProfile || "")}</td><td>${html(beanFlavorList(bean).join(" / "))}</td><td>${html(bean.Sweetness)}/${html(bean.Acidity)}/${html(bean.Body)}</td><td>${html(bean.Stock_g)}g</td><td>${html(bean.BestBrew || "Both")}</td><td>${html(bean.Active || "Yes")}</td></tr>`).join("");
   }
 
   function applyTopBeanToBrew() {
@@ -1008,25 +1109,25 @@
     };
   }
 
-  async function saveCurrentBrewDraft() {
+  function saveCurrentBrewDraft() {
+    if (!canUseWorkspaceModules()) {
+      showMessage(privateModuleMessage("Brew Log"));
+      showTab("admin");
+      return;
+    }
     const log = currentBrewLogBase();
-    if (canSubmitOnline()) {
-      try {
-        const saved = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
+    insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew)
+      .then(saved => {
         state.cloudBrewLogs.unshift(saved);
         renderBrewLogTable();
         renderRecipeOptions(computeBrew());
-        alert(canModerate() ? "Draft brew tersimpan ke Supabase dan langsung disetujui." : "Draft brew tersimpan ke Supabase dan menunggu review. Data akan tampil publik setelah disetujui QA/admin.");
-        return;
-      } catch (err) {
+        renderPublicBrewTable();
+        alert(canModerate() ? "Draft brew tersimpan dan langsung disetujui." : "Draft brew tersimpan dan menunggu review. Data akan tampil publik setelah disetujui QA/admin.");
+      })
+      .catch(err => {
         console.error(err);
-        alert(`Supabase gagal menyimpan draft. Data disimpan lokal sebagai cadangan. Detail: ${err.message || err}`);
-      }
-    }
-    state.userBrewLogs.push(log);
-    persist();
-    renderBrewLogTable();
-    alert(onlineSubmitHint() || "Draft brew tersimpan lokal di browser ini.");
+        alert(`Gagal menyimpan brew log ke Supabase. Data belum tersimpan. Detail: ${err.message || err}`);
+      });
   }
 
   function computeQAFromForm() {
@@ -1041,12 +1142,17 @@
     const approvalRequested = $("qaApproval").value === "Yes";
     const pass = final >= APPROVAL_THRESHOLD && approvalRequested && canModerate();
     $("qaFinalPreview").textContent = fmt(final, 2);
-    $("qaStatusPreview").textContent = pass ? "QA PASS" : (approvalRequested && !canModerate() ? "PENDING QA APPROVAL" : "RETEST");
+    $("qaStatusPreview").textContent = pass ? "QA PASS" : (approvalRequested && !canModerate() ? "MENUNGGU REVIEW QA" : "RETEST");
     $("qaStatusPreview").className = pass ? "qa-pass" : "qa-retest";
   }
 
   async function saveQA(e) {
     e.preventDefault();
+    if (!canUseWorkspaceModules()) {
+      showMessage(privateModuleMessage("Brew Log & QA"));
+      showTab("admin");
+      return;
+    }
     const final = computeQAFromForm();
     const approvalRequested = $("qaApproval").value === "Yes";
     const approved = final >= APPROVAL_THRESHOLD && approvalRequested && canModerate();
@@ -1086,37 +1192,46 @@
       Approver: approved ? $("qaEvaluator").value : "",
       QA_Notes: $("qaNotes").value
     };
-    if (canSubmitOnline()) {
-      try {
-        const savedLog = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
-        const savedQA = await insertCloud("qa_scores", toSnakeQA(qa), fromSnakeQA);
-        state.cloudBrewLogs.unshift(savedLog);
-        state.cloudQA.unshift(savedQA);
-        renderBrewLogTable();
-        renderBrew();
-        alert(approved ? "QA PASS. Resep disetujui dan menjadi opsi publik." : (approvalRequested && !canModerate() ? "QA tersimpan sebagai data menunggu review. Persetujuan hanya bisa dilakukan QA/admin." : "Brew log + QA tersimpan ke Supabase sebagai data menunggu review/perlu diuji ulang."));
-        return;
-      } catch (err) {
-        console.error(err);
-        alert(`Supabase gagal menyimpan QA. Data disimpan lokal sebagai cadangan. Detail: ${err.message || err}`);
-      }
+    try {
+      const savedLog = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
+      const savedQA = await insertCloud("qa_scores", toSnakeQA(qa), fromSnakeQA);
+      state.cloudBrewLogs.unshift(savedLog);
+      state.cloudQA.unshift(savedQA);
+      renderBrewLogTable();
+      renderBrew();
+      renderPublicBrewTable();
+      alert(approved ? "QA PASS. Resep langsung disetujui dan tampil di halaman publik." : (approvalRequested && !canModerate() ? "Brew log + QA tersimpan dan menunggu review QA/admin sebelum tampil publik." : "Brew log + QA tersimpan di workspace. Data belum tampil publik sebelum disetujui."));
+      return;
+    } catch (err) {
+      console.error(err);
+      alert(`Gagal menyimpan Brew Log & QA ke Supabase. Data belum tersimpan. Detail: ${err.message || err}`);
     }
-    state.userBrewLogs.push(log);
-    state.userQA.push(qa);
-    persist();
-    renderBrewLogTable();
-    renderBrew();
-    alert((onlineSubmitHint() ? onlineSubmitHint() + "\n" : "") + (approved ? "QA PASS tersimpan lokal. Untuk data publik, masuk sebagai QA/admin lalu kirim ke workspace." : "Brew log tersimpan lokal. Status masih perlu diuji ulang."));
   }
 
   function renderBrewLogTable() {
     const tbody = $("brewLogTable")?.querySelector("tbody");
     if (!tbody) return;
-    tbody.innerHTML = allBrewLogs().slice().reverse().map(log => `<tr><td><strong>${html(log.BrewID)}</strong></td><td>${html(log.Date)}</td><td>${html(log.BeanName)}</td><td>${html(log.RecipeKey)}</td><td>${html(log.Method)}</td><td>${html(log.Dripper)}</td><td>${html(log.GrindSetting)}</td><td>${html(log.Temp_C)}°C</td><td>1:${html(log.Ratio)}</td><td><span class="score-pill">${html(log.QA_Final || "-")}</span></td><td>${html(log.ApprovedForRecipe || "No")}</td><td>${html(log.PrimaryVariableChanged || "")}</td></tr>`).join("");
+    const locked = !canUseWorkspaceModules();
+    setModuleLocked("tab-qa", "qaAccessNotice", locked, privateModuleMessage("Brew Log & QA"));
+    if (locked) {
+      tbody.innerHTML = `<tr><td colspan="12">Masuk dan pilih workspace untuk mengisi atau melihat Brew Log & QA.</td></tr>`;
+      return;
+    }
+    const rows = allBrewLogs().slice().reverse();
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="12">Belum ada brew log di workspace ini.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map(log => `<tr><td><strong>${html(log.BrewID)}</strong></td><td>${html(log.Date)}</td><td>${html(log.BeanName)}</td><td>${html(log.RecipeKey)}</td><td>${html(log.Method)}</td><td>${html(log.Dripper)}</td><td>${html(log.GrindSetting)}</td><td>${html(log.Temp_C)}°C</td><td>1:${html(log.Ratio)}</td><td><span class="score-pill">${html(log.QA_Final || "-")}</span></td><td>${html(log.ApprovedForRecipe || "No")}</td><td>${html(log.PrimaryVariableChanged || "")}</td></tr>`).join("");
   }
 
   async function saveStock(e) {
     e.preventDefault();
+    if (!canUseWorkspaceModules()) {
+      showMessage(privateModuleMessage("Stok Kopi"));
+      showTab("admin");
+      return;
+    }
     const bean = {
       BeanID: nextId("B", allStock(), "BeanID"),
       CoffeeName: $("stockName").value,
@@ -1139,28 +1254,19 @@
       RoastDate: $("stockRoastDate").value,
       Active: $("stockActive").value
     };
-    if (canSubmitOnline()) {
-      try {
-        const saved = await insertCloud("stock_beans", toSnakeStock(bean), fromSnakeStock);
-        state.cloudStock.unshift(saved);
-        renderBeansTable();
-        renderMetrics();
-        e.target.reset();
-        hydrateSelects();
-        alert(canModerate() ? "Data biji kopi tersimpan ke Supabase dan langsung disetujui." : "Data biji kopi tersimpan ke Supabase dan menunggu review. Data akan tampil publik setelah disetujui admin/QA.");
-        return;
-      } catch (err) {
-        console.error(err);
-        alert(`Supabase gagal menyimpan stok. Data disimpan lokal sebagai cadangan. Detail: ${err.message || err}`);
-      }
+    try {
+      const saved = await insertCloud("stock_beans", toSnakeStock(bean), fromSnakeStock);
+      state.cloudStock.unshift(saved);
+      renderBeansTable();
+      renderMetrics();
+      e.target.reset();
+      hydrateSelects();
+      alert("Stok kopi tersimpan privat di workspace aktif.");
+      return;
+    } catch (err) {
+      console.error(err);
+      alert(`Gagal menyimpan stok ke Supabase. Data belum tersimpan. Detail: ${err.message || err}`);
     }
-    state.userStock.push(bean);
-    persist();
-    renderBeansTable();
-    renderMetrics();
-    e.target.reset();
-    hydrateSelects();
-    alert(onlineSubmitHint() || "Data biji kopi tersimpan lokal di browser ini.");
   }
 
   function moderationTitle(row, dataset) {
@@ -1178,7 +1284,7 @@
   }
 
   async function loadModerationRows() {
-    const table = $("moderationDataset")?.value || "stock_beans";
+    const table = $("moderationDataset")?.value || "brew_logs";
     const status = $("moderationStatus")?.value || "pending";
     if (!supabaseClient || !currentUser || !currentWorkspace) {
       moderationRows = [];
@@ -1204,7 +1310,7 @@
   function renderModerationTable(message = "") {
     const table = $("moderationTable");
     if (!table) return;
-    const dataset = $("moderationDataset")?.value || "stock_beans";
+    const dataset = $("moderationDataset")?.value || "brew_logs";
     table.querySelector("thead").innerHTML = `<tr><th>Status</th><th>Data</th><th>Pembuat</th><th>Dibuat</th><th>QA</th><th>Catatan</th><th>Aksi</th></tr>`;
     const tbody = table.querySelector("tbody");
     if (message) {
@@ -1235,7 +1341,7 @@
   }
 
   async function moderateRow(id, action) {
-    const table = $("moderationDataset")?.value || "stock_beans";
+    const table = $("moderationDataset")?.value || "brew_logs";
     if (!supabaseClient || !canModerate()) return showMessage("Butuh role QA/Admin.");
     if (action === "delete") {
       if (!canAdmin()) return showMessage("Hapus data hanya untuk admin workspace.");
@@ -1264,7 +1370,7 @@
   }
 
   async function editModerationJson(id) {
-    const table = $("moderationDataset")?.value || "stock_beans";
+    const table = $("moderationDataset")?.value || "brew_logs";
     if (!supabaseClient || !canModerate()) return showMessage("Butuh role QA/Admin.");
     const row = moderationRows.find(r => r.id === id);
     if (!row) return;
@@ -1280,6 +1386,50 @@
     await syncFromCloud(true).catch(console.warn);
     await loadModerationRows();
     showMessage("Data berhasil diedit.");
+  }
+
+  function publicBrewRows() {
+    const search = norm($("publicBrewSearch")?.value || "");
+    const method = $("publicBrewMethod")?.value || "all";
+    const minQA = Number($("publicBrewMinQA")?.value || 0);
+    return (state.cloudBrewLogs || [])
+      .filter(log => log.Source === "Supabase")
+      .filter(log => norm(log.ModerationStatus) === "approved")
+      .filter(log => norm(log.Visibility || "public") === "public")
+      .filter(log => method === "all" || norm(log.Method) === norm(method))
+      .filter(log => !minQA || Number(log.QA_Final || 0) >= minQA)
+      .filter(log => {
+        if (!search) return true;
+        return [log.BeanName, log.BrewerName, log.Variety, log.Process, log.RoastProfile, log.Method, log.Dripper, log.ResultNotes, log.PrimaryVariableChanged]
+          .some(v => norm(v).includes(search));
+      })
+      .sort((a, b) => new Date(b.Date || 0) - new Date(a.Date || 0));
+  }
+
+  function renderPublicBrewTable() {
+    const table = $("publicBrewTable");
+    if (!table) return;
+    const rows = publicBrewRows();
+    const tbody = table.querySelector("tbody");
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="8">Belum ada hasil seduhan publik yang sesuai filter. Brew log akan tampil di sini setelah disetujui.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map(log => {
+      const profile = [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · ");
+      const recipe = [`${log.GrindSetting || "-"}`, `${log.Temp_C || "-"}°C`, `1:${log.Ratio || "-"}`, `${log.TotalWater_ml || "-"} ml`].join(" · ");
+      const notes = [log.PrimaryVariableChanged, log.ResultNotes].filter(Boolean).join(" — ");
+      return `<tr>
+        <td>${html(log.Date || "-")}</td>
+        <td><strong>${html(log.BeanName || "Tanpa nama")}</strong><br><small>${html(log.Origin || "")}</small></td>
+        <td>${html(log.BrewerName || "Brewer")}</td>
+        <td>${html(profile)}</td>
+        <td>${html(log.Method || "-")}<br><small>${html(log.Dripper || "")}</small></td>
+        <td>${html(recipe)}<br><small>${html(log.ValvePlan || log.PourPlan || "")}</small></td>
+        <td><span class="score-pill">${html(log.QA_Final || "-")}</span></td>
+        <td>${html(notes || "-")}</td>
+      </tr>`;
+    }).join("");
   }
 
   function renderLibrary() {
@@ -1345,6 +1495,10 @@
     document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("change", renderQAPreview));
     $("libraryDataset").addEventListener("change", renderLibrary);
     $("librarySearch").addEventListener("input", renderLibrary);
+    $("publicBrewSearch")?.addEventListener("input", renderPublicBrewTable);
+    $("publicBrewMethod")?.addEventListener("change", renderPublicBrewTable);
+    $("publicBrewMinQA")?.addEventListener("change", renderPublicBrewTable);
+    $("refreshPublicBrews")?.addEventListener("click", async () => { await syncFromCloud(true).catch(err => alert(`Gagal memuat hasil seduhan publik: ${err.message || err}`)); });
     $("loginBtn")?.addEventListener("click", handleLogin);
     $("signupBtn")?.addEventListener("click", handleSignup);
     $("authJumpLink")?.addEventListener("click", () => {
@@ -1396,6 +1550,7 @@
     renderStockTable();
     renderQAPreview();
     renderBrewLogTable();
+    renderPublicBrewTable();
     renderLibrary();
     renderWorkspaceUI();
     if (canModerate()) loadModerationRows().catch(console.warn);

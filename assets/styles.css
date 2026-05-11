@@ -358,3 +358,42 @@ tr:hover td { background: #fffaf0; }
 @media (max-width: 900px) {
   .role-grid { grid-template-columns: 1fr; }
 }
+
+.public-feed-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 180px 150px auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+@media (max-width: 860px) {
+  .public-feed-toolbar { grid-template-columns: 1fr; }
+}
+
+
+.access-notice {
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: #fff1cc;
+  color: var(--espresso);
+  font-weight: 800;
+  line-height: 1.55;
+}
+.access-notice small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.hidden { display: none !important; }
+.module-disabled {
+  opacity: .55;
+}
+.module-disabled input,
+.module-disabled select,
+.module-disabled textarea,
+.module-disabled button {
+  pointer-events: none;
+}

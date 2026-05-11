@@ -50,3 +50,24 @@ url: "https://xxxxx.supabase.co"
 ```
 
 Jangan gunakan URL dashboard, `/rest/v1`, `/auth/v1`, atau `service_role key`.
+
+
+## Perubahan v8
+
+- Stok kopi bersifat privat untuk akun/workspace aktif.
+- Brew log yang sudah disetujui tampil di tab **Hasil Seduhan Publik**.
+- Halaman publik menampilkan nama brewer, profil kopi, metode seduh, recipe ringkas, nilai QA, dan catatan dial-in.
+- Untuk project Supabase yang sudah berjalan, jalankan `supabase/migration_v8_public_brews_private_stock.sql` di SQL Editor.
+
+
+## Catatan v9 — Modul privat dan feed publik
+
+Mulai v9:
+- Stok Kopi hanya muncul jika pengguna sudah login dan punya workspace aktif.
+- Brew Log & QA juga hanya bisa digunakan setelah login dan memilih workspace.
+- Hitungan `Stock Workspace` di header mengikuti jumlah stok pada workspace aktif.
+- Hasil seduhan dari semua pengguna ditampilkan di tab `Hasil Seduhan Publik`, tetapi hanya untuk brew log yang sudah berstatus `approved`.
+- Stok kopi tidak masuk feed publik.
+
+Jika project Supabase sudah berjalan, jalankan migration:
+`supabase/migration_v9_private_workspace_modules.sql`

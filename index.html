@@ -33,6 +33,7 @@
       <button class="tab-btn" data-tab="beans">Rekomendasi Biji Kopi</button>
       <button class="tab-btn" data-tab="stock">Stok Kopi</button>
       <button class="tab-btn" data-tab="qa">Brew Log & QA</button>
+      <button class="tab-btn" data-tab="public-brews">Hasil Seduhan Publik</button>
       <button class="tab-btn" data-tab="admin">Akun & Admin</button>
       <button class="tab-btn" data-tab="library">Pustaka Data</button>
     </nav>
@@ -174,6 +175,7 @@
       </section>
 
       <section id="tab-stock" class="tab-panel">
+        <div id="stockAccessNotice" class="access-notice hidden"></div>
         <div class="grid two-col">
           <section class="panel">
             <div class="section-title"><span>Stok</span><h2>Tambah / Update Biji Kopi</h2></div>
@@ -197,12 +199,12 @@
               <label>Tanggal Sangrai<input id="stockRoastDate" type="date" /></label>
               <label>Aktif<select id="stockActive"><option value="Yes">Ya</option><option value="No">Tidak</option></select></label>
               <label class="span-2">Catatan<textarea id="stockNotes" rows="3" placeholder="tasting notes, roast info, dll"></textarea></label>
-              <button class="primary span-2" type="submit">Simpan Biji Kopi ke Database</button>
+              <button class="primary span-2" type="submit">Simpan Stok Pribadi</button>
             </form>
           </section>
           <section class="panel">
             <div class="section-title"><span>Tools</span><h2>Manajemen Data</h2></div>
-            <p class="hint">Untuk versi komersial, data online memakai <strong>Supabase Auth + Workspace + Moderasi</strong>. Data publik yang tampil di rekomendasi adalah data yang sudah disetujui.</p>
+            <p class="hint">Untuk versi komersial, stok kopi disimpan privat per akun/workspace. Brew log yang lolos moderasi dapat tampil di halaman Hasil Seduhan Publik.</p>
             <div class="db-status" id="dbStatus">
               <span class="status-dot offline"></span>
               <div><strong>Mode penyimpanan lokal</strong><small>Isi <code>assets/supabase-config.js</code> untuk mengaktifkan database online.</small></div>
@@ -217,7 +219,7 @@
               <label class="file-button">Impor Backup JSON<input id="importJson" type="file" accept="application/json" hidden /></label>
               <button id="resetLocal" class="danger" type="button">Reset Data Lokal</button>
             </div>
-            <p class="hint small-note">Tamu bisa membaca data yang sudah disetujui. Untuk mengirim data publik, pengguna harus masuk dan menjadi anggota workspace.</p>
+            <p class="hint small-note">Tamu bisa membaca hasil seduhan publik yang sudah disetujui. Stok Kopi dan Brew Log & QA hanya aktif setelah pengguna masuk dan memiliki workspace.</p>
           </section>
         </div>
         <section class="panel wide">
@@ -232,6 +234,7 @@
       </section>
 
       <section id="tab-qa" class="tab-panel">
+        <div id="qaAccessNotice" class="access-notice hidden"></div>
         <div class="grid two-col">
           <section class="panel">
             <div class="section-title"><span>QA</span><h2>Evaluasi Seduhan</h2></div>
@@ -279,6 +282,28 @@
       </section>
 
 
+
+      <section id="tab-public-brews" class="tab-panel">
+        <section class="panel wide">
+          <div class="section-title"><span>Publik</span><h2>Hasil Seduhan dari Komunitas</h2></div>
+          <p class="hint">Halaman ini menampilkan brew log yang sudah disetujui. Data stok kopi tetap privat di akun/workspace masing-masing.</p>
+          <div class="public-feed-toolbar">
+            <input id="publicBrewSearch" placeholder="Cari kopi, brewer, varietas, proses, dripper..." />
+            <select id="publicBrewMethod"><option value="all">Semua metode</option><option>Hot V60</option><option>Japanese Iced</option></select>
+            <select id="publicBrewMinQA"><option value="0">Semua nilai QA</option><option value="8.6">QA ≥ 8.6</option><option value="8.8">QA ≥ 8.8</option><option value="9">QA ≥ 9.0</option></select>
+            <button id="refreshPublicBrews" class="secondary" type="button">Muat Ulang</button>
+          </div>
+          <div class="table-wrap tall">
+            <table id="publicBrewTable">
+              <thead>
+                <tr><th>Tanggal</th><th>Kopi</th><th>Brewer</th><th>Profil</th><th>Metode</th><th>Recipe</th><th>QA</th><th>Catatan</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
       <section id="tab-admin" class="tab-panel">
         <div class="grid two-col top-align">
           <section class="panel">
@@ -298,11 +323,9 @@
 
           <section class="panel">
             <div class="section-title"><span>Workspace</span><h2>Coffee Shop / Roastery</h2></div>
-            <p class="hint">Workspace memisahkan data coffee shop, roastery, atau komunitas. Peran aktif menentukan hak akses: brewer, QA, atau admin.</p>
+            <p class="hint">Setiap akun sebaiknya memakai satu workspace utama. Stok kopi bersifat privat di akun/workspace tersebut, sedangkan brew log yang disetujui bisa tampil di halaman Hasil Seduhan Publik.</p>
             <div class="form-grid compact">
               <label>Workspace Aktif<select id="adminWorkspaceSelect"></select></label>
-              <label>Gabung ke Workspace Publik<select id="joinWorkspaceSelect"></select></label>
-              <button id="joinWorkspaceBtn" class="secondary" type="button">Gabung sebagai Brewer</button>
             </div>
             <hr class="soft-line" />
             <form id="workspaceForm" class="form-grid compact">
@@ -327,7 +350,7 @@
         <section class="panel wide" id="adminPanel">
           <div class="section-title"><span>Moderasi</span><h2>Panel Admin — Menunggu Review / Disetujui / Ditolak</h2></div>
           <div class="admin-toolbar">
-            <select id="moderationDataset"><option value="stock_beans">Stok Biji Kopi</option><option value="brew_logs">Brew Log</option><option value="qa_scores">Nilai QA</option></select>
+            <select id="moderationDataset"><option value="brew_logs">Brew Log</option><option value="qa_scores">Nilai QA</option></select>
             <select id="moderationStatus"><option value="pending">Menunggu review</option><option value="approved">Disetujui</option><option value="rejected">Ditolak</option><option value="all">Semua</option></select>
             <button id="refreshModeration" class="secondary" type="button">Muat Ulang</button>
           </div>
