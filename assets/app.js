@@ -115,6 +115,19 @@
     return canModerate() ? "approved" : "pending";
   }
 
+  function isApprovedRecipeLog(log) {
+    return norm(log?.ApprovedForRecipe) === "yes" && Number(log?.QA_Final || 0) >= APPROVAL_THRESHOLD;
+  }
+
+  function moderationStatusForBrew(log) {
+    return canModerate() && isApprovedRecipeLog(log) ? "approved" : "pending";
+  }
+
+  function moderationStatusForQA(qa) {
+    const pass = Number(qa?.Final_QA || 0) >= APPROVAL_THRESHOLD && /qa pass/i.test(String(qa?.Status || ""));
+    return canModerate() && pass ? "approved" : "pending";
+  }
+
   function currentBrewerName() {
     return userProfile?.display_name || currentUser?.user_metadata?.display_name || currentUser?.email?.split("@")[0] || "Brewer";
   }
@@ -430,8 +443,8 @@
       switch_valve_mode: log.SwitchValveMode || null,
       valve_plan: log.ValvePlan || null,
       visibility: "public",
-      status: publicStatusForInsert(),
-      moderation_status: publicStatusForInsert(),
+      status: moderationStatusForBrew(log),
+      moderation_status: moderationStatusForBrew(log),
       workspace_id: activeWorkspaceId(),
       created_by: currentUser?.id || null,
       moderated_by: canModerate() ? currentUser?.id : null,
@@ -514,7 +527,7 @@
       approver: qa.Approver || null,
       qa_notes: qa.QA_Notes || null,
       visibility: "public",
-      moderation_status: publicStatusForInsert(),
+      moderation_status: moderationStatusForQA(qa),
       workspace_id: activeWorkspaceId(),
       created_by: currentUser?.id || null,
       moderated_by: canModerate() ? currentUser?.id : null,
@@ -1122,7 +1135,7 @@
         renderBrewLogTable();
         renderRecipeOptions(computeBrew());
         renderPublicBrewTable();
-        alert(canModerate() ? "Draft brew tersimpan dan langsung disetujui." : "Draft brew tersimpan dan menunggu review. Data akan tampil publik setelah disetujui QA/admin.");
+        alert("Draft brew tersimpan di workspace. Draft belum tampil publik sampai ada QA ≥ 8.6 dan disetujui QA/admin.");
       })
       .catch(err => {
         console.error(err);
@@ -1396,6 +1409,7 @@
       .filter(log => log.Source === "Supabase")
       .filter(log => norm(log.ModerationStatus) === "approved")
       .filter(log => norm(log.Visibility || "public") === "public")
+      .filter(log => isApprovedRecipeLog(log))
       .filter(log => method === "all" || norm(log.Method) === norm(method))
       .filter(log => !minQA || Number(log.QA_Final || 0) >= minQA)
       .filter(log => {
@@ -1412,7 +1426,7 @@
     const rows = publicBrewRows();
     const tbody = table.querySelector("tbody");
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="8">Belum ada hasil seduhan publik yang sesuai filter. Brew log akan tampil di sini setelah disetujui.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8">Belum ada hasil seduhan publik yang sesuai filter. Brew log akan tampil di sini setelah QA ≥ 8.6 dan disetujui.</td></tr>`;
       return;
     }
     tbody.innerHTML = rows.map(log => {

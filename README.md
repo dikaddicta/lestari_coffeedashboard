@@ -71,3 +71,14 @@ Mulai v9:
 
 Jika project Supabase sudah berjalan, jalankan migration:
 `supabase/migration_v9_private_workspace_modules.sql`
+
+
+## Catatan v10 — Penguncian feed publik
+
+Mulai v10, tab Hasil Seduhan Publik hanya menampilkan brew log yang memenuhi semua syarat berikut:
+- visibility = public
+- moderation_status = approved
+- ApprovedForRecipe = Yes
+- QA_Final minimal 8.6
+
+Draft brew tanpa QA tidak akan tampil di feed publik.
