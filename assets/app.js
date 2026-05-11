@@ -132,8 +132,19 @@
     return userProfile?.display_name || currentUser?.user_metadata?.display_name || currentUser?.email?.split("@")[0] || "Brewer";
   }
 
-  function showMessage(message) {
-    alert(message);
+  let toastTimer = null;
+
+  function showMessage(message, type = "info") {
+    const toast = $("appToast");
+    if (!toast) {
+      console.log(message);
+      return;
+    }
+    toast.textContent = message;
+    toast.dataset.type = type;
+    toast.classList.remove("hidden");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.add("hidden"), type === "error" ? 7000 : 4500);
   }
 
   function normalizeSlug(value) {
@@ -239,16 +250,27 @@
     const userLabel = $("authUserLabel");
     const roleLabel = $("authRoleLabel");
     const accountBox = $("accountBox");
-    if (userLabel) userLabel.textContent = currentUser ? (userProfile?.display_name || currentUser.email) : "Mode Tamu";
-    if (roleLabel) roleLabel.textContent = currentUser
+    const loginBtn = $("loginBtn");
+    const signupBtn = $("signupBtn");
+    const logoutBtn = $("logoutBtn");
+    const authJumpLink = $("authJumpLink");
+    const isLoggedIn = Boolean(currentUser);
+
+    if (userLabel) userLabel.textContent = isLoggedIn ? (userProfile?.display_name || currentUser.email) : "Mode Tamu";
+    if (roleLabel) roleLabel.textContent = isLoggedIn
       ? `${currentUser.email} · ${currentWorkspace?.name || "Belum ada workspace"} · ${currentRole}`
       : "Masuk untuk menyimpan dan membagikan data.";
+
     if (accountBox) {
-      accountBox.innerHTML = currentUser
+      accountBox.innerHTML = isLoggedIn
         ? `<strong>${html(userProfile?.display_name || currentUser.email)}</strong><br>Email: ${html(currentUser.email)}<br>Workspace: ${html(currentWorkspace?.name || "-")}<br>Peran: <span class="status-pill approved">${html(currentRole)}</span>`
         : `Belum masuk. Tamu tetap bisa membaca data publik yang sudah disetujui, tetapi pengiriman data ke database online memerlukan akun.`;
     }
-    $("logoutBtn")?.classList.toggle("hidden", !currentUser);
+
+    loginBtn?.classList.toggle("hidden", isLoggedIn);
+    signupBtn?.classList.toggle("hidden", isLoggedIn);
+    logoutBtn?.classList.toggle("hidden", !isLoggedIn);
+    authJumpLink?.classList.toggle("hidden", isLoggedIn);
   }
 
   async function initAuth() {
@@ -304,24 +326,95 @@
   }
 
   async function handleLogout() {
-    if (!supabaseClient) return;
-    await supabaseClient.auth.signOut();
-    showMessage("Berhasil keluar.");
+    if (!supabaseClient) return showMessage("Supabase belum aktif.", "error");
+
+    const btn = $("logoutBtn");
+    const originalText = btn?.textContent || "Keluar";
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Keluar...";
+    }
+
+    try {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) {
+        showMessage(`Gagal keluar: ${error.message}`, "error");
+        return;
+      }
+
+      currentSession = null;
+      currentUser = null;
+      userProfile = null;
+      joinedWorkspaces = [];
+      currentWorkspace = null;
+      currentRole = "guest";
+      state.cloudStock = [];
+      state.cloudBrewLogs = [];
+      state.cloudQA = [];
+      localStorage.removeItem(LAST_WORKSPACE_KEY);
+
+      renderWorkspaceUI();
+      renderAll();
+      showMessage("Berhasil keluar.", "success");
+    } catch (err) {
+      console.error(err);
+      showMessage(`Gagal keluar: ${err.message || err}`, "error");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
   }
 
   async function createWorkspace(e) {
     e.preventDefault();
-    if (!supabaseClient || !currentUser) return showMessage("Masuk terlebih dahulu untuk membuat workspace.");
-    const name = $("workspaceName").value.trim();
-    const slug = normalizeSlug($("workspaceSlug").value || name);
-    if (!name || !slug) return showMessage("Nama workspace dan slug wajib diisi.");
-    const payload = { name, slug, visibility: $("workspaceVisibility").value, description: $("workspaceDescription").value, created_by: currentUser.id };
-    const { data, error } = await supabaseClient.from("workspaces").insert(payload).select().single();
-    if (error) return showMessage(`Gagal membuat workspace: ${error.message}`);
-    await loadWorkspaces();
-    await setActiveWorkspace(data.id);
-    e.target.reset();
-    showMessage("Workspace berhasil dibuat. Kamu otomatis menjadi admin di workspace tersebut.");
+    if (!supabaseClient || !currentUser) return showMessage("Masuk terlebih dahulu untuk membuat workspace.", "error");
+
+    const button = $("createWorkspaceBtn");
+    const originalText = button?.textContent || "Buat Workspace";
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Membuat workspace...";
+    }
+
+    try {
+      const name = $("workspaceName").value.trim();
+      const slug = normalizeSlug($("workspaceSlug").value || name);
+      if (!name || !slug) {
+        showMessage("Nama workspace dan slug wajib diisi.", "error");
+        return;
+      }
+
+      const payload = {
+        name,
+        slug,
+        visibility: $("workspaceVisibility").value,
+        description: $("workspaceDescription").value,
+        created_by: currentUser.id
+      };
+
+      showMessage("Sedang membuat workspace...", "info");
+      const { data, error } = await supabaseClient.from("workspaces").insert(payload).select().single();
+      if (error) {
+        const duplicate = /duplicate key|already exists|unique/i.test(error.message || "");
+        showMessage(duplicate ? "Slug workspace sudah dipakai. Coba slug lain." : `Gagal membuat workspace: ${error.message}`, "error");
+        return;
+      }
+
+      await loadWorkspaces();
+      await setActiveWorkspace(data.id);
+      e.target.reset();
+      showMessage("Workspace berhasil dibuat dan sudah menjadi workspace aktif. Kamu otomatis menjadi admin di workspace ini.", "success");
+    } catch (err) {
+      console.error(err);
+      showMessage(`Gagal membuat workspace: ${err.message || err}`, "error");
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
   }
 
   async function joinWorkspace() {

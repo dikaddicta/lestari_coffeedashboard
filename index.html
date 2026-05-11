@@ -8,6 +8,7 @@
 </head>
 <body>
   <div class="app-shell">
+    <div id="appToast" class="app-toast hidden" role="status" aria-live="polite"></div>
     <header class="hero">
       <div class="hero-main">
         <p class="eyebrow">Dashboard Seduh untuk Kompetisi dan Bisnis Kopi</p>
@@ -333,7 +334,7 @@
               <label>Slug<input id="workspaceSlug" placeholder="roastery-abc" /></label>
               <label>Visibilitas<select id="workspaceVisibility"><option>public</option><option>private</option></select></label>
               <label class="span-2">Deskripsi<textarea id="workspaceDescription" rows="2" placeholder="Profil singkat coffee shop / roastery"></textarea></label>
-              <button class="primary span-2" type="submit">Buat Workspace</button>
+              <button class="primary span-2" id="createWorkspaceBtn" type="submit">Buat Workspace</button>
             </form>
           </section>
         </div>

@@ -397,3 +397,43 @@ tr:hover td { background: #fffaf0; }
 .module-disabled button {
   pointer-events: none;
 }
+
+
+.app-toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 9999;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: #fffdf9;
+  color: var(--espresso);
+  box-shadow: var(--shadow);
+  font-weight: 800;
+  line-height: 1.45;
+}
+.app-toast[data-type="success"] {
+  background: #ecfdf5;
+  border-color: rgba(15, 118, 110, .25);
+  color: #0f766e;
+}
+.app-toast[data-type="error"] {
+  background: #fff1f2;
+  border-color: rgba(185, 28, 28, .25);
+  color: #b91c1c;
+}
+.app-toast[data-type="info"] {
+  background: #fff7ed;
+  border-color: rgba(180, 83, 9, .25);
+  color: #7a4728;
+}
+.hidden { display: none !important; }
+
+
+/* v12 auth visibility */
+.inline-actions .hidden,
+.auth-card .hidden {
+  display: none !important;
+}

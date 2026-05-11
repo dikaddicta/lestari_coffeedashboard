@@ -82,3 +82,21 @@ Mulai v10, tab Hasil Seduhan Publik hanya menampilkan brew log yang memenuhi sem
 - QA_Final minimal 8.6
 
 Draft brew tanpa QA tidak akan tampil di feed publik.
+
+
+## Catatan v11 — Feedback Workspace
+
+Mulai v11, aksi `Buat Workspace` menampilkan notifikasi/toast yang jelas:
+- sedang membuat workspace,
+- berhasil dibuat,
+- gagal karena slug sudah dipakai,
+- atau gagal karena user belum login.
+
+
+## Catatan v12 — Login/logout
+
+Mulai v12:
+- Setelah pengguna login, tombol `Masuk` dan `Daftar` disembunyikan.
+- Tombol `Keluar` hanya muncul saat pengguna sudah login.
+- Link `Masuk / Daftar` di card akun header ikut hilang setelah login.
+- Logout membersihkan state akun, workspace aktif, dan data privat di tampilan.
