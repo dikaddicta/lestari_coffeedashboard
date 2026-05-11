@@ -250,10 +250,9 @@
     const userLabel = $("authUserLabel");
     const roleLabel = $("authRoleLabel");
     const accountBox = $("accountBox");
-    const loginBtn = $("loginBtn");
-    const signupBtn = $("signupBtn");
-    const logoutBtn = $("logoutBtn");
     const authJumpLink = $("authJumpLink");
+    const loggedOutArea = $("authLoggedOutArea");
+    const loggedInArea = $("authLoggedInArea");
     const isLoggedIn = Boolean(currentUser);
 
     if (userLabel) userLabel.textContent = isLoggedIn ? (userProfile?.display_name || currentUser.email) : "Mode Tamu";
@@ -267,9 +266,8 @@
         : `Belum masuk. Tamu tetap bisa membaca data publik yang sudah disetujui, tetapi pengiriman data ke database online memerlukan akun.`;
     }
 
-    loginBtn?.classList.toggle("hidden", isLoggedIn);
-    signupBtn?.classList.toggle("hidden", isLoggedIn);
-    logoutBtn?.classList.toggle("hidden", !isLoggedIn);
+    loggedOutArea?.classList.toggle("hidden", isLoggedIn);
+    loggedInArea?.classList.toggle("hidden", !isLoggedIn);
     authJumpLink?.classList.toggle("hidden", isLoggedIn);
   }
 
@@ -295,18 +293,18 @@
     if (!supabaseClient) return showMessage("Supabase belum aktif.");
     const email = $("authEmail").value.trim();
     const password = $("authPassword").value;
-    if (!email || !password) return showMessage("Isi email dan password.");
+    if (!email || !password) return showMessage("Isi email dan kata sandi untuk masuk.", "error");
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) return showMessage(`Gagal masuk: ${error.message}`);
-    showMessage("Berhasil masuk.");
+    if (error) return showMessage(`Gagal masuk: ${error.message}`, "error");
+    showMessage("Berhasil masuk.", "success");
   }
 
   async function handleSignup() {
     if (!supabaseClient) return showMessage("Supabase belum aktif.");
-    const email = $("authEmail").value.trim();
-    const password = $("authPassword").value;
-    const displayName = $("authDisplayName").value.trim() || email.split("@")[0];
-    if (!email || !password) return showMessage("Isi email dan password.");
+    const email = ($("signupEmail")?.value || $("authEmail")?.value || "").trim();
+    const password = $("signupPassword")?.value || $("authPassword")?.value || "";
+    const displayName = $("authDisplayName")?.value.trim() || email.split("@")[0];
+    if (!email || !password) return showMessage("Isi email dan kata sandi untuk daftar akun baru.", "error");
     const redirectTo = `${window.location.origin}${window.location.pathname}`;
     const { error } = await supabaseClient.auth.signUp({
       email,
@@ -320,9 +318,9 @@
       const message = /Invalid path specified/i.test(error.message)
         ? "Pendaftaran gagal: Supabase URL di assets/supabase-config.js kemungkinan salah. Pakai Project URL utama, contoh https://xxxxx.supabase.co, bukan URL dashboard, /rest/v1, atau /auth/v1."
         : `Pendaftaran gagal: ${error.message}`;
-      return showMessage(message);
+      return showMessage(message, "error");
     }
-    showMessage("Pendaftaran berhasil. Jika konfirmasi email aktif, cek inbox untuk verifikasi.");
+    showMessage("Pendaftaran berhasil. Jika konfirmasi email aktif, cek inbox untuk verifikasi.", "success");
   }
 
   async function handleLogout() {
@@ -1611,7 +1609,7 @@
     $("authJumpLink")?.addEventListener("click", () => {
       showTab("admin");
       setTimeout(() => {
-        $("authDisplayName")?.focus();
+        $("authEmail")?.focus();
         document.querySelector("#tab-admin")?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 50);
     });

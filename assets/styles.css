@@ -437,3 +437,23 @@ tr:hover td { background: #fffaf0; }
 .auth-card .hidden {
   display: none !important;
 }
+
+
+.signup-details {
+  margin-top: 8px;
+}
+.signup-details summary {
+  cursor: pointer;
+  font-weight: 900;
+  color: var(--espresso);
+  padding: 10px 0;
+}
+.signup-details summary:hover {
+  color: var(--espresso-2);
+}
+.signup-form {
+  margin-top: 10px;
+}
+#authLoggedInArea {
+  margin-top: 12px;
+}

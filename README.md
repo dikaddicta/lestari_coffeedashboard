@@ -100,3 +100,11 @@ Mulai v12:
 - Tombol `Keluar` hanya muncul saat pengguna sudah login.
 - Link `Masuk / Daftar` di card akun header ikut hilang setelah login.
 - Logout membersihkan state akun, workspace aktif, dan data privat di tampilan.
+
+
+## Catatan v13 — Form login dan daftar dipisah
+
+Mulai v13:
+- Login hanya memakai email dan kata sandi.
+- Nama Tampilan hanya muncul di area daftar akun baru.
+- Area daftar dibuat sebagai bagian collapsible agar tidak terlihat seperti login ulang.
