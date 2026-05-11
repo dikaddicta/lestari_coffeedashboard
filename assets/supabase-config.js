@@ -5,7 +5,7 @@
 // Jangan pernah masukkan service_role key di file frontend/browser.
 
 window.SUPABASE_CONFIG = {
-  url: "", // contoh: "https://abcdefghijklm.supabase.co"
-  anonKey: "", // Project Settings > API > anon/public key
+  url: "https://mumaxugelqywxiaoarmy.supabase.co/rest/v1/", // contoh: "https://abcdefghijklm.supabase.co"
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11bWF4dWdlbHF5d3hpYW9hcm15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDYyMjAsImV4cCI6MjA5NDA4MjIyMH0.HFnH2CSw3YYPh75U445zvlCTbxWUZBp_Vr-lPeCihf4", // Project Settings > API > anon/public key
   enabled: true
 };
