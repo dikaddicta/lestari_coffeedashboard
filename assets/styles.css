@@ -457,3 +457,15 @@ tr:hover td { background: #fffaf0; }
 #authLoggedInArea {
   margin-top: 12px;
 }
+
+
+.logged-in-actions {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+#authLoggedOutArea.hidden,
+#authLoggedInArea.hidden,
+#authJumpLink.hidden {
+  display: none !important;
+}

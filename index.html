@@ -308,7 +308,7 @@
       <section id="tab-admin" class="tab-panel">
         <div class="grid two-col top-align">
           <section class="panel">
-            <div class="section-title"><span>Akun</span><h2>Login Pengguna</h2></div>
+            <div class="section-title"><span>Akun</span><h2 id="authPanelTitle">Login Pengguna</h2></div>
             <div id="authLoggedOutArea">
               <form id="loginForm" class="form-grid compact">
                 <label>Email<input id="authEmail" type="email" placeholder="nama@email.com" autocomplete="email" /></label>
@@ -333,7 +333,8 @@
               </details>
             </div>
 
-            <div id="authLoggedInArea" class="inline-actions hidden">
+            <div id="authLoggedInArea" class="logged-in-actions hidden">
+              <p class="hint small-note">Kamu sudah masuk. Form login dan daftar disembunyikan.</p>
               <button class="ghost" id="logoutBtn" type="button">Keluar</button>
             </div>
             <div class="account-box" id="accountBox">Belum masuk.</div>

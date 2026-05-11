@@ -108,3 +108,11 @@ Mulai v13:
 - Login hanya memakai email dan kata sandi.
 - Nama Tampilan hanya muncul di area daftar akun baru.
 - Area daftar dibuat sebagai bagian collapsible agar tidak terlihat seperti login ulang.
+
+
+## Catatan v14 — Tampilan akun setelah login
+
+Mulai v14:
+- Setelah user login, seluruh area form login dan form daftar benar-benar disembunyikan.
+- Judul panel berubah dari `Login Pengguna` menjadi `Akun Pengguna`.
+- Yang tersisa hanya ringkasan akun dan tombol `Keluar`.

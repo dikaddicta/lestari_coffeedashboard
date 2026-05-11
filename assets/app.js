@@ -246,6 +246,13 @@
     if (canModerate()) await loadModerationRows().catch(console.warn);
   }
 
+  function setElementHidden(el, hidden) {
+    if (!el) return;
+    el.classList.toggle("hidden", hidden);
+    el.hidden = Boolean(hidden);
+    el.style.display = hidden ? "none" : "";
+  }
+
   function renderAuthUI() {
     const userLabel = $("authUserLabel");
     const roleLabel = $("authRoleLabel");
@@ -253,8 +260,10 @@
     const authJumpLink = $("authJumpLink");
     const loggedOutArea = $("authLoggedOutArea");
     const loggedInArea = $("authLoggedInArea");
+    const title = $("authPanelTitle");
     const isLoggedIn = Boolean(currentUser);
 
+    if (title) title.textContent = isLoggedIn ? "Akun Pengguna" : "Login Pengguna";
     if (userLabel) userLabel.textContent = isLoggedIn ? (userProfile?.display_name || currentUser.email) : "Mode Tamu";
     if (roleLabel) roleLabel.textContent = isLoggedIn
       ? `${currentUser.email} · ${currentWorkspace?.name || "Belum ada workspace"} · ${currentRole}`
@@ -266,9 +275,9 @@
         : `Belum masuk. Tamu tetap bisa membaca data publik yang sudah disetujui, tetapi pengiriman data ke database online memerlukan akun.`;
     }
 
-    loggedOutArea?.classList.toggle("hidden", isLoggedIn);
-    loggedInArea?.classList.toggle("hidden", !isLoggedIn);
-    authJumpLink?.classList.toggle("hidden", isLoggedIn);
+    setElementHidden(loggedOutArea, isLoggedIn);
+    setElementHidden(loggedInArea, !isLoggedIn);
+    setElementHidden(authJumpLink, isLoggedIn);
   }
 
   async function initAuth() {
@@ -296,6 +305,8 @@
     if (!email || !password) return showMessage("Isi email dan kata sandi untuk masuk.", "error");
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) return showMessage(`Gagal masuk: ${error.message}`, "error");
+    await ensureProfile().catch(console.warn);
+    renderAuthUI();
     showMessage("Berhasil masuk.", "success");
   }
 
