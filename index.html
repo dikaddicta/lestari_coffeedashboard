@@ -94,8 +94,8 @@
               </label>
             </div>
             <div class="inline-actions">
-              <button id="saveCurrentBrew" class="secondary">Simpan draft ke Brew Log</button>
-              <button id="applyBeanToBrew" class="ghost">Gunakan biji kopi ranking #1</button>
+              <button id="saveCurrentBrew" class="secondary" type="button">Simpan draft ke Brew Log</button>
+              <button id="applyBeanToBrew" class="ghost" type="button">Gunakan biji kopi ranking #1</button>
             </div>
           </section>
 
@@ -242,8 +242,11 @@
             <form id="qaForm" class="form-grid qa-form">
               <label>Nama Kopi<input id="qaBeanName" placeholder="Bean / sample name" /></label>
               <label>Penilai<input id="qaEvaluator" value="Head Brewer" /></label>
-              <label>BrewID Asal<input id="qaParent" placeholder="BL001 jika modifikasi" /></label>
-              <label>Variabel Utama yang Diubah<input id="qaVariable" placeholder="Grind finer / temp +1C" /></label>
+              <label id="qaParentWrap">BrewID Asal<select id="qaParent"></select></label>
+              <label id="qaVariableWrap" class="qa-variable-wrap">
+                <span class="checkbox-line"><input id="qaHasVariable" type="checkbox" /> Ada variabel utama yang diubah</span>
+                <input id="qaVariable" placeholder="Contoh: grind lebih halus / suhu +1°C" disabled />
+              </label>
               <label class="span-2">Hipotesis<textarea id="qaHypothesis" rows="2" placeholder="Apa yang ingin diperbaiki dari brew sebelumnya?"></textarea></label>
               <label>Aroma<input class="qa-score" id="qaAroma" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
               <label>Rasa<input class="qa-score" id="qaFlavor" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
@@ -268,13 +271,13 @@
               <li><strong>Jadikan resep dasar sebagai kontrol.</strong> Jangan ditimpa; simpan sebagai BrewID awal.</li>
               <li><strong>Gunakan ParentBrewID saat iterasi.</strong> Dengan begitu, asal perubahan tetap terlacak.</li>
               <li><strong>Ubah satu variabel utama.</strong> Contoh: grind lebih halus, suhu +1°C, atau rasio berubah.</li>
-              <li><strong>Gunakan gerbang QA.</strong> Resep baru hanya masuk opsi jika nilai QA akhir ≥ 8.6 dan disetujui manual.</li>
-              <li><strong>Uji konsistensi.</strong> Untuk penggunaan komersial, idealnya resep disetujui setelah 2 dari 3 seduhan ulang tetap ≥ 8.6.</li>
+              <li><strong>Gunakan gerbang QA.</strong> Resep baru hanya masuk opsi jika nilai QA akhir ≥ 6.5 dan disetujui manual.</li>
+              <li><strong>Uji konsistensi.</strong> Untuk penggunaan komersial, idealnya resep disetujui setelah 2 dari 3 seduhan ulang tetap ≥ 6.5.</li>
             </ol>
-            <div class="stat-card"><span>Batas Lolos QA</span><strong>8.6 / 10</strong></div>
+            <div class="stat-card"><span>Batas Lolos QA</span><strong>6.5 / 10</strong></div>
           </section>
         </div>
-        <section class="panel wide">
+        <section class="panel wide" id="brewLogHistoryPanel">
           <div class="section-title"><span>Riwayat</span><h2>Brew Log</h2></div>
           <div class="table-wrap tall">
             <table id="brewLogTable"><thead><tr><th>BrewID</th><th>Tanggal</th><th>Biji Kopi</th><th>Key</th><th>Metode</th><th>Dripper</th><th>Gilingan</th><th>Suhu</th><th>Ratio</th><th>QA</th><th>Disetujui</th><th>Variabel</th></tr></thead><tbody></tbody></table>
@@ -291,7 +294,7 @@
           <div class="public-feed-toolbar">
             <input id="publicBrewSearch" placeholder="Cari kopi, brewer, varietas, proses, dripper..." />
             <select id="publicBrewMethod"><option value="all">Semua metode</option><option>Hot V60</option><option>Japanese Iced</option></select>
-            <select id="publicBrewMinQA"><option value="0">Semua nilai QA</option><option value="8.6">QA ≥ 8.6</option><option value="8.8">QA ≥ 8.8</option><option value="9">QA ≥ 9.0</option></select>
+            <select id="publicBrewMinQA"><option value="0">Semua nilai QA</option><option value="6.5">QA ≥ 6.5</option><option value="7">QA ≥ 7.0</option><option value="8">QA ≥ 8.0</option></select>
             <button id="refreshPublicBrews" class="secondary" type="button">Muat Ulang</button>
           </div>
           <div class="table-wrap tall">

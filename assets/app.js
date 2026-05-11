@@ -3,7 +3,7 @@
 
   const DATA = window.COFFEE_DATA || {};
   const STORAGE_KEY = "coffeeDashboardWebV1";
-  const APPROVAL_THRESHOLD = 8.6;
+  const APPROVAL_THRESHOLD = 6.5;
   const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
   let supabaseClient = null;
   let cloudReady = false;
@@ -17,6 +17,7 @@
   let currentRole = "guest";
   let moderationRows = [];
   const LAST_WORKSPACE_KEY = "coffeeDashboardActiveWorkspace";
+  const DEFAULT_PUBLIC_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001";
 
   const $ = (id) => document.getElementById(id);
   const fmt = (n, d = 0) => Number.isFinite(Number(n)) ? Number(n).toFixed(d).replace(/\.0$/, "") : "-";
@@ -120,12 +121,16 @@
   }
 
   function moderationStatusForBrew(log) {
-    return canModerate() && isApprovedRecipeLog(log) ? "approved" : "pending";
+    if (!isApprovedRecipeLog(log)) return "pending";
+    if (!currentUser) return "approved";
+    return canModerate() ? "approved" : "pending";
   }
 
   function moderationStatusForQA(qa) {
     const pass = Number(qa?.Final_QA || 0) >= APPROVAL_THRESHOLD && /qa pass/i.test(String(qa?.Status || ""));
-    return canModerate() && pass ? "approved" : "pending";
+    if (!pass) return "pending";
+    if (!currentUser) return "approved";
+    return canModerate() ? "approved" : "pending";
   }
 
   function currentBrewerName() {
@@ -231,6 +236,7 @@
         : "Belum ada workspace aktif.";
     }
     renderAuthUI();
+    renderAccessUI();
   }
 
   async function setActiveWorkspace(id) {
@@ -547,7 +553,7 @@
       visibility: "public",
       status: moderationStatusForBrew(log),
       moderation_status: moderationStatusForBrew(log),
-      workspace_id: activeWorkspaceId(),
+      workspace_id: activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID,
       created_by: currentUser?.id || null,
       moderated_by: canModerate() ? currentUser?.id : null,
       moderated_at: canModerate() ? new Date().toISOString() : null,
@@ -630,7 +636,7 @@
       qa_notes: qa.QA_Notes || null,
       visibility: "public",
       moderation_status: moderationStatusForQA(qa),
-      workspace_id: activeWorkspaceId(),
+      workspace_id: activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID,
       created_by: currentUser?.id || null,
       moderated_by: canModerate() ? currentUser?.id : null,
       moderated_at: canModerate() ? new Date().toISOString() : null,
@@ -743,6 +749,13 @@
   async function insertCloud(table, payload, mapper) {
     if (!cloudReady || !supabaseClient) throw new Error("Supabase belum siap.");
     const { data, error } = await supabaseClient.from(table).insert(payload).select().single();
+    if (error) throw error;
+    return mapper(data);
+  }
+
+  async function updateCloud(table, id, payload, mapper) {
+    if (!cloudReady || !supabaseClient) throw new Error("Supabase belum siap.");
+    const { data, error } = await supabaseClient.from(table).update(payload).eq("id", id).select().single();
     if (error) throw error;
     return mapper(data);
   }
@@ -1042,7 +1055,7 @@
 
     const baseCard = `<article class="recipe-card base"><span class="badge">Opsi 1 · Rekomendasi Dasar</span><h3>Rekomendasi Dasar</h3><p><strong>${html($("brewDripper").value)}</strong> · ${html(brew.mode)} · ${html(brew.switchMode)}</p><p>${html(brew.grinderSetting)} · ${brew.temp}°C · 1:${fmt(brew.ratio, 1)}</p><p>Dosis ${fmt(brew.dose, 1)}g · Total ${brew.totalWater}ml · ${brew.pourCount} tuangan utama</p><p>Dasar: varietas × proses × profil sangrai × dripper × air.</p></article>`;
     const approvedCards = approved.map((log, idx) => `<article class="recipe-card"><span class="badge">Opsi ${idx + 2} · QA ${fmt(log.QA_Final, 2)}</span><h3>${html(log.BrewID)}</h3><p><strong>${html(log.Dripper)}</strong> · ${html(log.Method)} · ${html(log.SwitchValveMode || "N/A")}</p><p>${html(log.GrindSetting)} · ${html(log.Temp_C)}°C · 1:${html(log.Ratio)}</p><p>Dosis ${html(log.Dose_g)}g · Total ${html(log.TotalWater_ml)}ml · Air panas ${html(log.HotWater_ml)}ml${Number(log.Ice_g) ? ` · Es ${html(log.Ice_g)}g` : ""}</p><p>${html(log.PrimaryVariableChanged || "Resep terverifikasi dari brew log")}</p></article>`);
-    $("recipeOptions").innerHTML = baseCard + (approvedCards.join("") || `<article class="recipe-card"><span class="badge">Belum ada opsi terverifikasi</span><h3>Belum ada opsi dari Brew Log</h3><p>Resep dengan QA ≥ 8.6 dan persetujuan manual akan muncul di sini jika key varietas × proses × profil sangrai cocok.</p></article>`);
+    $("recipeOptions").innerHTML = baseCard + (approvedCards.join("") || `<article class="recipe-card"><span class="badge">Belum ada opsi terverifikasi</span><h3>Belum ada opsi dari Brew Log</h3><p>Resep dengan QA ≥ 6.5 dan persetujuan manual akan muncul di sini jika key varietas × proses × profil sangrai cocok.</p></article>`);
   }
 
   function toggleSwitchVisibility() {
@@ -1180,10 +1193,12 @@
   function currentBrewLogBase(extra = {}) {
     const brew = computeBrew();
     const id = extra.BrewID || nextId("BL", allBrewLogs(), "BrewID");
-    const qaId = extra.QA_ID || nextId("QA", allQA(), "QA_ID");
+    const qaId = extra.QA_ID || "";
+    const defaultVerifyText = "Belum diverifikasi";
     return {
       BrewID: id,
       Date: todayISO(),
+      BrewerName: extra.BrewerName || currentBrewerName(),
       BeanName: extra.BeanName || $("qaBeanName")?.value || $("brewVariety").value,
       Origin: extra.Origin || "",
       Variety: $("brewVariety").value,
@@ -1199,23 +1214,23 @@
       TotalWater_ml: brew.totalWater,
       HotWater_ml: brew.hotWater,
       Ice_g: brew.ice,
-      BrewTime_sec: brew.brewTime,
-      Bloom_ml: brew.bloom,
-      PourCount: brew.pourCount,
-      PourPlan: brew.steps.map(st => `${st.stage} ${st.water || "-"}g ${st.valve}`).join(" | "),
+      BrewTime_sec: brew.brewTimeSec,
+      Bloom_ml: brew.steps.find(s => s.stage === "Bloom")?.water || 0,
+      PourCount: brew.steps.filter(s => /^Pour/.test(s.stage)).length,
+      PourPlan: brew.steps.map(st => `${st.stage}: ${st.water}ml @ ${st.time}`).join(" | "),
       Water: $("brewWater").value,
-      TDS_ppm: brew.tds,
-      Agitation: "record in notes",
-      Filter: brew.dripper.Filter || "",
+      TDS_ppm: getBy(DATA.waters, "Water", $("brewWater").value).TDS || "",
+      Agitation: "Controlled",
+      Filter: "Paper",
       ParentBrewID: extra.ParentBrewID || "",
-      PrimaryVariableChanged: extra.PrimaryVariableChanged || "Dasar",
-      Hypothesis: extra.Hypothesis || "Rekomendasi dasar dari sistem.",
-      ResultNotes: extra.ResultNotes || "Draft disimpan dari rekomendasi web.",
+      PrimaryVariableChanged: extra.PrimaryVariableChanged || defaultVerifyText,
+      Hypothesis: extra.Hypothesis || "",
+      ResultNotes: extra.ResultNotes || "",
       QA_ID: qaId,
       QA_Final: extra.QA_Final ?? "",
-      QA_Status: extra.QA_Status || "Pending QA",
+      QA_Status: extra.QA_Status || defaultVerifyText,
       ManualApproval: extra.ManualApproval || "No",
-      ApprovedForRecipe: extra.ApprovedForRecipe || "No",
+      ApprovedForRecipe: extra.ApprovedForRecipe || defaultVerifyText,
       RecipeKey: recipeKey($("brewVariety").value, $("brewProcess").value, $("brewRoast").value),
       CurrentMatchScore: "",
       Water_Formula_Note: "TotalWater_ml = Rasio × Dosis_g. Japanese: air panas = 60%, es = 40%.",
@@ -1226,8 +1241,7 @@
 
   function saveCurrentBrewDraft() {
     if (!canUseWorkspaceModules()) {
-      showMessage(privateModuleMessage("Brew Log"));
-      showTab("admin");
+      showMessage("Masuk dan pilih workspace untuk menyimpan draft ke Brew Log.", "error");
       return;
     }
     const log = currentBrewLogBase();
@@ -1235,13 +1249,14 @@
       .then(saved => {
         state.cloudBrewLogs.unshift(saved);
         renderBrewLogTable();
+        renderQABrewOptions();
         renderRecipeOptions(computeBrew());
         renderPublicBrewTable();
-        alert("Draft brew tersimpan di workspace. Draft belum tampil publik sampai ada QA ≥ 8.6 dan disetujui QA/admin.");
+        showMessage(`Draft ${saved.BrewID} tersimpan ke Brew Log. Lanjutkan verifikasi di menu Brew Log & QA.`, "success");
       })
       .catch(err => {
         console.error(err);
-        alert(`Gagal menyimpan brew log ke Supabase. Data belum tersimpan. Detail: ${err.message || err}`);
+        showMessage(`Gagal menyimpan draft ke Supabase: ${err.message || err}`, "error");
       });
   }
 
@@ -1254,43 +1269,66 @@
 
   function renderQAPreview() {
     const final = computeQAFromForm();
-    const approvalRequested = $("qaApproval").value === "Yes";
-    const pass = final >= APPROVAL_THRESHOLD && approvalRequested && canModerate();
+    const approvalRequested = currentUser ? $("qaApproval").value === "Yes" : true;
+    const pass = final >= APPROVAL_THRESHOLD && (approvalRequested || !currentUser);
     $("qaFinalPreview").textContent = fmt(final, 2);
-    $("qaStatusPreview").textContent = pass ? "QA PASS" : (approvalRequested && !canModerate() ? "MENUNGGU REVIEW QA" : "RETEST");
+    $("qaStatusPreview").textContent = pass ? "QA PASS" : "RETEST";
     $("qaStatusPreview").className = pass ? "qa-pass" : "qa-retest";
   }
 
   async function saveQA(e) {
     e.preventDefault();
-    if (!canUseWorkspaceModules()) {
-      showMessage(privateModuleMessage("Brew Log & QA"));
+
+    if (!cloudReady || !supabaseClient) {
+      showMessage("Database belum tersambung. Hubungkan Supabase terlebih dahulu.", "error");
+      return;
+    }
+
+    const isGuest = !currentUser;
+    if (currentUser && !canUseWorkspaceModules()) {
+      showMessage(privateModuleMessage("Brew Log & QA"), "error");
       showTab("admin");
       return;
     }
+
+    let draft = null;
+    if (currentUser) {
+      draft = selectedDraftLog();
+      if (!draft) {
+        showMessage("Pilih BrewID Asal dari draft Data Seduhan terlebih dahulu. Kalau belum ada, simpan draft dari menu Rekomendasi Seduh.", "error");
+        return;
+      }
+    }
+
     const final = computeQAFromForm();
-    const approvalRequested = $("qaApproval").value === "Yes";
-    const approved = final >= APPROVAL_THRESHOLD && approvalRequested && canModerate();
-    const brewId = nextId("BL", allBrewLogs(), "BrewID");
+    const approvalRequested = currentUser ? $("qaApproval").value === "Yes" : true;
+    const approved = final >= APPROVAL_THRESHOLD && (isGuest || (approvalRequested && canModerate()));
     const qaId = nextId("QA", allQA(), "QA_ID");
+
+    const hasVariable = currentUser ? Boolean($("qaHasVariable")?.checked) : false;
+    const variableText = currentUser
+      ? (hasVariable ? ($("qaVariable").value.trim() || "Ada perubahan variabel") : "Tidak ada perubahan variabel")
+      : "Input publik tanpa draft";
+
     const log = currentBrewLogBase({
-      BrewID: brewId,
+      BrewID: draft?.BrewID || nextId("BL", allBrewLogs(), "BrewID"),
       QA_ID: qaId,
-      BeanName: $("qaBeanName").value || $("brewVariety").value,
-      ParentBrewID: $("qaParent").value,
-      PrimaryVariableChanged: $("qaVariable").value || "Not specified",
+      BeanName: $("qaBeanName").value || draft?.BeanName || $("brewVariety").value,
+      ParentBrewID: currentUser ? (draft?.BrewID || "") : "",
+      PrimaryVariableChanged: variableText,
       Hypothesis: $("qaHypothesis").value,
       ResultNotes: $("qaNotes").value,
       QA_Final: final,
-      QA_Status: approved ? "QA PASS" : "RETEST",
-      ManualApproval: $("qaApproval").value,
+      QA_Status: final >= APPROVAL_THRESHOLD ? "QA PASS" : "RETEST",
+      ManualApproval: approvalRequested ? "Yes" : "No",
       ApprovedForRecipe: approved ? "Yes" : "No"
     });
+
     const qa = {
       QA_ID: qaId,
-      BrewID: brewId,
+      BrewID: log.BrewID,
       Date: todayISO(),
-      Evaluator: $("qaEvaluator").value,
+      Evaluator: $("qaEvaluator").value || currentBrewerName(),
       Aroma: Number($("qaAroma").value),
       Flavor: Number($("qaFlavor").value),
       Aftertaste: Number($("qaAftertaste").value),
@@ -1303,23 +1341,39 @@
       DefectPenalty: Number($("qaDefect").value),
       Consistency: Number($("qaConsistency").value),
       Final_QA: final,
-      Status: approved ? "QA PASS" : "RETEST",
-      Approver: approved ? $("qaEvaluator").value : "",
+      Status: final >= APPROVAL_THRESHOLD ? "QA PASS" : "RETEST",
+      Approver: approved ? ($("qaEvaluator").value || currentBrewerName()) : "",
       QA_Notes: $("qaNotes").value
     };
+
     try {
-      const savedLog = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
+      let savedLog;
+      if (draft?.CloudID) {
+        savedLog = await updateCloud("brew_logs", draft.CloudID, toSnakeBrew(log), fromSnakeBrew);
+        state.cloudBrewLogs = state.cloudBrewLogs.map(item => item.CloudID === savedLog.CloudID ? savedLog : item);
+      } else {
+        savedLog = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
+        state.cloudBrewLogs.unshift(savedLog);
+      }
+
       const savedQA = await insertCloud("qa_scores", toSnakeQA(qa), fromSnakeQA);
-      state.cloudBrewLogs.unshift(savedLog);
       state.cloudQA.unshift(savedQA);
+
       renderBrewLogTable();
+      renderQABrewOptions();
       renderBrew();
       renderPublicBrewTable();
-      alert(approved ? "QA PASS. Resep langsung disetujui dan tampil di halaman publik." : (approvalRequested && !canModerate() ? "Brew log + QA tersimpan dan menunggu review QA/admin sebelum tampil publik." : "Brew log + QA tersimpan di workspace. Data belum tampil publik sebelum disetujui."));
-      return;
+
+      if (isGuest) {
+        showMessage(final >= APPROVAL_THRESHOLD ? "Hasil seduhan publik tersimpan dan tampil di feed publik." : "Hasil seduhan tersimpan, tetapi belum masuk feed publik karena nilai belum mencapai 6.5.", final >= APPROVAL_THRESHOLD ? "success" : "info");
+      } else if (approved) {
+        showMessage("QA PASS. Brew log terverifikasi dan tampil di Hasil Seduhan Publik.", "success");
+      } else {
+        showMessage("Brew Log & QA tersimpan. Data belum tampil publik sebelum disetujui QA/admin atau mencapai status approved.", "info");
+      }
     } catch (err) {
       console.error(err);
-      alert(`Gagal menyimpan Brew Log & QA ke Supabase. Data belum tersimpan. Detail: ${err.message || err}`);
+      showMessage(`Gagal menyimpan Brew Log & QA ke Supabase: ${err.message || err}`, "error");
     }
   }
 
@@ -1327,17 +1381,21 @@
     const tbody = $("brewLogTable")?.querySelector("tbody");
     if (!tbody) return;
     const locked = !canUseWorkspaceModules();
-    setModuleLocked("tab-qa", "qaAccessNotice", locked, privateModuleMessage("Brew Log & QA"));
-    if (locked) {
-      tbody.innerHTML = `<tr><td colspan="12">Masuk dan pilih workspace untuk mengisi atau melihat Brew Log & QA.</td></tr>`;
-      return;
-    }
+    setElementHidden($("brewLogHistoryPanel"), locked);
+    if (locked) return;
+
     const rows = allBrewLogs().slice().reverse();
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="12">Belum ada brew log di workspace ini.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="12">Belum ada brew log di workspace ini. Buat draft dari menu Rekomendasi Seduh terlebih dahulu.</td></tr>`;
       return;
     }
-    tbody.innerHTML = rows.map(log => `<tr><td><strong>${html(log.BrewID)}</strong></td><td>${html(log.Date)}</td><td>${html(log.BeanName)}</td><td>${html(log.RecipeKey)}</td><td>${html(log.Method)}</td><td>${html(log.Dripper)}</td><td>${html(log.GrindSetting)}</td><td>${html(log.Temp_C)}°C</td><td>1:${html(log.Ratio)}</td><td><span class="score-pill">${html(log.QA_Final || "-")}</span></td><td>${html(log.ApprovedForRecipe || "No")}</td><td>${html(log.PrimaryVariableChanged || "")}</td></tr>`).join("");
+
+    tbody.innerHTML = rows.map(log => {
+      const qaText = log.QA_Final ? `<span class="score-pill">${html(log.QA_Final)}</span>` : "belum diverifikasi";
+      const approvedText = log.QA_Final ? html(log.ApprovedForRecipe || "No") : "belum diverifikasi";
+      const variableText = log.QA_Final ? html(log.PrimaryVariableChanged || "Tidak ada perubahan variabel") : "belum diverifikasi";
+      return `<tr><td><strong>${html(log.BrewID)}</strong></td><td>${html(log.Date)}</td><td>${html(log.BeanName)}</td><td>${html(log.RecipeKey)}</td><td>${html(log.Method)}</td><td>${html(log.Dripper)}</td><td>${html(log.GrindSetting)}</td><td>${html(log.Temp_C)}°C</td><td>1:${html(log.Ratio)}</td><td>${qaText}</td><td>${approvedText}</td><td>${variableText}</td></tr>`;
+    }).join("");
   }
 
   async function saveStock(e) {
@@ -1528,7 +1586,7 @@
     const rows = publicBrewRows();
     const tbody = table.querySelector("tbody");
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="8">Belum ada hasil seduhan publik yang sesuai filter. Brew log akan tampil di sini setelah QA ≥ 8.6 dan disetujui.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8">Belum ada hasil seduhan publik yang sesuai filter. Brew log akan tampil di sini setelah QA ≥ 6.5 dan disetujui.</td></tr>`;
       return;
     }
     tbody.innerHTML = rows.map(log => {
@@ -1598,6 +1656,54 @@
     document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.toggle("active", panel.id === `tab-${name}`));
   }
 
+
+  function renderAccessUI() {
+    const privateReady = canUseWorkspaceModules();
+    setElementHidden($("saveCurrentBrew"), !privateReady);
+    setElementHidden($("applyBeanToBrew"), !privateReady);
+    setElementHidden(document.querySelector('[data-tab="beans"]'), !privateReady);
+    setElementHidden($("brewLogHistoryPanel"), !privateReady);
+    setElementHidden($("qaParentWrap"), !currentUser);
+    setElementHidden($("qaVariableWrap"), !currentUser);
+
+    if (!privateReady && document.querySelector(".tab-btn.active")?.dataset.tab === "beans") {
+      showTab("brew");
+    }
+  }
+
+  function draftBrewLogsForQA() {
+    return allBrewLogs()
+      .filter(log => log.Source === "Supabase")
+      .filter(log => !log.QA_Final && norm(log.QA_Status) !== "qa pass")
+      .sort((a, b) => new Date(b.Date || 0) - new Date(a.Date || 0));
+  }
+
+  function renderQABrewOptions() {
+    const select = $("qaParent");
+    if (!select) return;
+    if (!currentUser) {
+      select.innerHTML = "";
+      select.disabled = true;
+      return;
+    }
+    const drafts = draftBrewLogsForQA();
+    select.innerHTML = drafts.length
+      ? `<option value="">Pilih BrewID dari Data Seduhan</option>` + drafts.map(log => `<option value="${html(log.BrewID)}">${html(log.BrewID)} · ${html(log.BeanName || log.Variety || "Tanpa nama")} · ${html(log.Method || "-")}</option>`).join("")
+      : `<option value="">Belum ada draft dari Data Seduhan</option>`;
+    select.disabled = !drafts.length;
+  }
+
+  function selectedDraftLog() {
+    const brewId = $("qaParent")?.value || "";
+    return allBrewLogs().find(log => log.BrewID === brewId) || null;
+  }
+
+  function applySelectedDraftToQA() {
+    const draft = selectedDraftLog();
+    if (!draft) return;
+    if ($("qaBeanName")) $("qaBeanName").value = draft.BeanName || draft.Variety || "";
+  }
+
   function bindEvents() {
     document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => showTab(btn.dataset.tab)));
     ["brewVariety", "brewProcess", "brewRoast", "brewDripper", "brewMode", "switchValveMode", "brewGrinder", "brewWater", "brewDose", "pourPattern"].forEach(id => $(id).addEventListener("change", renderBrew));
@@ -1609,6 +1715,14 @@
     $("qaForm").addEventListener("submit", saveQA);
     document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("input", renderQAPreview));
     document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("change", renderQAPreview));
+    $("qaParent")?.addEventListener("change", applySelectedDraftToQA);
+    $("qaHasVariable")?.addEventListener("change", e => {
+      const input = $("qaVariable");
+      if (input) {
+        input.disabled = !e.target.checked;
+        if (!e.target.checked) input.value = "";
+      }
+    });
     $("libraryDataset").addEventListener("change", renderLibrary);
     $("librarySearch").addEventListener("input", renderLibrary);
     $("publicBrewSearch")?.addEventListener("input", renderPublicBrewTable);
@@ -1661,11 +1775,13 @@
 
   function renderAll() {
     renderMetrics();
+    renderAccessUI();
     renderBrew();
     renderBeansTable();
     renderStockTable();
     renderQAPreview();
     renderBrewLogTable();
+    renderQABrewOptions();
     renderPublicBrewTable();
     renderLibrary();
     renderWorkspaceUI();

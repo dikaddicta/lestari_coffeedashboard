@@ -469,3 +469,27 @@ tr:hover td { background: #fffaf0; }
 #authJumpLink.hidden {
   display: none !important;
 }
+
+
+.checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  color: var(--espresso);
+  margin-bottom: 8px;
+}
+.checkbox-line input {
+  width: auto;
+  min-height: auto;
+}
+.locked-tab {
+  display: none !important;
+}
+#saveCurrentBrew.hidden,
+#applyBeanToBrew.hidden,
+#brewLogHistoryPanel.hidden,
+#qaParentWrap.hidden,
+#qaVariableWrap.hidden {
+  display: none !important;
+}

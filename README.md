@@ -36,7 +36,7 @@ Jangan pernah memasukkan `service_role key` ke frontend.
 - Data publik sebaiknya hanya memakai status `approved`.
 - Data baru dari user masuk sebagai `pending`.
 - QA/Admin bertugas mengecek dan menyetujui data.
-- Untuk penggunaan komersial, resep sebaiknya baru disetujui setelah hasilnya konsisten, misalnya 2 dari 3 brew ulang tetap mendapatkan nilai QA minimal 8.6.
+- Untuk penggunaan komersial, resep sebaiknya baru disetujui setelah hasilnya konsisten, misalnya 2 dari 3 brew ulang tetap mendapatkan nilai QA minimal 6.5.
 
 
 ## Troubleshooting Supabase
@@ -79,7 +79,7 @@ Mulai v10, tab Hasil Seduhan Publik hanya menampilkan brew log yang memenuhi sem
 - visibility = public
 - moderation_status = approved
 - ApprovedForRecipe = Yes
-- QA_Final minimal 8.6
+- QA_Final minimal 6.5
 
 Draft brew tanpa QA tidak akan tampil di feed publik.
 
@@ -116,3 +116,16 @@ Mulai v14:
 - Setelah user login, seluruh area form login dan form daftar benar-benar disembunyikan.
 - Judul panel berubah dari `Login Pengguna` menjadi `Akun Pengguna`.
 - Yang tersisa hanya ringkasan akun dan tombol `Keluar`.
+
+
+## Catatan v15 — Brew Log flow dan threshold 6.5
+
+Mulai v15:
+- Batas lolos QA diturunkan dari 8.6 menjadi 6.5.
+- Tombol `Simpan draft ke Brew Log` hanya muncul setelah user login dan memiliki workspace aktif.
+- Draft dari menu Rekomendasi Seduh masuk ke tabel Brew Log dengan status `belum diverifikasi`.
+- Di menu Brew Log & QA, user login wajib memilih `BrewID Asal` dari draft yang sudah dibuat.
+- `Variabel Utama yang Diubah` memakai checklist. Jika tidak dicentang, sistem menyimpan `Tidak ada perubahan variabel`.
+- Saat belum login, tabel Brew Log pribadi disembunyikan. Guest tetap bisa mengisi form QA publik, dan hasilnya masuk ke feed publik jika QA minimal 6.5.
+- Menu Rekomendasi Biji Kopi hanya tampil saat user login dan memiliki workspace aktif.
+- Jalankan migration: `supabase/migration_v15_guest_public_brew_threshold_65.sql`

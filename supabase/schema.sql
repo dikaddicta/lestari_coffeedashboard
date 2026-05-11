@@ -594,3 +594,8 @@ CREATE POLICY "Stock delete private owner or admin" ON public.stock_beans
   FOR DELETE USING (created_by = auth.uid() OR public.is_workspace_admin(workspace_id));
 
 create index if not exists idx_brew_logs_public_feed on public.brew_logs (moderation_status, visibility, qa_final desc, created_at desc);
+
+
+-- v15 note:
+-- For existing Supabase projects, run supabase/migration_v15_guest_public_brew_threshold_65.sql
+-- after v9 migration.
