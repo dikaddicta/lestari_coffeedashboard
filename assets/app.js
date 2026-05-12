@@ -2038,6 +2038,8 @@
     }
 
     const status = action === "activate" ? "active" : "disabled";
+    const verb = status === "active" ? "mengaktifkan kembali" : "menangguhkan akses";
+    showMessage(`Sedang ${verb} user...`, "info");
     const { data, error } = await supabaseClient
       .from("workspace_members")
       .update({ status, updated_at: new Date().toISOString() })
@@ -2359,10 +2361,21 @@
       if (!btn) return;
       updateMemberRequest(btn.dataset.userId, btn.dataset.memberAction);
     });
-    $("workspaceUserTable")?.addEventListener("click", e => {
+    $("workspaceUserTable")?.addEventListener("click", async e => {
       const btn = e.target.closest("button[data-workspace-user-action]");
       if (!btn) return;
-      updateWorkspaceMember(btn.dataset.userId, btn.dataset.workspaceUserAction);
+      const oldLabel = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Memproses...";
+      try {
+        await updateWorkspaceMember(btn.dataset.userId, btn.dataset.workspaceUserAction);
+      } catch (err) {
+        console.error(err);
+        showMessage(`Gagal memproses aksi pengguna: ${err.message || err}`, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldLabel;
+      }
     });
     $("syncCloud")?.addEventListener("click", async () => {
       try {
@@ -2372,9 +2385,9 @@
         alert(`Sinkronisasi gagal: ${err.message || err}`);
       }
     });
-    $("exportJson").addEventListener("click", exportJson);
-    $("importJson").addEventListener("change", e => e.target.files[0] && importJson(e.target.files[0]));
-    $("resetLocal").addEventListener("click", () => {
+    $("exportJson")?.addEventListener("click", exportJson);
+    $("importJson")?.addEventListener("change", e => e.target.files[0] && importJson(e.target.files[0]));
+    $("resetLocal")?.addEventListener("click", () => {
       if (confirm("Reset semua data lokal? Data bawaan dari dashboard Excel tetap ada.")) {
         localStorage.removeItem(STORAGE_KEY);
         state.userStock = [];

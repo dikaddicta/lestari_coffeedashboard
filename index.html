@@ -18,8 +18,8 @@
         </div>
         <div class="hero-text">
           <p class="hero-lead">Dashboard pribadi untuk homebrewer yang ingin mencatat, membandingkan, dan membagikan pengalaman seduh kopi dengan lebih rapi.</p>
-          <p class="hero-copy">Silakan digunakan secara gratis. Jika ada kesalahan, ketidaksesuaian, atau kekurangan data seperti dripper, varietas, pasca panen, roast profile, maupun setting grinder, bantu lengkapi melalui <button class="hero-inline-link" type="button" data-jump-tab="suggestion">kotak saran</button>.</p>
-          <p class="hero-copy">Semoga dashboard ini bermanfaat bagi teman-teman yang sedang belajar dan berbagi tentang kopi. Dashboard ini masih jauh dari sempurna, jadi setiap masukan akan sangat membantu. Terima kasih dan selamat menggunakan.</p>
+          <p class="hero-copy">Semoga dashboard ini bermanfaat bagi teman-teman yang sedang belajar tentang kopi maupun yang ingin berbagi pengalaman seduh. Dashboard ini masih jauh dari sempurna, jadi setiap masukan akan sangat membantu untuk menyempurnakannya. Terima kasih dan selamat menggunakan.</p>
+          <p class="hero-footnote">Silakan digunakan secara gratis. Jika ada kesalahan, ketidaksesuaian, atau kekurangan data seperti dripper, varietas, pasca panen, roast profile, maupun setting grinder, bantu lengkapi melalui <button class="hero-inline-link" type="button" data-jump-tab="suggestion">kotak saran</button>.</p>
         </div>
       </div>
       <div class="hero-side">
@@ -218,23 +218,21 @@
             </form>
           </section>
           <section class="panel">
-            <div class="section-title"><span>Tools</span><h2>Manajemen Data</h2></div>
-            <p class="hint">Untuk versi komersial, stok kopi disimpan privat per akun/workspace. Brew log yang lolos moderasi dapat tampil di halaman Hasil Seduhan Publik.</p>
+            <div class="section-title"><span>Workspace</span><h2>Status Workspace</h2></div>
+            <p class="hint">Panel ini difokuskan untuk membantu kamu memastikan koneksi database, workspace aktif, dan sinkronisasi data berjalan dengan baik.</p>
             <div class="db-status" id="dbStatus">
               <span class="status-dot offline"></span>
               <div><strong>Mode penyimpanan lokal</strong><small>Isi <code>assets/supabase-config.js</code> untuk mengaktifkan database online.</small></div>
             </div>
             <div class="workspace-mini">
               <label>Workspace Aktif<select id="activeWorkspaceSelect"></select></label>
-              <small id="workspaceHint">Masuk untuk memilih atau membuat workspace.</small>
+              <small id="workspaceHint">Masuk untuk memilih workspace yang sedang digunakan.</small>
             </div>
-            <div class="button-stack">
+            <div class="button-stack button-stack-compact">
               <button id="syncCloud" class="primary" type="button">Sinkronkan dari Supabase</button>
-              <button id="exportJson" class="secondary" type="button">Ekspor Backup JSON</button>
-              <label class="file-button">Impor Backup JSON<input id="importJson" type="file" accept="application/json" hidden /></label>
-              <button id="resetLocal" class="danger" type="button">Reset Data Lokal</button>
+              <button class="secondary" type="button" data-jump-tab="admin">Buka Akun &amp; Admin</button>
             </div>
-            <p class="hint small-note">Tamu bisa membaca hasil seduhan publik yang sudah disetujui. Stok Kopi dan Brew Log & QA hanya aktif setelah pengguna masuk dan memiliki workspace.</p>
+            <p class="hint small-note">Tamu bisa membaca hasil seduhan publik yang sudah disetujui. Stok kopi, Brew Log, dan QA aktif setelah pengguna masuk dan terhubung ke workspace.</p>
           </section>
         </div>
         <section class="panel wide">
