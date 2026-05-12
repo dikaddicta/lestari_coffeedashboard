@@ -5,6 +5,7 @@
   const STORAGE_KEY = "coffeeDashboardWebV1";
   const APPROVAL_THRESHOLD = 6.5;
   let stockSaving = false;
+  let editingStockId = null;
   const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
   let supabaseClient = null;
   let cloudReady = false;
@@ -648,6 +649,9 @@
       brewer_name: log.BrewerName || currentBrewerName(),
       bean_name: log.BeanName || null,
       origin: log.Origin || null,
+      stock_bean_id: log.StockBeanID || null,
+      stock_bean_code: log.StockBeanCode || null,
+      stock_usage_g: log.StockUsage_g === "" ? null : Number(log.StockUsage_g || 0),
       variety: log.Variety || null,
       process: log.Process || null,
       roast_profile: log.RoastProfile || null,
@@ -702,6 +706,9 @@
       BrewerName: row.brewer_name || "Brewer",
       BeanName: row.bean_name,
       Origin: row.origin,
+      StockBeanID: row.stock_bean_id,
+      StockBeanCode: row.stock_bean_code,
+      StockUsage_g: row.stock_usage_g,
       Variety: row.variety,
       Process: row.process,
       RoastProfile: row.roast_profile,
@@ -944,6 +951,77 @@
 
   function allStock() {
     return workspaceStock();
+  }
+
+  function stockOptionLabel(bean) {
+    const name = bean.CoffeeName || bean.BeanID || "Kopi tanpa nama";
+    const meta = [bean.Producer, bean.Origin, bean.Stock_g !== undefined ? `${bean.Stock_g}g` : ""].filter(Boolean).join(" · ");
+    return meta ? `${name} · ${meta}` : name;
+  }
+
+  function selectedBrewStockBean() {
+    const value = $("brewStockSelect")?.value || "non_stock";
+    if (!value || value === "non_stock") return null;
+    return allStock().find(bean => String(bean.CloudID || bean.BeanID) === String(value)) || null;
+  }
+
+  function setSelectIfAvailable(id, value) {
+    const select = $(id);
+    if (!select || !value) return;
+    const hasOption = Array.from(select.options || []).some(opt => opt.value === value);
+    if (hasOption) select.value = value;
+  }
+
+  function syncBrewStockUI({ apply = true } = {}) {
+    const hasWorkspace = canUseWorkspaceModules();
+    const stockWrap = $("brewStockWrap");
+    const nameWrap = $("brewBeanNameWrap");
+    const stockSelect = $("brewStockSelect");
+    const stockBean = selectedBrewStockBean();
+    const usingStock = Boolean(stockBean);
+
+    setElementHidden(stockWrap, !hasWorkspace);
+    setElementHidden(nameWrap, !hasWorkspace || usingStock);
+
+    ["brewVariety", "brewProcess", "brewRoast"].forEach(id => {
+      const el = $(id);
+      if (el) el.disabled = hasWorkspace && usingStock;
+    });
+
+    if (!hasWorkspace) {
+      if (stockSelect) stockSelect.value = "non_stock";
+      return null;
+    }
+
+    if (stockBean && apply) {
+      setSelectIfAvailable("brewVariety", stockBean.Variety);
+      setSelectIfAvailable("brewProcess", stockBean.Process);
+      setSelectIfAvailable("brewRoast", stockBean.RoastProfile);
+    }
+
+    const hint = $("brewStockHint");
+    if (hint) {
+      hint.textContent = stockBean
+        ? `Menggunakan stok: ${stockBean.CoffeeName || "Kopi"}. Brew log akan mengurangi stok sebesar dosis seduh.`
+        : "Non Stock: isi nama kopi dan pilih varietas, pasca panen, serta roast profile secara manual.";
+    }
+    return stockBean;
+  }
+
+  function renderBrewStockOptions() {
+    const select = $("brewStockSelect");
+    if (!select) return;
+    const hasWorkspace = canUseWorkspaceModules();
+    const previous = select.value || "non_stock";
+    const beans = hasWorkspace
+      ? allStock().filter(bean => String(bean.Active || "Yes").toLowerCase() !== "no")
+      : [];
+    const options = [`<option value="non_stock">Non Stock / Manual</option>`]
+      .concat(beans.map(bean => `<option value="${html(bean.CloudID || bean.BeanID)}">${html(stockOptionLabel(bean))}</option>`));
+    select.innerHTML = options.join("");
+    const values = new Set(["non_stock", ...beans.map(bean => String(bean.CloudID || bean.BeanID))]);
+    select.value = values.has(previous) ? previous : "non_stock";
+    syncBrewStockUI({ apply: false });
   }
 
   function allBrewLogs() {
@@ -1218,6 +1296,8 @@
   }
 
   function renderBrew() {
+    renderBrewStockOptions();
+    syncBrewStockUI({ apply: true });
     const brew = computeBrew();
     const cards = [
       ["Suhu", `${brew.temp} °C`, "Target suhu air seduh"],
@@ -1391,29 +1471,112 @@
   }
 
   function renderStockTable() {
+    renderBrewStockOptions();
     const tbody = $("stockTable")?.querySelector("tbody");
     if (!tbody) return;
     const locked = !canUseWorkspaceModules();
     setModuleLocked("tab-stock", "stockAccessNotice", locked, privateModuleMessage("Stok Kopi"));
     if (locked) {
-      tbody.innerHTML = `<tr><td colspan="11">Masuk dan pilih workspace untuk melihat atau mengelola stok kopi.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="12">Masuk dan pilih workspace untuk melihat atau mengelola stok kopi.</td></tr>`;
       return;
     }
     const rows = allStock();
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="11">Belum ada stok kopi di workspace ini.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="12">Belum ada stok kopi di workspace ini.</td></tr>`;
       return;
     }
-    tbody.innerHTML = rows.map(bean => `<tr><td><strong>${html(bean.CoffeeName)}</strong><br><small>${html(bean.Producer || "")}</small></td><td>${html(bean.Origin || "")}</td><td>${html(bean.Variety || "")}</td><td>${html(bean.Variety2_optional || "")}</td><td>${html(bean.Process || "")}</td><td>${html(bean.RoastProfile || "")}</td><td>${html(beanFlavorList(bean).join(" / "))}</td><td>${html(bean.Sweetness)}/${html(bean.Acidity)}/${html(bean.Body)}</td><td>${html(bean.Stock_g)}g</td><td>${html(bean.BestBrew || "Both")}</td><td>${html(bean.Active || "Yes")}</td></tr>`).join("");
+    tbody.innerHTML = rows.map(bean => {
+      const key = html(bean.CloudID || bean.BeanID || "");
+      const actions = canAdmin()
+        ? `<div class="moderation-actions"><button class="secondary" data-stock-action="edit" data-stock-id="${key}">Edit</button><button class="danger" data-stock-action="delete" data-stock-id="${key}">Hapus</button></div>`
+        : `<small class="member-self-note">Admin saja</small>`;
+      return `<tr><td><strong>${html(bean.CoffeeName)}</strong><br><small>${html(bean.Producer || "")}</small></td><td>${html(bean.Origin || "")}</td><td>${html(bean.Variety || "")}</td><td>${html(bean.Variety2_optional || "")}</td><td>${html(bean.Process || "")}</td><td>${html(bean.RoastProfile || "")}</td><td>${html(beanFlavorList(bean).join(" / "))}</td><td>${html(bean.Sweetness)}/${html(bean.Acidity)}/${html(bean.Body)}</td><td>${html(bean.Stock_g)}g</td><td>${html(bean.BestBrew || "Both")}</td><td>${html(bean.Active || "Yes")}</td><td>${actions}</td></tr>`;
+    }).join("");
+  }
+
+  function setStockFormMode(mode = "create") {
+    const submitBtn = $("stockSubmitBtn");
+    const cancelBtn = $("stockCancelEditBtn");
+    const title = document.querySelector("#tab-stock .section-title h2");
+    const editing = mode === "edit";
+    if (submitBtn) submitBtn.textContent = editing ? "Simpan Perubahan Stok" : "Simpan Stok Pribadi";
+    if (cancelBtn) cancelBtn.classList.toggle("hidden", !editing);
+    if (title) title.textContent = editing ? "Edit Biji Kopi" : "Tambah / Update Biji Kopi";
+  }
+
+  function resetStockForm() {
+    editingStockId = null;
+    $("stockForm")?.reset();
+    hydrateSelects();
+    setStockFormMode("create");
+  }
+
+  function editStockBean(id) {
+    if (!canAdmin()) return showMessage("Edit stok hanya tersedia untuk Admin Workspace.", "error");
+    const bean = allStock().find(item => String(item.CloudID || item.BeanID) === String(id));
+    if (!bean) return showMessage("Data stok tidak ditemukan. Muat ulang data terlebih dahulu.", "error");
+    editingStockId = bean.CloudID || bean.BeanID;
+    if ($("stockName")) $("stockName").value = bean.CoffeeName || "";
+    if ($("stockOrigin")) $("stockOrigin").value = bean.Origin || "";
+    if ($("stockProducer")) $("stockProducer").value = bean.Producer || "";
+    setSelectIfAvailable("stockVariety1", bean.Variety);
+    setSelectIfAvailable("stockVariety2", bean.Variety2_optional);
+    setSelectIfAvailable("stockProcess", bean.Process);
+    setSelectIfAvailable("stockRoast", bean.RoastProfile);
+    setSelectIfAvailable("stockFlavor1", bean.FlavorFamily);
+    setSelectIfAvailable("stockFlavor2", bean.FlavorFamily2_optional);
+    setSelectIfAvailable("stockFlavor3", bean.FlavorFamily3_optional);
+    if ($("stockSweet")) $("stockSweet").value = bean.Sweetness || 4;
+    if ($("stockAcid")) $("stockAcid").value = bean.Acidity || 4;
+    if ($("stockBody")) $("stockBody").value = bean.Body || 3;
+    if ($("stockQty")) $("stockQty").value = bean.Stock_g || 0;
+    setSelectIfAvailable("stockBestBrew", bean.BestBrew || "Both");
+    if ($("stockPrice")) $("stockPrice").value = bean.Price || 0;
+    if ($("stockRoastDate")) $("stockRoastDate").value = bean.RoastDate || "";
+    setSelectIfAvailable("stockActive", bean.Active || "Yes");
+    if ($("stockNotes")) $("stockNotes").value = bean.Notes || "";
+    setStockFormMode("edit");
+    document.querySelector("#stockForm")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function deleteStockBean(id) {
+    if (!supabaseClient || !canAdmin() || !currentWorkspace) return showMessage("Hapus stok hanya tersedia untuk Admin Workspace.", "error");
+    const bean = allStock().find(item => String(item.CloudID || item.BeanID) === String(id));
+    if (!bean?.CloudID) return showMessage("Stok ini belum tersimpan di Supabase atau tidak punya CloudID.", "error");
+    if (!confirm(`Hapus stok ${bean.CoffeeName || bean.BeanID} dari workspace?`)) return;
+    try {
+      const { data, error } = await supabaseClient
+        .from("stock_beans")
+        .delete()
+        .eq("id", bean.CloudID)
+        .eq("workspace_id", currentWorkspace.id)
+        .select("id")
+        .single();
+      if (error || !data) throw error || new Error("Data stok tidak terhapus. Cek policy RLS.");
+      state.cloudStock = (state.cloudStock || []).filter(item => item.CloudID !== bean.CloudID);
+      renderStockTable();
+      renderBeansTable();
+      renderMetrics();
+      showMessage("Stok kopi berhasil dihapus.", "success");
+    } catch (err) {
+      console.error(err);
+      showMessage(`Gagal menghapus stok: ${err.message || err}`, "error");
+    }
   }
 
   function applyTopBeanToBrew() {
     const ranked = rankBeans();
     if (!ranked.length) return alert("Tidak ada bean yang cocok dengan filter saat ini.");
     const bean = ranked[0].bean;
-    $("brewVariety").value = bean.Variety || $("brewVariety").value;
-    $("brewProcess").value = bean.Process || $("brewProcess").value;
-    $("brewRoast").value = bean.RoastProfile || $("brewRoast").value;
+    renderBrewStockOptions();
+    if ($("brewStockSelect") && bean.CloudID && canUseWorkspaceModules()) {
+      $("brewStockSelect").value = bean.CloudID;
+      syncBrewStockUI({ apply: true });
+    } else {
+      $("brewVariety").value = bean.Variety || $("brewVariety").value;
+      $("brewProcess").value = bean.Process || $("brewProcess").value;
+      $("brewRoast").value = bean.RoastProfile || $("brewRoast").value;
+    }
     renderBrew();
     showTab("brew");
   }
@@ -1424,7 +1587,10 @@
   }
 
   function currentBrewLogBase(extra = {}) {
+    syncBrewStockUI({ apply: true });
     const brew = computeBrew();
+    const stockBean = selectedBrewStockBean();
+    const manualBeanName = $("brewBeanName")?.value.trim() || "";
     const id = extra.BrewID || nextId("BL", allBrewLogs(), "BrewID");
     const qaId = extra.QA_ID || "";
     const defaultVerifyText = "Belum diverifikasi";
@@ -1432,8 +1598,11 @@
       BrewID: id,
       Date: todayISO(),
       BrewerName: extra.BrewerName || currentBrewerName(),
-      BeanName: extra.BeanName || $("qaBeanName")?.value || $("brewVariety").value,
-      Origin: extra.Origin || "",
+      BeanName: extra.BeanName || stockBean?.CoffeeName || manualBeanName || $("qaBeanName")?.value || $("brewVariety").value,
+      Origin: extra.Origin || stockBean?.Origin || "",
+      StockBeanID: extra.StockBeanID || stockBean?.CloudID || "",
+      StockBeanCode: extra.StockBeanCode || stockBean?.BeanID || "",
+      StockUsage_g: extra.StockUsage_g ?? (stockBean ? brew.dose : ""),
       Variety: $("brewVariety").value,
       Process: $("brewProcess").value,
       RoastProfile: $("brewRoast").value,
@@ -1472,6 +1641,18 @@
     };
   }
 
+  async function consumeStockForBrew(stockBean, amount) {
+    if (!stockBean?.CloudID || !amount) return null;
+    const { data, error } = await supabaseClient.rpc("consume_stock_for_brew", {
+      p_stock_id: stockBean.CloudID,
+      p_amount: Number(amount || 0)
+    });
+    if (error) throw error;
+    const updated = fromSnakeStock(data);
+    state.cloudStock = uniqueByCloudId([updated, ...(state.cloudStock || []).filter(bean => bean.CloudID !== updated.CloudID)]);
+    return updated;
+  }
+
   async function saveCurrentBrewDraft(event) {
     event?.preventDefault?.();
     event?.stopPropagation?.();
@@ -1496,19 +1677,32 @@
       }
       showMessage("Sedang menyimpan draft ke Brew Log...", "info");
 
+      const stockBean = selectedBrewStockBean();
       const log = currentBrewLogBase();
       const payload = toSnakeBrew(log);
       const saved = await insertCloud("brew_logs", payload, fromSnakeBrew);
 
       state.cloudBrewLogs.unshift(saved);
+      let stockMessage = "";
+      if (stockBean) {
+        try {
+          const updatedStock = await consumeStockForBrew(stockBean, log.Dose_g);
+          stockMessage = updatedStock ? ` Stok ${updatedStock.CoffeeName || "kopi"} tersisa ${updatedStock.Stock_g}g.` : "";
+        } catch (stockErr) {
+          console.error("Stock deduction failed", stockErr);
+          stockMessage = ` Draft tersimpan, tetapi stok belum berkurang: ${stockErr.message || stockErr}`;
+        }
+      }
       await syncFromCloud(false).catch(console.warn);
 
+      renderStockTable();
+      renderBeansTable();
       renderBrewLogTable();
       renderQABrewOptions();
       renderRecipeOptions(computeBrew());
       renderPublicBrewTable();
 
-      showMessage(`Draft ${saved.BrewID} berhasil tersimpan. Buka Brew Log & QA lalu pilih BrewID tersebut untuk verifikasi.`, "success");
+      showMessage(`Draft ${saved.BrewID} berhasil tersimpan. Buka Brew Log & QA lalu pilih BrewID tersebut untuk verifikasi.${stockMessage}`, stockMessage.includes("belum berkurang") ? "error" : "success");
     } catch (err) {
       console.error("saveCurrentBrewDraft error", err);
       const detail = err?.message || err?.details || err?.hint || String(err);
@@ -1705,8 +1899,28 @@
     showMessage("Menyimpan stok kopi ke workspace...", "info");
 
     try {
-      const saved = await insertCloud("stock_beans", toSnakeStock(bean), fromSnakeStock);
-      state.cloudStock = uniqueByCloudId([saved, ...(state.cloudStock || [])]);
+      let saved;
+      if (editingStockId) {
+        if (!canAdmin()) throw new Error("Edit stok hanya tersedia untuk Admin Workspace.");
+        const current = allStock().find(item => String(item.CloudID || item.BeanID) === String(editingStockId));
+        if (!current?.CloudID) throw new Error("Data stok yang diedit tidak ditemukan di Supabase.");
+        const payload = toSnakeStock({ ...bean, BeanID: current.BeanID });
+        delete payload.created_by;
+        delete payload.source_client_id;
+        const { data, error } = await supabaseClient
+          .from("stock_beans")
+          .update(payload)
+          .eq("id", current.CloudID)
+          .eq("workspace_id", currentWorkspace.id)
+          .select("*")
+          .single();
+        if (error || !data) throw error || new Error("Data stok tidak berhasil diperbarui.");
+        saved = fromSnakeStock(data);
+        state.cloudStock = uniqueByCloudId([saved, ...(state.cloudStock || []).filter(item => item.CloudID !== saved.CloudID)]);
+      } else {
+        saved = await insertCloud("stock_beans", toSnakeStock(bean), fromSnakeStock);
+        state.cloudStock = uniqueByCloudId([saved, ...(state.cloudStock || [])]);
+      }
       renderStockTable();
       renderBeansTable();
       renderMetrics();
@@ -1714,7 +1928,7 @@
       const savedId = saved.CloudID;
       const previousStock = state.cloudStock || [];
       const syncError = await syncFromCloud(false).then(() => null).catch(err => err);
-      if (syncError) console.warn("Stock refresh failed after insert", syncError);
+      if (syncError) console.warn("Stock refresh failed after save", syncError);
       if (savedId && !(state.cloudStock || []).some(item => item.CloudID === savedId)) {
         state.cloudStock = uniqueByCloudId([saved, ...previousStock, ...(state.cloudStock || [])]);
       }
@@ -1722,9 +1936,9 @@
       renderStockTable();
       renderBeansTable();
       renderMetrics();
-      form?.reset();
-      hydrateSelects();
-      showMessage("Stok kopi berhasil masuk ke tabel workspace.", "success");
+      const wasEditing = Boolean(editingStockId);
+      resetStockForm();
+      showMessage(wasEditing ? "Perubahan stok kopi berhasil disimpan." : "Stok kopi berhasil masuk ke tabel workspace.", "success");
     } catch (err) {
       console.error("Stock save failed", err);
       showMessage(`Gagal menyimpan stok ke Supabase: ${err.message || err}`, "error");
@@ -1733,7 +1947,7 @@
       stockSaving = false;
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = "Simpan Stok Pribadi";
+        submitBtn.textContent = editingStockId ? "Simpan Perubahan Stok" : "Simpan Stok Pribadi";
       }
     }
   }
@@ -1802,7 +2016,7 @@
         <td><div class="moderation-actions">
           <button class="secondary" data-mod-action="approve" data-id="${html(row.id)}">Setujui</button>
           <button class="danger" data-mod-action="reject" data-id="${html(row.id)}">Tolak</button>
-          ${canAdmin() ? `<button class="danger" data-mod-action="delete" data-id="${html(row.id)}">Hapus</button>` : ""}
+          ${canModerate() ? `<button class="danger" data-mod-action="delete" data-id="${html(row.id)}">Hapus</button>` : ""}
         </div></td>
       </tr>`;
     }).join("");
@@ -1810,7 +2024,7 @@
 
   async function deleteModerationRow(id) {
     const table = $("moderationDataset")?.value || "brew_logs";
-    if (!supabaseClient || !canAdmin()) return showMessage("Hapus data hanya untuk admin workspace.", "error");
+    if (!supabaseClient || !canModerate()) return showMessage("Hapus data hanya untuk QA/Admin workspace.", "error");
     const row = moderationRows.find(r => r.id === id);
     if (!row) return showMessage("Row tidak ditemukan di tabel moderasi saat ini.", "error");
     if (!confirm("Hapus data ini permanen dari Supabase?")) return;
@@ -1826,7 +2040,7 @@
         .eq("workspace_id", currentWorkspace.id)
         .select("id")
         .single();
-      if (error || !data) throw error || new Error("Data tidak terhapus. Kemungkinan policy RLS belum mengizinkan delete untuk admin workspace.");
+      if (error || !data) throw error || new Error("Data tidak terhapus. Kemungkinan policy RLS belum mengizinkan delete untuk QA/Admin workspace.");
       state.cloudBrewLogs = state.cloudBrewLogs.filter(item => item.CloudID !== id);
       state.cloudQA = state.cloudQA.filter(item => item.CloudID !== id);
       state.cloudStock = state.cloudStock.filter(item => item.CloudID !== id);
@@ -2341,16 +2555,30 @@
       }
     });
     ["brewVariety", "brewProcess", "brewRoast", "brewDripper", "brewMode", "switchValveMode", "brewGrinder", "brewWater", "brewDose", "pourPattern"].forEach(id => $(id)?.addEventListener("change", renderBrew));
+    $("brewStockSelect")?.addEventListener("change", () => { syncBrewStockUI({ apply: true }); renderBrew(); });
+    $("brewBeanName")?.addEventListener("input", () => syncBrewStockUI({ apply: false }));
     ["customGrinderName", "customGrinderSetting"].forEach(id => $(id)?.addEventListener("input", renderBrew));
     $("signupRole")?.addEventListener("change", renderSignupRoleUI);
     $("suggestionForm")?.addEventListener("submit", submitSuggestion);
     document.querySelectorAll("[data-jump-tab]").forEach(btn => btn.addEventListener("click", () => showTab(btn.dataset.jumpTab)));
+    document.querySelectorAll(".guide-role-btn").forEach(btn => btn.addEventListener("click", () => {
+      const role = btn.dataset.guideRole;
+      document.querySelectorAll(".guide-role-btn").forEach(item => item.classList.toggle("active", item === btn));
+      document.querySelectorAll(".guide-role-panel").forEach(panel => panel.classList.toggle("hidden", panel.dataset.guidePanel !== role));
+    }));
     ["targetSweet", "targetAcid", "targetBody", "filterFlavor1", "filterFlavor2", "filterFlavor3", "filterVariety1", "filterVariety2", "filterBrew", "minStock"].forEach(id => $(id).addEventListener("change", renderBeansTable));
     ["targetSweet", "targetAcid", "targetBody", "minStock"].forEach(id => $(id).addEventListener("input", renderBeansTable));
     $("saveCurrentBrew")?.addEventListener("click", saveCurrentBrewDraft);
     $("applyBeanToBrew")?.addEventListener("click", applyTopBeanToBrew);
     $("stockForm")?.addEventListener("submit", saveStock);
     $("stockSubmitBtn")?.addEventListener("click", saveStock);
+    $("stockCancelEditBtn")?.addEventListener("click", resetStockForm);
+    $("stockTable")?.addEventListener("click", e => {
+      const btn = e.target.closest("button[data-stock-action]");
+      if (!btn) return;
+      if (btn.dataset.stockAction === "edit") return editStockBean(btn.dataset.stockId);
+      if (btn.dataset.stockAction === "delete") return deleteStockBean(btn.dataset.stockId);
+    });
     $("qaForm").addEventListener("submit", saveQA);
     document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("input", renderQAPreview));
     document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("change", renderQAPreview));
