@@ -43,6 +43,9 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  requested_role text;
+  requested_workspace uuid;
 begin
   insert into public.profiles (id, email, display_name)
   values (
@@ -54,6 +57,25 @@ begin
     email = excluded.email,
     display_name = coalesce(public.profiles.display_name, excluded.display_name),
     updated_at = now();
+
+  requested_role := lower(coalesce(new.raw_user_meta_data ->> 'requested_role', ''));
+  if requested_role in ('brewer', 'qa') and nullif(new.raw_user_meta_data ->> 'requested_workspace_id', '') is not null then
+    requested_workspace := (new.raw_user_meta_data ->> 'requested_workspace_id')::uuid;
+    insert into public.workspace_members (workspace_id, user_id, role, status)
+    select requested_workspace, new.id, requested_role, 'pending'
+    where exists (
+      select 1 from public.workspaces w
+      where w.id = requested_workspace and w.status = 'active'
+    )
+    on conflict (workspace_id, user_id) do update set
+      role = excluded.role,
+      status = case when public.workspace_members.status = 'active' then 'active' else 'pending' end,
+      updated_at = now();
+  end if;
+
+  return new;
+exception when others then
+  -- Profile creation should never block Auth signup.
   return new;
 end;
 $$;
@@ -87,7 +109,7 @@ create table if not exists public.workspace_members (
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
   role text not null default 'brewer' check (role in ('brewer', 'qa', 'admin')),
-  status text not null default 'active' check (status in ('active', 'disabled')),
+  status text not null default 'active' check (status in ('pending', 'active', 'rejected', 'disabled')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   primary key (workspace_id, user_id)
@@ -429,8 +451,16 @@ DROP POLICY IF EXISTS "Public insert qa scores" ON public.qa_scores;
 
 -- Profiles
 DROP POLICY IF EXISTS "Profiles select own" ON public.profiles;
-CREATE POLICY "Profiles select own" ON public.profiles
-  FOR SELECT USING (id = auth.uid());
+DROP POLICY IF EXISTS "Profiles select own or workspace admin" ON public.profiles;
+CREATE POLICY "Profiles select own or workspace admin" ON public.profiles
+  FOR SELECT USING (
+    id = auth.uid()
+    OR EXISTS (
+      SELECT 1 FROM public.workspace_members wm
+      WHERE wm.user_id = public.profiles.id
+        AND public.is_workspace_admin(wm.workspace_id)
+    )
+  );
 DROP POLICY IF EXISTS "Profiles insert own" ON public.profiles;
 CREATE POLICY "Profiles insert own" ON public.profiles
   FOR INSERT WITH CHECK (id = auth.uid());
@@ -440,8 +470,9 @@ CREATE POLICY "Profiles update own" ON public.profiles
 
 -- Workspaces
 DROP POLICY IF EXISTS "Workspaces read public or member" ON public.workspaces;
-CREATE POLICY "Workspaces read public or member" ON public.workspaces
-  FOR SELECT USING (visibility = 'public' OR public.is_workspace_member(id));
+DROP POLICY IF EXISTS "Workspaces read active directory or member" ON public.workspaces;
+CREATE POLICY "Workspaces read active directory or member" ON public.workspaces
+  FOR SELECT USING (status = 'active' OR public.is_workspace_member(id));
 DROP POLICY IF EXISTS "Workspaces insert authenticated" ON public.workspaces;
 CREATE POLICY "Workspaces insert authenticated" ON public.workspaces
   FOR INSERT WITH CHECK (auth.uid() IS NOT NULL AND (created_by = auth.uid() OR created_by IS NULL));
@@ -457,15 +488,16 @@ DROP POLICY IF EXISTS "Members read own or admin" ON public.workspace_members;
 CREATE POLICY "Members read own or admin" ON public.workspace_members
   FOR SELECT USING (user_id = auth.uid() OR public.is_workspace_admin(workspace_id));
 DROP POLICY IF EXISTS "Members self join public or admin add" ON public.workspace_members;
-CREATE POLICY "Members self join public or admin add" ON public.workspace_members
+DROP POLICY IF EXISTS "Members request access or admin add" ON public.workspace_members;
+CREATE POLICY "Members request access or admin add" ON public.workspace_members
   FOR INSERT WITH CHECK (
     (
       user_id = auth.uid()
-      AND role = 'brewer'
-      AND status = 'active'
+      AND role in ('brewer', 'qa')
+      AND status = 'pending'
       AND EXISTS (
         SELECT 1 FROM public.workspaces w
-        WHERE w.id = workspace_id AND w.visibility = 'public' AND w.status = 'active'
+        WHERE w.id = workspace_id AND w.status = 'active'
       )
     )
     OR public.is_workspace_admin(workspace_id)
@@ -509,12 +541,27 @@ CREATE POLICY "Brew read approved own or moderator" ON public.brew_logs
     OR public.can_moderate_workspace(workspace_id)
   );
 DROP POLICY IF EXISTS "Brew insert member" ON public.brew_logs;
-CREATE POLICY "Brew insert member" ON public.brew_logs
+DROP POLICY IF EXISTS "Brew insert member pending unless moderator" ON public.brew_logs;
+DROP POLICY IF EXISTS "Brew insert member or guest approved" ON public.brew_logs;
+CREATE POLICY "Brew insert member or guest approved" ON public.brew_logs
   FOR INSERT WITH CHECK (
-    auth.uid() IS NOT NULL
-    AND created_by = auth.uid()
-    AND public.is_workspace_member(workspace_id)
-    AND (moderation_status = 'pending' OR public.can_moderate_workspace(workspace_id))
+    (
+      auth.uid() IS NOT NULL
+      AND created_by = auth.uid()
+      AND public.is_workspace_member(workspace_id)
+      AND visibility = 'public'
+      AND (moderation_status = 'pending' OR public.can_moderate_workspace(workspace_id))
+    )
+    OR
+    (
+      auth.uid() IS NULL
+      AND created_by IS NULL
+      AND workspace_id = '00000000-0000-0000-0000-000000000001'
+      AND visibility = 'public'
+      AND moderation_status = 'approved'
+      AND coalesce(qa_final, 0) >= 6.5
+      AND lower(coalesce(approved_for_recipe, '')) = 'yes'
+    )
   );
 DROP POLICY IF EXISTS "Brew update owner or moderator" ON public.brew_logs;
 CREATE POLICY "Brew update owner or moderator" ON public.brew_logs
@@ -532,12 +579,26 @@ CREATE POLICY "QA read approved own or moderator" ON public.qa_scores
     OR public.can_moderate_workspace(workspace_id)
   );
 DROP POLICY IF EXISTS "QA insert member" ON public.qa_scores;
-CREATE POLICY "QA insert member" ON public.qa_scores
+DROP POLICY IF EXISTS "QA insert member pending unless moderator" ON public.qa_scores;
+DROP POLICY IF EXISTS "QA insert member or guest approved" ON public.qa_scores;
+CREATE POLICY "QA insert member or guest approved" ON public.qa_scores
   FOR INSERT WITH CHECK (
-    auth.uid() IS NOT NULL
-    AND created_by = auth.uid()
-    AND public.is_workspace_member(workspace_id)
-    AND (moderation_status = 'pending' OR public.can_moderate_workspace(workspace_id))
+    (
+      auth.uid() IS NOT NULL
+      AND created_by = auth.uid()
+      AND public.is_workspace_member(workspace_id)
+      AND visibility = 'public'
+      AND (moderation_status = 'pending' OR public.can_moderate_workspace(workspace_id))
+    )
+    OR
+    (
+      auth.uid() IS NULL
+      AND created_by IS NULL
+      AND workspace_id = '00000000-0000-0000-0000-000000000001'
+      AND visibility = 'public'
+      AND moderation_status = 'approved'
+      AND coalesce(final_qa, 0) >= 6.5
+    )
   );
 DROP POLICY IF EXISTS "QA update owner or moderator" ON public.qa_scores;
 CREATE POLICY "QA update owner or moderator" ON public.qa_scores
@@ -546,6 +607,51 @@ CREATE POLICY "QA update owner or moderator" ON public.qa_scores
 DROP POLICY IF EXISTS "QA delete admin" ON public.qa_scores;
 CREATE POLICY "QA delete admin" ON public.qa_scores
   FOR DELETE USING (public.is_workspace_admin(workspace_id));
+
+
+
+-- -----------------------------------------------------------------------------
+-- Suggestions / Kotak Saran
+-- -----------------------------------------------------------------------------
+create table if not exists public.suggestions (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  name text,
+  email text,
+  category text,
+  priority text default 'Normal',
+  message text not null,
+  status text not null default 'open' check (status in ('open', 'reviewed', 'closed')),
+  workspace_id uuid references public.workspaces(id) on delete set null,
+  created_by uuid references auth.users(id) on delete set null
+);
+
+drop trigger if exists trg_suggestions_updated_at on public.suggestions;
+create trigger trg_suggestions_updated_at
+before update on public.suggestions
+for each row execute function public.set_updated_at();
+
+alter table public.suggestions enable row level security;
+
+DROP POLICY IF EXISTS "Suggestions public insert" ON public.suggestions;
+CREATE POLICY "Suggestions public insert" ON public.suggestions
+  FOR INSERT WITH CHECK (status = 'open');
+
+DROP POLICY IF EXISTS "Suggestions read owner or workspace admin" ON public.suggestions;
+CREATE POLICY "Suggestions read owner or workspace admin" ON public.suggestions
+  FOR SELECT USING (
+    created_by = auth.uid()
+    OR (workspace_id is not null AND public.is_workspace_admin(workspace_id))
+  );
+
+DROP POLICY IF EXISTS "Suggestions update workspace admin" ON public.suggestions;
+CREATE POLICY "Suggestions update workspace admin" ON public.suggestions
+  FOR UPDATE USING (workspace_id is not null AND public.is_workspace_admin(workspace_id))
+  WITH CHECK (workspace_id is not null AND public.is_workspace_admin(workspace_id));
+
+create index if not exists idx_suggestions_status_created on public.suggestions (status, created_at desc);
+create index if not exists idx_suggestions_workspace on public.suggestions (workspace_id, created_at desc);
 
 -- -----------------------------------------------------------------------------
 -- Important operational note

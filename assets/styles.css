@@ -498,3 +498,26 @@ button[disabled] {
   opacity: .65;
   cursor: wait;
 }
+
+.hero-inline-link {
+  display: inline;
+  padding: 0;
+  min-height: auto;
+  border: 0;
+  background: transparent;
+  color: #fff3d4;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 900;
+}
+.hero-inline-link:hover { color: white; }
+#customGrinderNameWrap.hidden,
+#customGrinderSettingWrap.hidden,
+#signupWorkspaceWrap.hidden,
+#signupApprovalHint.hidden,
+#workspaceCreateArea.hidden,
+#workspaceMemberArea.hidden,
+#workspacePanel.hidden,
+#memberApprovalPanel.hidden {
+  display: none !important;
+}

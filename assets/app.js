@@ -12,10 +12,12 @@
   let currentUser = null;
   let userProfile = null;
   let joinedWorkspaces = [];
+  let userMemberships = [];
   let publicWorkspaces = [];
   let currentWorkspace = null;
   let currentRole = "guest";
   let moderationRows = [];
+  let pendingMemberRows = [];
   const LAST_WORKSPACE_KEY = "coffeeDashboardActiveWorkspace";
   const DEFAULT_PUBLIC_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -39,12 +41,13 @@
         userStock: Array.isArray(saved.userStock) ? saved.userStock : [],
         userBrewLogs: Array.isArray(saved.userBrewLogs) ? saved.userBrewLogs : [],
         userQA: Array.isArray(saved.userQA) ? saved.userQA : [],
+        suggestions: Array.isArray(saved.suggestions) ? saved.suggestions : [],
         cloudStock: [],
         cloudBrewLogs: [],
         cloudQA: []
       };
     } catch (err) {
-      return { userStock: [], userBrewLogs: [], userQA: [], cloudStock: [], cloudBrewLogs: [], cloudQA: [] };
+      return { userStock: [], userBrewLogs: [], userQA: [], suggestions: [], cloudStock: [], cloudBrewLogs: [], cloudQA: [] };
     }
   }
 
@@ -185,21 +188,28 @@
 
   async function loadWorkspaces() {
     joinedWorkspaces = [];
+    userMemberships = [];
     publicWorkspaces = [];
     currentWorkspace = null;
     currentRole = "guest";
     if (!supabaseClient) return;
 
-    const publicRes = await supabaseClient.from("workspaces").select("id,name,slug,visibility,description").eq("visibility", "public").eq("status", "active").order("name");
-    if (!publicRes.error) publicWorkspaces = publicRes.data || [];
+    const workspaceRes = await supabaseClient
+      .from("workspaces")
+      .select("id,name,slug,visibility,description,status")
+      .eq("status", "active")
+      .order("name");
+    if (!workspaceRes.error) publicWorkspaces = workspaceRes.data || [];
 
     if (currentUser) {
       const memberRes = await supabaseClient
         .from("workspace_members")
         .select("workspace_id, role, status, workspaces(id,name,slug,visibility,description)")
-        .eq("user_id", currentUser.id)
-        .eq("status", "active");
-      if (!memberRes.error) joinedWorkspaces = (memberRes.data || []).map(flattenWorkspaceMembership).filter(ws => ws.id);
+        .eq("user_id", currentUser.id);
+      if (!memberRes.error) {
+        userMemberships = (memberRes.data || []).map(flattenWorkspaceMembership).filter(ws => ws.id);
+        joinedWorkspaces = userMemberships.filter(ws => ws.membershipStatus === "active");
+      }
     }
 
     const last = localStorage.getItem(LAST_WORKSPACE_KEY);
@@ -215,28 +225,34 @@
       .map(id => joinedWorkspaces.find(ws => ws.id === id))
       .filter(Boolean);
 
-    [$("activeWorkspaceSelect"), $("adminWorkspaceSelect")].forEach(sel => {
+    [$(`activeWorkspaceSelect`), $(`adminWorkspaceSelect`)].forEach(sel => {
       if (!sel) return;
       sel.innerHTML = allKnown.length
-        ? allKnown.map(ws => `<option value="${html(ws.id)}">${html(ws.name)}${joinedWorkspaces.find(j => j.id === ws.id) ? ` · ${html(joinedWorkspaces.find(j => j.id === ws.id).role)}` : " · hanya lihat"}</option>`).join("")
-        : `<option value="">Belum ada workspace</option>`;
+        ? allKnown.map(ws => `<option value="${html(ws.id)}">${html(ws.name)} · ${html(ws.role)} · ${html(ws.slug || "company")}</option>`).join("")
+        : `<option value="">Belum ada workspace aktif</option>`;
       if (currentWorkspace?.id) sel.value = currentWorkspace.id;
     });
 
-    const joinSel = $("joinWorkspaceSelect");
-    if (joinSel) {
-      const joinable = (publicWorkspaces || []).filter(ws => !joinedWorkspaces.some(j => j.id === ws.id));
-      joinSel.innerHTML = joinable.length ? joinable.map(ws => `<option value="${html(ws.id)}">${html(ws.name)}</option>`).join("") : `<option value="">Tidak ada public workspace baru</option>`;
+    const signupSel = $("signupWorkspace");
+    if (signupSel) {
+      const rows = (publicWorkspaces || []).filter(ws => ws.slug !== "public-brew-community");
+      signupSel.innerHTML = rows.length
+        ? `<option value="">Pilih workspace / company</option>` + rows.map(ws => `<option value="${html(ws.id)}">${html(ws.name)} · ${html(ws.slug || "company")}</option>`).join("")
+        : `<option value="">Belum ada workspace terdaftar</option>`;
     }
 
     const hint = $("workspaceHint");
     if (hint) {
+      const pending = (userMemberships || []).filter(ws => ws.membershipStatus === "pending");
       hint.textContent = currentWorkspace
         ? `${currentWorkspace.name} · peran aktif: ${currentRole}`
-        : "Belum ada workspace aktif.";
+        : pending.length
+          ? `Menunggu approval: ${pending.map(ws => `${ws.name} (${ws.role})`).join(", ")}`
+          : "Belum ada workspace aktif.";
     }
     renderAuthUI();
     renderAccessUI();
+    renderSignupRoleUI();
   }
 
   async function setActiveWorkspace(id) {
@@ -250,6 +266,7 @@
     renderWorkspaceUI();
     await syncFromCloud(true).catch(console.warn);
     if (canModerate()) await loadModerationRows().catch(console.warn);
+    if (canAdmin()) await loadMemberRequests().catch(console.warn);
   }
 
   function setElementHidden(el, hidden) {
@@ -276,10 +293,15 @@
       : "Masuk untuk menyimpan dan membagikan data.";
 
     if (accountBox) {
+      const pending = (userMemberships || []).filter(ws => ws.membershipStatus === "pending");
+      const pendingText = pending.length ? `<br>Request pending: ${html(pending.map(ws => `${ws.name} (${ws.role})`).join(", "))}` : "";
       accountBox.innerHTML = isLoggedIn
-        ? `<strong>${html(userProfile?.display_name || currentUser.email)}</strong><br>Email: ${html(currentUser.email)}<br>Workspace: ${html(currentWorkspace?.name || "-")}<br>Peran: <span class="status-pill approved">${html(currentRole)}</span>`
+        ? `<strong>${html(userProfile?.display_name || currentUser.email)}</strong><br>Email: ${html(currentUser.email)}<br>Workspace: ${html(currentWorkspace?.name || "-")}<br>Peran: <span class="status-pill approved">${html(currentRole)}</span>${pendingText}`
         : `Belum masuk. Tamu tetap bisa membaca data publik yang sudah disetujui, tetapi pengiriman data ke database online memerlukan akun.`;
     }
+
+    if ($("suggestionName") && isLoggedIn && !$('suggestionName').value) $("suggestionName").value = userProfile?.display_name || currentUser.email?.split("@")[0] || "";
+    if ($("suggestionEmail") && isLoggedIn && !$('suggestionEmail').value) $("suggestionEmail").value = currentUser.email || "";
 
     setElementHidden(loggedOutArea, isLoggedIn);
     setElementHidden(loggedInArea, !isLoggedIn);
@@ -297,7 +319,7 @@
       currentSession = session || null;
       currentUser = currentSession?.user || null;
       if (currentUser) await ensureProfile();
-      else { userProfile = null; joinedWorkspaces = []; currentWorkspace = null; currentRole = "guest"; }
+      else { userProfile = null; joinedWorkspaces = []; userMemberships = []; currentWorkspace = null; currentRole = "guest"; }
       await loadWorkspaces();
       await syncFromCloud(true).catch(console.warn);
     });
@@ -321,14 +343,23 @@
     const email = ($("signupEmail")?.value || $("authEmail")?.value || "").trim();
     const password = $("signupPassword")?.value || $("authPassword")?.value || "";
     const displayName = $("authDisplayName")?.value.trim() || email.split("@")[0];
+    const requestedRole = $("signupRole")?.value || "admin";
+    const requestedWorkspaceId = $("signupWorkspace")?.value || "";
     if (!email || !password) return showMessage("Isi email dan kata sandi untuk daftar akun baru.", "error");
+    if (["brewer", "qa"].includes(requestedRole) && !requestedWorkspaceId) {
+      return showMessage("Pilih workspace/company untuk mendaftar sebagai Brewer atau QA.", "error");
+    }
     const redirectTo = `${window.location.origin}${window.location.pathname}`;
-    const { error } = await supabaseClient.auth.signUp({
+    const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectTo,
-        data: { display_name: displayName }
+        data: {
+          display_name: displayName,
+          requested_role: requestedRole,
+          requested_workspace_id: requestedWorkspaceId || null
+        }
       }
     });
     if (error) {
@@ -337,7 +368,26 @@
         : `Pendaftaran gagal: ${error.message}`;
       return showMessage(message, "error");
     }
-    showMessage("Pendaftaran berhasil. Jika konfirmasi email aktif, cek inbox untuk verifikasi.", "success");
+
+    if (data?.session?.user && ["brewer", "qa"].includes(requestedRole) && requestedWorkspaceId) {
+      await requestWorkspaceAccess(requestedWorkspaceId, requestedRole, data.session.user.id).catch(console.warn);
+    }
+
+    const roleMessage = requestedRole === "admin"
+      ? "Pendaftaran berhasil. Setelah masuk, buat workspace/company sebagai Admin Workspace."
+      : "Pendaftaran berhasil. Request akses workspace sudah dikirim dan menunggu approval Admin Workspace.";
+    showMessage(`${roleMessage} Jika konfirmasi email aktif, cek inbox untuk verifikasi.`, "success");
+  }
+
+  async function requestWorkspaceAccess(workspaceId, role, userId = currentUser?.id) {
+    if (!supabaseClient || !userId || !workspaceId || !["brewer", "qa"].includes(role)) return;
+    const { error } = await supabaseClient.from("workspace_members").insert({
+      workspace_id: workspaceId,
+      user_id: userId,
+      role,
+      status: "pending"
+    });
+    if (error && !/duplicate|already exists/i.test(error.message || "")) throw error;
   }
 
   async function handleLogout() {
@@ -361,6 +411,7 @@
       currentUser = null;
       userProfile = null;
       joinedWorkspaces = [];
+      userMemberships = [];
       currentWorkspace = null;
       currentRole = "guest";
       state.cloudStock = [];
@@ -397,14 +448,14 @@
       const name = $("workspaceName").value.trim();
       const slug = normalizeSlug($("workspaceSlug").value || name);
       if (!name || !slug) {
-        showMessage("Nama workspace dan slug wajib diisi.", "error");
+        showMessage("Nama workspace dan company wajib diisi.", "error");
         return;
       }
 
       const payload = {
         name,
         slug,
-        visibility: $("workspaceVisibility").value,
+        visibility: "private",
         description: $("workspaceDescription").value,
         created_by: currentUser.id
       };
@@ -413,7 +464,7 @@
       const { data, error } = await supabaseClient.from("workspaces").insert(payload).select().single();
       if (error) {
         const duplicate = /duplicate key|already exists|unique/i.test(error.message || "");
-        showMessage(duplicate ? "Slug workspace sudah dipakai. Coba slug lain." : `Gagal membuat workspace: ${error.message}`, "error");
+        showMessage(duplicate ? "Company sudah dipakai. Coba company lain." : `Gagal membuat workspace: ${error.message}`, "error");
         return;
       }
 
@@ -832,7 +883,7 @@
     const processes = (DATA.processes || []).map(p => p.Process);
     const roasts = (DATA.roasts || []).map(r => r.RoastProfile);
     const drippers = (DATA.drippers || []).map(d => d.DripperName);
-    const grinders = (DATA.grinders || []).map(g => g.Grinder);
+    const grinders = [...(DATA.grinders || []).map(g => g.Grinder), "Custom"];
     const waters = (DATA.waters || []).map(w => w.Water);
     const flavors = uniq([
       "All", "Fruity", "Floral", "Citrus", "Stone Fruit", "Tropical", "Berry", "Tea", "Chocolate", "Caramel", "Nutty", "Spicy", "Fermented", "Herbal", "Sweet"
@@ -919,16 +970,57 @@
     return { variety, process, roast, dripper, water, dose, mode, switchMode, acidity, sweetness, body, risk, flow, tds, temp, ratio, totalWater, hotWater, ice, grindTarget, grinderSetting, brewTime, pourCount, bloom, steps, pourSum };
   }
 
+  function isCustomGrinderSelected() {
+    return norm($("brewGrinder")?.value) === "custom";
+  }
+
+  function getSelectedGrinderName() {
+    if (isCustomGrinderSelected()) return $("customGrinderName")?.value.trim() || "Custom Grinder";
+    return $("brewGrinder")?.value || "";
+  }
+
+  function formatOneZpressoSetting(totalClicks, clicksPerRotation = 30, clicksPerNumber = 3) {
+    const clicks = Math.max(0, Math.round(totalClicks));
+    const rotations = Math.floor(clicks / clicksPerRotation);
+    const remain = clicks % clicksPerRotation;
+    const dialNumber = Math.floor(remain / clicksPerNumber);
+    const subClicks = remain % clicksPerNumber;
+    return `${rotations}.${dialNumber}.${subClicks}`;
+  }
+
+  function formatCentirotationSetting(totalCentirotations, centirotationsPerRotation = 100) {
+    const value = Number(totalCentirotations) / centirotationsPerRotation;
+    return `${value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "")} rotations`;
+  }
+
+  function formatGrinderDisplay(grinder, value) {
+    const precision = Number.isFinite(Number(grinder.Precision)) ? Number(grinder.Precision) : 0;
+    const rounded = round(value, precision);
+    if (grinder.DisplayFormat === "onezpresso30") {
+      return `${formatOneZpressoSetting(rounded, Number(grinder.ClicksPerRotation || 30), Number(grinder.ClicksPerNumber || 3))} rotations`;
+    }
+    if (grinder.DisplayFormat === "rotation100") {
+      return formatCentirotationSetting(rounded, Number(grinder.ClicksPerRotation || 100));
+    }
+    const template = grinder.DisplayFormat || "{value}";
+    return template.replace("{value}", fmt(rounded, precision));
+  }
+
   function getGrinderSetting(grinderName, micron, mode, isImmersion) {
-    if (/EVCG/i.test(grinderName)) {
-      const click = round(clamp(1 + ((micron - 320) / ((900 - 320) / 43)), 1, 44));
-      return `${click}/44 clicks`;
+    if (norm(grinderName) === "custom") {
+      return $("customGrinderSetting")?.value.trim() || "klik/dial";
     }
-    if (/Timemore|C3/i.test(grinderName)) {
-      const click = round(clamp(11 + ((micron - 500) / 400) * 7, 11, 24));
-      return `${click} clicks`;
-    }
-    return `${micron} µm target`;
+    const grinder = getBy(DATA.grinders, "Grinder", grinderName);
+    if (!grinder.Grinder) return `${micron} µm target`;
+    const methodKey = isImmersion ? "Immersion" : mode === "Japanese Iced" ? "Japanese" : "V60";
+    const min = Number(grinder[`${methodKey}_Min`] ?? grinder.V60_Min);
+    const max = Number(grinder[`${methodKey}_Max`] ?? grinder.V60_Max);
+    const micronMin = Number(grinder.MicronMin || 400);
+    const micronMax = Number(grinder.MicronMax || 930);
+    if (!Number.isFinite(min) || !Number.isFinite(max) || min === max) return `${micron} µm target`;
+    const ratio = clamp((Number(micron) - micronMin) / Math.max(1, micronMax - micronMin), 0, 1);
+    const setting = min + ratio * (max - min);
+    return formatGrinderDisplay(grinder, setting);
   }
 
   function resolvePourCount(pattern, isImmersion, risk, body) {
@@ -1032,6 +1124,7 @@
     renderSteps(brew);
     renderRecipeOptions(brew);
     toggleSwitchVisibility();
+    toggleCustomGrinderFields();
     return brew;
   }
 
@@ -1040,6 +1133,29 @@
     tbody.innerHTML = brew.steps.map(st => `<tr><td><strong>${html(st.stage)}</strong></td><td>${html(st.water ? `${st.water}` : "-")}</td><td>${html(st.time)}</td><td><span class="badge">${html(st.valve)}</span></td><td>${html(st.instruction)}</td></tr>`).join("");
     const hotSum = brew.steps.filter(st => st.stage !== "Ice").reduce((sum, st) => sum + (Number(st.water) || 0), 0);
     $("pourCheck").textContent = `Pour check: hot water steps = ${hotSum} ml, target hot water = ${brew.hotWater} ml. Total brew water = ${brew.totalWater} ml${brew.ice ? ` (hot ${brew.hotWater} + ice ${brew.ice})` : ""}.`;
+  }
+
+  function formatRecipeStepPlan(steps = []) {
+    return (steps || []).map(st => `${st.stage}: ${st.water || 0}ml @ ${st.time} · ${st.valve} · ${st.instruction || ""}`).join(" | ");
+  }
+
+  function formatValvePlan(steps = []) {
+    return (steps || []).map(st => `${st.stage}: ${st.valve}`).join(" | ");
+  }
+
+  function formatPublicRecipeSteps(log) {
+    if (log.PourPlan && !/N\/A/i.test(log.PourPlan)) return log.PourPlan;
+    const pieces = [];
+    if (Number(log.Bloom_ml)) pieces.push(`Bloom: ${log.Bloom_ml}ml`);
+    const pourCount = Number(log.PourCount || 0);
+    const hot = Number(log.HotWater_ml || log.TotalWater_ml || 0);
+    const bloom = Number(log.Bloom_ml || 0);
+    if (pourCount > 0 && hot > 0) {
+      const pours = splitWater(Math.max(0, hot - bloom), pourCount);
+      pours.forEach((water, idx) => pieces.push(`Pour ${idx + 1}: ${water}ml`));
+    }
+    if (Number(log.Ice_g)) pieces.push(`Ice: ${log.Ice_g}g`);
+    return pieces.length ? pieces.join(" | ") : (log.ValvePlan || "Detail tahapan belum tersedia");
   }
 
   function recipeKey(variety, process, roast) {
@@ -1061,6 +1177,12 @@
   function toggleSwitchVisibility() {
     const active = isSwitch($("brewDripper").value);
     $("switchModeWrap").style.display = active ? "grid" : "none";
+  }
+
+  function toggleCustomGrinderFields() {
+    const custom = isCustomGrinderSelected();
+    setElementHidden($("customGrinderNameWrap"), !custom);
+    setElementHidden($("customGrinderSettingWrap"), !custom);
   }
 
   function selectedFlavors() {
@@ -1206,7 +1328,7 @@
       RoastProfile: $("brewRoast").value,
       Dripper: $("brewDripper").value,
       Method: $("brewMode").value,
-      Grinder: $("brewGrinder").value,
+      Grinder: getSelectedGrinderName(),
       GrindSetting: brew.grinderSetting,
       Temp_C: brew.temp,
       Ratio: brew.ratio,
@@ -1214,12 +1336,12 @@
       TotalWater_ml: brew.totalWater,
       HotWater_ml: brew.hotWater,
       Ice_g: brew.ice,
-      BrewTime_sec: brew.brewTimeSec,
+      BrewTime_sec: brew.brewTime,
       Bloom_ml: brew.steps.find(s => s.stage === "Bloom")?.water || 0,
       PourCount: brew.steps.filter(s => /^Pour/.test(s.stage)).length,
-      PourPlan: brew.steps.map(st => `${st.stage}: ${st.water}ml @ ${st.time}`).join(" | "),
+      PourPlan: formatRecipeStepPlan(brew.steps),
       Water: $("brewWater").value,
-      TDS_ppm: getBy(DATA.waters, "Water", $("brewWater").value).TDS || "",
+      TDS_ppm: getBy(DATA.waters, "Water", $("brewWater").value).TDS_ppm || "",
       Agitation: "Controlled",
       Filter: "Paper",
       ParentBrewID: extra.ParentBrewID || "",
@@ -1235,7 +1357,7 @@
       CurrentMatchScore: "",
       Water_Formula_Note: "TotalWater_ml = Rasio × Dosis_g. Japanese: air panas = 60%, es = 40%.",
       SwitchValveMode: brew.switchMode,
-      ValvePlan: brew.steps.map(st => `${st.stage}: ${st.valve}`).join(" | ")
+      ValvePlan: formatValvePlan(brew.steps)
     };
   }
 
@@ -1535,27 +1657,50 @@
         <td><div class="moderation-actions">
           <button class="secondary" data-mod-action="approve" data-id="${html(row.id)}">Setujui</button>
           <button class="danger" data-mod-action="reject" data-id="${html(row.id)}">Tolak</button>
-          <button class="ghost" data-mod-action="edit" data-id="${html(row.id)}">Edit JSON</button>
           ${canAdmin() ? `<button class="danger" data-mod-action="delete" data-id="${html(row.id)}">Hapus</button>` : ""}
         </div></td>
       </tr>`;
     }).join("");
   }
 
-  async function moderateRow(id, action) {
+  async function deleteModerationRow(id) {
     const table = $("moderationDataset")?.value || "brew_logs";
-    if (!supabaseClient || !canModerate()) return showMessage("Butuh role QA/Admin.");
-    if (action === "delete") {
-      if (!canAdmin()) return showMessage("Hapus data hanya untuk admin workspace.");
-      if (!confirm("Hapus data ini permanen dari Supabase?")) return;
-      const { error } = await supabaseClient.from(table).delete().eq("id", id);
-      if (error) return showMessage(`Gagal menghapus data: ${error.message}`);
+    if (!supabaseClient || !canAdmin()) return showMessage("Hapus data hanya untuk admin workspace.", "error");
+    const row = moderationRows.find(r => r.id === id);
+    if (!row) return showMessage("Row tidak ditemukan di tabel moderasi saat ini.", "error");
+    if (!confirm("Hapus data ini permanen dari Supabase?")) return;
+
+    try {
+      if (table === "brew_logs" && row.brew_code) {
+        await supabaseClient.from("qa_scores").delete().eq("workspace_id", currentWorkspace.id).eq("brew_code", row.brew_code);
+      }
+      const { data, error } = await supabaseClient
+        .from(table)
+        .delete()
+        .eq("id", id)
+        .eq("workspace_id", currentWorkspace.id)
+        .select("id")
+        .single();
+      if (error || !data) throw error || new Error("Data tidak terhapus. Kemungkinan policy RLS belum mengizinkan delete untuk admin workspace.");
+      state.cloudBrewLogs = state.cloudBrewLogs.filter(item => item.CloudID !== id);
+      state.cloudQA = state.cloudQA.filter(item => item.CloudID !== id);
+      state.cloudStock = state.cloudStock.filter(item => item.CloudID !== id);
       await syncFromCloud(true).catch(console.warn);
       await loadModerationRows();
-      return showMessage("Data dihapus.");
+      showMessage("Data berhasil dihapus permanen dari Supabase.", "success");
+    } catch (err) {
+      console.error(err);
+      showMessage(`Gagal menghapus data: ${err.message || err}`, "error");
     }
-    if (action === "edit") return editModerationJson(id);
+  }
 
+  async function moderateRow(id, action) {
+    const table = $("moderationDataset")?.value || "brew_logs";
+    if (!supabaseClient || !canModerate()) return showMessage("Butuh role QA/Admin.", "error");
+    if (action === "delete") return deleteModerationRow(id);
+    if (action === "edit") return showMessage("Edit JSON dinonaktifkan dari UI agar data produksi lebih aman.", "info");
+
+    const row = moderationRows.find(r => r.id === id);
     const notes = action === "reject" ? prompt("Alasan reject / catatan perbaikan:", "Data perlu dicek ulang.") : "Disetujui oleh moderator";
     const payload = {
       moderation_status: action === "approve" ? "approved" : "rejected",
@@ -1563,12 +1708,38 @@
       moderated_by: currentUser.id,
       moderated_at: new Date().toISOString()
     };
-    if (table !== "qa_scores") payload.status = action === "approve" ? "published" : "rejected";
-    const { error } = await supabaseClient.from(table).update(payload).eq("id", id);
-    if (error) return showMessage(`Moderation gagal: ${error.message}`);
-    await syncFromCloud(true).catch(console.warn);
-    await loadModerationRows();
-    showMessage(action === "approve" ? "Data disetujui dan akan tampil publik." : "Data ditolak.");
+    if (table === "brew_logs") {
+      payload.status = action === "approve" ? "published" : "rejected";
+      if (action === "approve" && Number(row?.qa_final || 0) >= APPROVAL_THRESHOLD) {
+        payload.manual_approval = "Yes";
+        payload.approved_for_recipe = "Yes";
+        payload.qa_status = "QA PASS";
+      }
+      if (action === "reject") {
+        payload.manual_approval = "No";
+        payload.approved_for_recipe = "No";
+      }
+    }
+    if (table === "qa_scores") {
+      payload.status = action === "approve" ? (Number(row?.final_qa || 0) >= APPROVAL_THRESHOLD ? "QA PASS" : "APPROVED") : "REJECTED";
+    }
+
+    try {
+      const { data, error } = await supabaseClient
+        .from(table)
+        .update(payload)
+        .eq("id", id)
+        .eq("workspace_id", currentWorkspace.id)
+        .select("id")
+        .single();
+      if (error || !data) throw error || new Error("Tidak ada row yang berubah. Cek RLS policy dan role workspace.");
+      await syncFromCloud(true).catch(console.warn);
+      await loadModerationRows();
+      showMessage(action === "approve" ? "Data disetujui. Jika QA memenuhi threshold, data akan tampil publik." : "Data ditolak.", action === "approve" ? "success" : "info");
+    } catch (err) {
+      console.error(err);
+      showMessage(`Moderation gagal: ${err.message || err}`, "error");
+    }
   }
 
   async function editModerationJson(id) {
@@ -1588,6 +1759,120 @@
     await syncFromCloud(true).catch(console.warn);
     await loadModerationRows();
     showMessage("Data berhasil diedit.");
+  }
+
+  async function loadMemberRequests() {
+    if (!supabaseClient || !currentUser || !currentWorkspace || !canAdmin()) {
+      pendingMemberRows = [];
+      renderMemberRequests();
+      return;
+    }
+    const { data, error } = await supabaseClient
+      .from("workspace_members")
+      .select("workspace_id,user_id,role,status,created_at")
+      .eq("workspace_id", currentWorkspace.id)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+    if (error) {
+      pendingMemberRows = [];
+      renderMemberRequests(`Gagal membaca request akses: ${error.message}`);
+      return;
+    }
+    const userIds = (data || []).map(row => row.user_id).filter(Boolean);
+    let profiles = [];
+    if (userIds.length) {
+      const profileRes = await supabaseClient.from("profiles").select("id,email,display_name").in("id", userIds);
+      if (!profileRes.error) profiles = profileRes.data || [];
+    }
+    pendingMemberRows = (data || []).map(row => ({ ...row, profile: profiles.find(p => p.id === row.user_id) || {} }));
+    renderMemberRequests();
+  }
+
+  function renderMemberRequests(message = "") {
+    const table = $("memberRequestTable");
+    if (!table) return;
+    const tbody = table.querySelector("tbody");
+    if (!canAdmin()) {
+      tbody.innerHTML = `<tr><td colspan="5">Panel ini hanya untuk Admin Workspace.</td></tr>`;
+      return;
+    }
+    if (message) {
+      tbody.innerHTML = `<tr><td colspan="5">${html(message)}</td></tr>`;
+      return;
+    }
+    if (!pendingMemberRows.length) {
+      tbody.innerHTML = `<tr><td colspan="5">Tidak ada request akses pending.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = pendingMemberRows.map(row => {
+      const display = row.profile?.display_name || row.profile?.email || row.user_id;
+      return `<tr>
+        <td><strong>${html(display)}</strong><br><small>${html(row.profile?.email || row.user_id)}</small></td>
+        <td>${html(row.role)}</td>
+        <td><span class="status-pill pending">Menunggu approval</span></td>
+        <td>${html((row.created_at || "").slice(0, 10))}</td>
+        <td><div class="moderation-actions"><button class="secondary" data-member-action="approve" data-user-id="${html(row.user_id)}">Setujui</button><button class="danger" data-member-action="reject" data-user-id="${html(row.user_id)}">Tolak</button></div></td>
+      </tr>`;
+    }).join("");
+  }
+
+  async function updateMemberRequest(userId, action) {
+    if (!supabaseClient || !canAdmin() || !currentWorkspace) return showMessage("Butuh role Admin Workspace.", "error");
+    const status = action === "approve" ? "active" : "rejected";
+    const { data, error } = await supabaseClient
+      .from("workspace_members")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("workspace_id", currentWorkspace.id)
+      .eq("user_id", userId)
+      .eq("status", "pending")
+      .select("workspace_id,user_id,status")
+      .single();
+    if (error || !data) return showMessage(`Gagal memproses request: ${(error && error.message) || "row tidak ditemukan"}`, "error");
+    await loadMemberRequests();
+    showMessage(action === "approve" ? "Request akses disetujui. User sekarang bisa mengakses workspace." : "Request akses ditolak.", action === "approve" ? "success" : "info");
+  }
+
+  async function submitSuggestion(e) {
+    e.preventDefault();
+    const suggestion = {
+      id: `SG-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      name: $("suggestionName")?.value.trim() || currentBrewerName(),
+      email: $("suggestionEmail")?.value.trim() || currentUser?.email || "",
+      category: $("suggestionCategory")?.value || "Lainnya",
+      priority: $("suggestionPriority")?.value || "Normal",
+      message: $("suggestionMessage")?.value.trim() || "",
+      workspace_id: activeWorkspaceId(),
+      created_by: currentUser?.id || null
+    };
+    if (!suggestion.message) return showMessage("Isi saran/masukan terlebih dahulu.", "error");
+    try {
+      if (supabaseClient) {
+        const { error } = await supabaseClient.from("suggestions").insert({
+          name: suggestion.name,
+          email: suggestion.email || null,
+          category: suggestion.category,
+          priority: suggestion.priority,
+          message: suggestion.message,
+          workspace_id: suggestion.workspace_id,
+          created_by: suggestion.created_by,
+          status: "open"
+        });
+        if (error) throw error;
+        e.target.reset();
+        if (currentUser) {
+          $("suggestionName").value = userProfile?.display_name || currentUser.email?.split("@")[0] || "";
+          $("suggestionEmail").value = currentUser.email || "";
+        }
+        return showMessage("Terima kasih. Saran berhasil dikirim.", "success");
+      }
+      throw new Error("Supabase belum aktif");
+    } catch (err) {
+      state.suggestions.unshift(suggestion);
+      persist();
+      e.target.reset();
+      showMessage("Terima kasih. Saran tersimpan lokal karena tabel Supabase belum tersedia/aktif.", "info");
+    }
   }
 
   function publicBrewRows() {
@@ -1621,6 +1906,7 @@
     tbody.innerHTML = rows.map(log => {
       const profile = [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · ");
       const recipe = [`${log.GrindSetting || "-"}`, `${log.Temp_C || "-"}°C`, `1:${log.Ratio || "-"}`, `${log.TotalWater_ml || "-"} ml`].join(" · ");
+      const stepSummary = formatPublicRecipeSteps(log);
       const notes = [log.PrimaryVariableChanged, log.ResultNotes].filter(Boolean).join(" — ");
       return `<tr>
         <td>${html(log.Date || "-")}</td>
@@ -1628,7 +1914,7 @@
         <td>${html(log.BrewerName || "Brewer")}</td>
         <td>${html(profile)}</td>
         <td>${html(log.Method || "-")}<br><small>${html(log.Dripper || "")}</small></td>
-        <td>${html(recipe)}<br><small>${html(log.ValvePlan || log.PourPlan || "")}</small></td>
+        <td>${html(recipe)}<br><small>${html(stepSummary)}</small></td>
         <td><span class="score-pill">${html(log.QA_Final || "-")}</span></td>
         <td>${html(notes || "-")}</td>
       </tr>`;
@@ -1645,7 +1931,7 @@
       Acidity: "Acidity", Sweetness: "Sweetness", Body: "Body", ProcessName: "Nama Proses", Category: "Kategori",
       FermentRisk: "Risiko Fermentasi", BrewingCue: "Catatan Seduh", DripperName: "Nama Dripper", Material: "Material",
       FlowSpeed: "Kecepatan Flow", HeatRetention: "Retensi Panas", RoastName: "Profil Sangrai", WaterName: "Nama Air",
-      TDS: "TDS", Hardness: "Hardness", Alkalinity: "Alkalinitas"
+      TDS: "TDS", Hardness: "Hardness", Alkalinity: "Alkalinitas", Grinder: "Grinder", Unit: "Unit", Type: "Jenis", V60_Min: "V60 Min", V60_Max: "V60 Max", Japanese_Min: "Japanese Min", Japanese_Max: "Japanese Max", Immersion_Min: "Immersion Min", Immersion_Max: "Immersion Max"
     };
     const table = $("libraryTable");
     table.querySelector("thead").innerHTML = `<tr>${cols.map(c => `<th>${html(labelMap[c] || c)}</th>`).join("")}</tr>`;
@@ -1686,6 +1972,27 @@
   }
 
 
+  function renderSignupRoleUI() {
+    const role = $("signupRole")?.value || "admin";
+    const needWorkspace = ["brewer", "qa"].includes(role);
+    setElementHidden($("signupWorkspaceWrap"), !needWorkspace);
+    setElementHidden($("signupApprovalHint"), !needWorkspace);
+  }
+
+  function renderWorkspacePanelAccess() {
+    const workspacePanel = $("workspacePanel");
+    const createArea = $("workspaceCreateArea");
+    const memberArea = $("workspaceMemberArea");
+    if (!workspacePanel) return;
+    const loggedIn = Boolean(currentUser);
+    const hasPendingMembership = (userMemberships || []).some(ws => ws.membershipStatus === "pending");
+    const canCreateWorkspace = loggedIn && (currentRole === "admin" || (!currentWorkspace && !hasPendingMembership));
+    const showForUser = loggedIn && (currentRole === "admin" || canCreateWorkspace || hasPendingMembership || !currentWorkspace);
+    setElementHidden(workspacePanel, !showForUser);
+    setElementHidden(createArea, !canCreateWorkspace);
+    setElementHidden(memberArea, !(loggedIn && currentRole !== "admin" && (currentWorkspace || hasPendingMembership)));
+  }
+
   function renderAccessUI() {
     const privateReady = canUseWorkspaceModules();
     setElementHidden($("saveCurrentBrew"), !privateReady);
@@ -1694,9 +2001,15 @@
     setElementHidden($("brewLogHistoryPanel"), !privateReady);
     setElementHidden($("qaParentWrap"), !currentUser);
     setElementHidden($("qaVariableWrap"), !currentUser);
+    renderWorkspacePanelAccess();
+    setElementHidden($("memberApprovalPanel"), !canAdmin());
+    setElementHidden($("adminPanel"), !canModerate());
 
     if (!privateReady && document.querySelector(".tab-btn.active")?.dataset.tab === "beans") {
       showTab("brew");
+    }
+    if (currentUser && currentRole !== "admin" && document.querySelector(".tab-btn.active")?.dataset.tab === "admin" && $("workspacePanel")?.hidden) {
+      // tetap biarkan user melihat panel akun dan peran; hanya area workspace/admin yang disembunyikan.
     }
   }
 
@@ -1747,7 +2060,11 @@
         applyTopBeanToBrew();
       }
     });
-    ["brewVariety", "brewProcess", "brewRoast", "brewDripper", "brewMode", "switchValveMode", "brewGrinder", "brewWater", "brewDose", "pourPattern"].forEach(id => $(id).addEventListener("change", renderBrew));
+    ["brewVariety", "brewProcess", "brewRoast", "brewDripper", "brewMode", "switchValveMode", "brewGrinder", "brewWater", "brewDose", "pourPattern"].forEach(id => $(id)?.addEventListener("change", renderBrew));
+    ["customGrinderName", "customGrinderSetting"].forEach(id => $(id)?.addEventListener("input", renderBrew));
+    $("signupRole")?.addEventListener("change", renderSignupRoleUI);
+    $("suggestionForm")?.addEventListener("submit", submitSuggestion);
+    document.querySelectorAll("[data-jump-tab]").forEach(btn => btn.addEventListener("click", () => showTab(btn.dataset.jumpTab)));
     ["targetSweet", "targetAcid", "targetBody", "filterFlavor1", "filterFlavor2", "filterFlavor3", "filterVariety1", "filterVariety2", "filterBrew", "minStock"].forEach(id => $(id).addEventListener("change", renderBeansTable));
     ["targetSweet", "targetAcid", "targetBody", "minStock"].forEach(id => $(id).addEventListener("input", renderBeansTable));
     $("saveCurrentBrew")?.addEventListener("click", saveCurrentBrewDraft);
@@ -1792,6 +2109,11 @@
       if (!btn) return;
       moderateRow(btn.dataset.id, btn.dataset.modAction);
     });
+    $("memberRequestTable")?.addEventListener("click", e => {
+      const btn = e.target.closest("button[data-member-action]");
+      if (!btn) return;
+      updateMemberRequest(btn.dataset.userId, btn.dataset.memberAction);
+    });
     $("syncCloud")?.addEventListener("click", async () => {
       try {
         await syncFromCloud(true);
@@ -1828,6 +2150,8 @@
     renderWorkspaceUI();
     if (canModerate()) loadModerationRows().catch(console.warn);
     else renderModerationTable?.();
+    if (canAdmin()) loadMemberRequests().catch(console.warn);
+    else renderMemberRequests?.();
   }
 
 

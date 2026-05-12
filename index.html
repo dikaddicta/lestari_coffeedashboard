@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rekomendasi Seduh Kopi</title>
+  <title>Coffee Dashboard by Lestari</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -11,9 +11,10 @@
     <div id="appToast" class="app-toast hidden" role="status" aria-live="polite"></div>
     <header class="hero">
       <div class="hero-main">
-        <p class="eyebrow">Dashboard Seduh untuk Kompetisi dan Bisnis Kopi</p>
-        <h1>☕ Rekomendasi Seduh Kopi</h1>
-        <p class="hero-copy">Aplikasi untuk menyusun rekomendasi seduh, memilih biji kopi dari stok, mencatat brew log, menilai hasil seduhan, dan mengelola resep yang sudah lolos QA.</p>
+        <p class="eyebrow">Coffee Dashboard by Lestari</p>
+        <h1>☕ Coffee Dashboard</h1>
+        <p class="hero-copy">Dashboard yang dibuat untuk penggunaan pribadi sebagai homebrewer. Jika ingin menggunakan dipersilakan secara gratis. Jika ada kesalahan, ketidaksesuaian dan ataupun kekurangan data (dripper, varietas, pasca panen, roastprofile maupun setting grinder) boleh dibantu untuk mengisi kotak saran <button class="hero-inline-link" type="button" data-jump-tab="suggestion">berikut</button>.</p>
+        <p class="hero-copy">Semoga Dashboard ini bisa bermanfaat bagi teman-teman yang sedang belajar tentang Kopi maupun bagi teman-teman yang ingin sharing mengenai Kopi. Dashboard ini tentu jauh dari Sempurna, maka dari itu harapan saya teman-teman bisa bantu saya melalui kotak saran untuk menyempurnakan-nya, terimakasih dan selamat menggunakan!</p>
       </div>
       <div class="hero-side">
         <div class="hero-card">
@@ -35,6 +36,7 @@
       <button class="tab-btn" data-tab="stock">Stok Kopi</button>
       <button class="tab-btn" data-tab="qa">Brew Log & QA</button>
       <button class="tab-btn" data-tab="public-brews">Hasil Seduhan Publik</button>
+      <button class="tab-btn" data-tab="suggestion">Kotak Saran</button>
       <button class="tab-btn" data-tab="admin">Akun & Admin</button>
       <button class="tab-btn" data-tab="library">Pustaka Data</button>
     </nav>
@@ -76,6 +78,12 @@
               </label>
               <label>Grinder
                 <select id="brewGrinder"></select>
+              </label>
+              <label id="customGrinderNameWrap" class="hidden">Nama Grinder
+                <input id="customGrinderName" placeholder="Contoh: Grinder manual 38mm" />
+              </label>
+              <label id="customGrinderSettingWrap" class="hidden">Setting Grinder
+                <input id="customGrinderSetting" placeholder="klik/dial" />
               </label>
               <label>Air
                 <select id="brewWater"></select>
@@ -308,6 +316,46 @@
         </section>
       </section>
 
+      <section id="tab-suggestion" class="tab-panel">
+        <div class="grid two-col top-align">
+          <section class="panel">
+            <div class="section-title"><span>Saran</span><h2>Kotak Saran</h2></div>
+            <p class="hint">Terimakasih atas saran dan masukan kalian semua. Semoga hal tersebut bisa membantu orang lain untuk terus bisa belajar tentang Kopi.</p>
+            <form id="suggestionForm" class="form-grid compact">
+              <label>Nama<input id="suggestionName" placeholder="Nama / brand" /></label>
+              <label>Email<input id="suggestionEmail" type="email" placeholder="opsional@email.com" /></label>
+              <label>Kategori
+                <select id="suggestionCategory">
+                  <option>Dripper</option>
+                  <option>Varietas</option>
+                  <option>Pasca Panen</option>
+                  <option>Roast Profile</option>
+                  <option>Setting Grinder</option>
+                  <option>Air Mineral</option>
+                  <option>Bug / Error Web</option>
+                  <option>Ide Fitur</option>
+                  <option>Lainnya</option>
+                </select>
+              </label>
+              <label>Prioritas
+                <select id="suggestionPriority"><option>Normal</option><option>Penting</option><option>Kompetisi / urgent</option></select>
+              </label>
+              <label class="span-2">Saran / Masukan<textarea id="suggestionMessage" rows="6" required placeholder="Tulis data yang perlu ditambah/dikoreksi, sumber referensi jika ada, atau bug yang ditemukan."></textarea></label>
+              <button class="primary span-2" type="submit">Kirim Saran</button>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="section-title"><span>Panduan</span><h2>Supaya Saran Mudah Ditindaklanjuti</h2></div>
+            <ol class="workflow">
+              <li>Sebutkan bagian data yang ingin diperbaiki, misalnya dripper, varietas, pasca panen, roast profile, setting grinder, atau air mineral.</li>
+              <li>Tambahkan sumber/referensi jika ada, terutama untuk angka TDS air mineral dan rentang klik grinder.</li>
+              <li>Untuk bug, tulis langkah yang kamu lakukan sampai error muncul.</li>
+            </ol>
+            <div class="account-box" id="suggestionSaveInfo">Saran akan disimpan ke Supabase jika tabel tersedia. Jika belum, saran disimpan sementara di browser lokal.</div>
+          </section>
+        </div>
+      </section>
+
       <section id="tab-admin" class="tab-panel">
         <div class="grid two-col top-align">
           <section class="panel">
@@ -328,7 +376,18 @@
                 <form id="signupForm" class="form-grid compact signup-form">
                   <label>Email<input id="signupEmail" type="email" placeholder="nama@email.com" autocomplete="email" /></label>
                   <label>Kata Sandi<input id="signupPassword" type="password" placeholder="Minimal 6 karakter" autocomplete="new-password" /></label>
-                  <label class="span-2">Nama Tampilan<input id="authDisplayName" placeholder="Nama / brand" /></label>
+                  <label>Nama Tampilan<input id="authDisplayName" placeholder="Nama / brand" /></label>
+                  <label>Daftar sebagai
+                    <select id="signupRole">
+                      <option value="admin">Admin Workspace</option>
+                      <option value="brewer">Brewer</option>
+                      <option value="qa">QA</option>
+                    </select>
+                  </label>
+                  <label id="signupWorkspaceWrap" class="span-2 hidden">Pilih Workspace / Company
+                    <select id="signupWorkspace"></select>
+                  </label>
+                  <p id="signupApprovalHint" class="hint small-note span-2 hidden">Akses Brewer/QA akan berstatus menunggu approval dari Admin Workspace yang dipilih.</p>
                   <div class="span-2 inline-actions">
                     <button class="secondary" id="signupBtn" type="button">Daftar Akun Baru</button>
                   </div>
@@ -343,22 +402,33 @@
             <div class="account-box" id="accountBox">Belum masuk.</div>
           </section>
 
-          <section class="panel">
+          <section class="panel" id="workspacePanel">
             <div class="section-title"><span>Workspace</span><h2>Coffee Shop / Roastery</h2></div>
-            <p class="hint">Setiap akun sebaiknya memakai satu workspace utama. Stok kopi bersifat privat di akun/workspace tersebut, sedangkan brew log yang disetujui bisa tampil di halaman Hasil Seduhan Publik.</p>
+            <p class="hint" id="workspacePanelHint">Workspace hanya bisa dikelola oleh Admin Workspace. Brewer dan QA yang mendaftar ke company yang sama akan masuk sebagai request dan baru bisa mengakses fitur setelah disetujui admin.</p>
             <div class="form-grid compact">
               <label>Workspace Aktif<select id="adminWorkspaceSelect"></select></label>
             </div>
-            <hr class="soft-line" />
-            <form id="workspaceForm" class="form-grid compact">
-              <label>Nama Workspace<input id="workspaceName" placeholder="Contoh: Roastery ABC" /></label>
-              <label>Slug<input id="workspaceSlug" placeholder="roastery-abc" /></label>
-              <label>Visibilitas<select id="workspaceVisibility"><option>public</option><option>private</option></select></label>
-              <label class="span-2">Deskripsi<textarea id="workspaceDescription" rows="2" placeholder="Profil singkat coffee shop / roastery"></textarea></label>
-              <button class="primary span-2" id="createWorkspaceBtn" type="submit">Buat Workspace</button>
-            </form>
+            <div id="workspaceCreateArea">
+              <hr class="soft-line" />
+              <form id="workspaceForm" class="form-grid compact">
+                <label>Nama Workspace<input id="workspaceName" placeholder="Contoh: Roastery ABC" /></label>
+                <label>Company<input id="workspaceSlug" placeholder="roastery-abc" /></label>
+                <label class="span-2">Deskripsi<textarea id="workspaceDescription" rows="2" placeholder="Profil singkat coffee shop / roastery"></textarea></label>
+                <button class="primary span-2" id="createWorkspaceBtn" type="submit">Buat Workspace</button>
+              </form>
+            </div>
+            <div id="workspaceMemberArea" class="hidden">
+              <hr class="soft-line" />
+              <div class="account-box">Akses workspace untuk Brewer/QA dikelola oleh Admin Workspace. Jika statusmu masih pending, hubungi admin company yang kamu pilih saat pendaftaran.</div>
+            </div>
           </section>
         </div>
+
+        <section class="panel wide" id="memberApprovalPanel">
+          <div class="section-title"><span>Approval</span><h2>Request Akses Workspace</h2></div>
+          <p class="hint">Admin Workspace menyetujui atau menolak pendaftar Brewer/QA di company yang sama. Setelah disetujui, user bisa mengakses rekomendasi biji kopi, stok kopi, Brew Log & QA, dan fitur workspace terkait.</p>
+          <div class="table-wrap tall"><table id="memberRequestTable"><thead><tr><th>Nama / Email</th><th>Role Diminta</th><th>Status</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+        </section>
 
         <section class="panel wide">
           <div class="section-title"><span>Peran</span><h2>Peran & Aturan Moderasi</h2></div>
@@ -377,7 +447,7 @@
             <button id="refreshModeration" class="secondary" type="button">Muat Ulang</button>
           </div>
           <div class="table-wrap tall"><table id="moderationTable"><thead></thead><tbody></tbody></table></div>
-          <p class="hint small-note">Edit JSON hanya untuk admin atau QA yang memahami struktur data. Hapus data hanya tersedia untuk admin workspace.</p>
+          <p class="hint small-note">Setujui/Tolak tersedia untuk QA dan Admin. Hapus data hanya tersedia untuk Admin Workspace dan akan benar-benar menghapus row dari Supabase jika policy database sudah sesuai.</p>
         </section>
       </section>
 
@@ -385,7 +455,7 @@
         <section class="panel wide">
           <div class="section-title"><span>Pustaka</span><h2>Data Referensi</h2></div>
           <div class="library-controls">
-            <select id="libraryDataset"><option value="varieties">Varietas</option><option value="drippers">Dripper</option><option value="processes">Proses</option><option value="roasts">Sangrai</option><option value="waters">Air</option></select>
+            <select id="libraryDataset"><option value="varieties">Varietas</option><option value="drippers">Dripper</option><option value="processes">Proses</option><option value="roasts">Sangrai</option><option value="waters">Air</option><option value="grinders">Grinder</option></select>
             <input id="librarySearch" placeholder="Search data library..." />
           </div>
           <div class="table-wrap tall"><table id="libraryTable"><thead></thead><tbody></tbody></table></div>

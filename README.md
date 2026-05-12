@@ -139,3 +139,22 @@ Mulai v16:
 - Setelah draft berhasil tersimpan, app melakukan sync ulang agar BrewID langsung muncul di Brew Log & QA.
 - Event tombol dibuat lebih kuat dengan fallback event delegation.
 - Debug helper tersedia di browser console: `COFFEE_APP_DEBUG.getState()`.
+
+## Catatan v17 — Revisi kompetisi / komersial
+
+Mulai v17:
+- Draft dari menu **Rekomendasi Seduh** menyimpan detail resep lengkap ke Brew Log, termasuk tahapan Bloom/Pour/Ice dan rencana valve, sehingga halaman publik tidak lagi menampilkan `N/A` untuk recipe step jika draft dibuat dari form 1.1 Data Seduhan.
+- Tombol **Setujui** di panel moderasi kini memperbarui status publik, `manual_approval`, `approved_for_recipe`, dan `qa_status` untuk brew log yang memenuhi threshold QA.
+- Tombol **Hapus** kini memakai validasi delete dengan `.select().single()` agar kegagalan RLS/row tidak ditemukan terbaca jelas. Admin juga bisa menghapus brew log yang sudah ada di workspace aktif.
+- Tombol **Edit JSON** disembunyikan dari UI produksi.
+- Data grinder diperluas dan rekomendasi klik/dial dipetakan dari target mikron per metode seduh.
+- Data air mineral Indonesia diperluas dengan TDS untuk membantu rekomendasi seduh.
+- Menu **Rekomendasi Seduh** memiliki opsi grinder **Custom** dengan input Nama Grinder dan Setting Grinder; nilai custom ini ikut tersimpan ke Brew Log.
+- Signup sekarang memiliki pilihan role Admin Workspace, Brewer, dan QA. Brewer/QA memilih Workspace/Company dan masuk sebagai request pending hingga disetujui Admin Workspace.
+- Panel Workspace hanya ditampilkan untuk Admin atau user yang belum memiliki workspace aktif; Brewer/QA melihat informasi akses saja.
+- Field visibility workspace dihapus dari UI. Workspace dibuat privat; akses modul mengikuti membership aktif pada company yang sama.
+- Judul tab, judul halaman, subtitle, dan menu **Kotak Saran** diperbarui.
+- Tabel `suggestions` ditambahkan untuk menyimpan saran/masukan publik.
+
+Untuk project Supabase yang sudah berjalan, jalankan migration:
+`supabase/migration_v17_roles_workspace_suggestions.sql`
