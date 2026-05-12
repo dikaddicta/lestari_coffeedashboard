@@ -1690,12 +1690,14 @@
     };
     try {
       const saved = await insertCloud("stock_beans", toSnakeStock(bean), fromSnakeStock);
-      state.cloudStock.unshift(saved);
+      state.cloudStock = uniqueByCloudId([saved, ...(state.cloudStock || [])]);
+      await syncFromCloud(false).catch(console.warn);
+      renderStockTable();
       renderBeansTable();
       renderMetrics();
       e.target.reset();
       hydrateSelects();
-      alert("Stok kopi tersimpan privat di workspace aktif.");
+      showMessage("Stok kopi tersimpan di workspace aktif.", "success");
       return;
     } catch (err) {
       console.error(err);
