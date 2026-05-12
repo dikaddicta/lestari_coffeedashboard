@@ -15,6 +15,20 @@ window.COFFEE_DATA = {
       "SourceURL": "https://varieties.worldcoffeeresearch.org/arabica/varieties"
     },
     {
+      "Variety": "Abesinia 3",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Ethiopian / Abyssinia-derived selection",
+      "Typical_Regions": "Indonesia; Java; Sumatra",
+      "Acidity_Base": 4,
+      "Sweetness_Base": 3,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 3,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Released/recommended arabica variety in Indonesian material. Practical cup target uses clearer acidity and more aromatic potential than many Catimor-derived local labels.",
+      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
+    },
+    {
       "Variety": "Anacafe 14",
       "Species": "C. arabica",
       "Genetic_Market_Group": "Catimor",
@@ -27,6 +41,34 @@ window.COFFEE_DATA = {
       "Fermentation_Tolerance": 3,
       "Notes": "Very high yielding; rust resistance; good quality at elevation.",
       "SourceURL": "https://varieties.worldcoffeeresearch.org/arabica/varieties"
+    },
+    {
+      "Variety": "Andungsari 1",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Caturra x Hibrido de Timor-derived Indonesian selection",
+      "Typical_Regions": "East Java; Ijen; Bondowoso; Indonesia",
+      "Acidity_Base": 4,
+      "Sweetness_Base": 4,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 3,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Released and recommended Indonesian arabica variety. Practical filter profile emphasizes good sweetness, clear acidity, and balanced body at higher elevation.",
+      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
+    },
+    {
+      "Variety": "Andungsari 2K",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Indonesian arabica selection",
+      "Typical_Regions": "East Java; Indonesia",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 4,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Also written Andungsari 2 K. Included among released/recommended Indonesian arabica varieties; practical profile is sweet, balanced, and suitable for filter roast profiles.",
+      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
     },
     {
       "Variety": "Arusha",
@@ -55,6 +97,20 @@ window.COFFEE_DATA = {
       "Fermentation_Tolerance": 3,
       "Notes": "Local Indonesian name for Catimor-type arabica widely planted in Sumatra; selected for compact growth, productivity, and disease resistance. Cup target leans medium-low acidity with fuller body and herbal/chocolate notes depending on origin and process.",
       "SourceURL": "https://royalcoffee.com/indonesian-coffee-cultivars-and-varieties/"
+    },
+    {
+      "Variety": "Ateng Jaluk",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Catimor / Timor Hybrid-derived",
+      "Typical_Regions": "Aceh Tengah; Gayo; Sumatra; Indonesia",
+      "Acidity_Base": 2,
+      "Sweetness_Base": 3,
+      "Body_Base": 4,
+      "Fruity_Base": 2,
+      "Floral_Base": 1,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Local Aceh/Gayo name in the Ateng-Catimor family. Use as a practical profile for compact, productive Catimor-type lots with medium-low acidity, fuller body, and chocolate/herbal leaning cup character.",
+      "SourceURL": "https://library.sweetmarias.com/glossary/ateng/"
     },
     {
       "Variety": "Ateng Super",
@@ -99,6 +155,20 @@ window.COFFEE_DATA = {
       "SourceURL": "https://en.wikipedia.org/wiki/List_of_coffee_varieties"
     },
     {
+      "Variety": "Borbor",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Indonesian local arabica selection",
+      "Typical_Regions": "Gayo; Aceh; Sumatra; Indonesia",
+      "Acidity_Base": 2,
+      "Sweetness_Base": 3,
+      "Body_Base": 4,
+      "Fruity_Base": 2,
+      "Floral_Base": 1,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Local Sumatra/Gayo cultivar name used in Indonesian arabica discussions. Practical profile leans lower acidity, fuller body, and earthy-chocolate cup character depending on processing.",
+      "SourceURL": "https://pdfs.semanticscholar.org/4970/be31049cdb8d22d3b9e12a01a6b0fdb9d5cd.pdf"
+    },
+    {
       "Variety": "Bourbon",
       "Species": "C. arabica",
       "Genetic_Market_Group": "Bourbon-Typica",
@@ -139,6 +209,48 @@ window.COFFEE_DATA = {
       "Fermentation_Tolerance": 4,
       "Notes": "Moderate yield; good cup potential.",
       "SourceURL": "https://varieties.worldcoffeeresearch.org/arabica/varieties"
+    },
+    {
+      "Variety": "BP 234",
+      "Species": "C. canephora",
+      "Genetic_Market_Group": "Indonesian robusta clone",
+      "Typical_Regions": "Lampung; South Sumatra; Java; Indonesia",
+      "Acidity_Base": 1,
+      "Sweetness_Base": 2,
+      "Body_Base": 5,
+      "Fruity_Base": 1,
+      "Floral_Base": 1,
+      "Fermentation_Tolerance": 2,
+      "Notes": "Common Indonesian robusta clone label. Use for robusta stock and blends; profile target is heavy body, low acidity, and lower floral/fruity expression.",
+      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
+    },
+    {
+      "Variety": "BP 308",
+      "Species": "C. canephora",
+      "Genetic_Market_Group": "Indonesian robusta clone",
+      "Typical_Regions": "Lampung; South Sumatra; Java; Indonesia",
+      "Acidity_Base": 1,
+      "Sweetness_Base": 2,
+      "Body_Base": 5,
+      "Fruity_Base": 1,
+      "Floral_Base": 1,
+      "Fermentation_Tolerance": 2,
+      "Notes": "Common Indonesian robusta clone label. Use for robusta stock and blends; profile target is heavy body, low acidity, and strong roast/chocolate character.",
+      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
+    },
+    {
+      "Variety": "BP 42",
+      "Species": "C. canephora",
+      "Genetic_Market_Group": "Indonesian robusta clone",
+      "Typical_Regions": "Lampung; South Sumatra; Java; Indonesia",
+      "Acidity_Base": 1,
+      "Sweetness_Base": 2,
+      "Body_Base": 5,
+      "Fruity_Base": 1,
+      "Floral_Base": 1,
+      "Fermentation_Tolerance": 2,
+      "Notes": "Common Indonesian robusta clone label. Use for robusta stock and blends; profile target is heavy body, low acidity, and roast/chocolate intensity.",
+      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
     },
     {
       "Variety": "BP 534",
@@ -617,6 +729,34 @@ window.COFFEE_DATA = {
       "SourceURL": "https://varieties.worldcoffeeresearch.org/arabica/varieties"
     },
     {
+      "Variety": "Gayo 1",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Indonesian arabica selection",
+      "Typical_Regions": "Gayo; Aceh; Indonesia",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 4,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Indonesian released variety associated with Gayo. Practical cup target uses good sweetness, balanced acidity, and clean filter potential, especially for washed and honey lots.",
+      "SourceURL": "https://pustaka.bppsdmp.pertanian.go.id/index-berita/varietas-unggul-kopi-arabika-gayo-1-dan-gayo-2"
+    },
+    {
+      "Variety": "Gayo 2",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Indonesian arabica selection",
+      "Typical_Regions": "Gayo; Aceh; Indonesia",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 3,
+      "Body_Base": 4,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Indonesian released variety associated with Gayo. Practical profile leans balanced with fuller body and moderate acidity; suitable for Sumatra-style profiles and controlled fermentation.",
+      "SourceURL": "https://pustaka.bppsdmp.pertanian.go.id/index-berita/varietas-unggul-kopi-arabika-gayo-1-dan-gayo-2"
+    },
+    {
       "Variety": "Geisha / Gesha (Panama)",
       "Species": "C. arabica",
       "Genetic_Market_Group": "Ethiopian landrace",
@@ -869,6 +1009,20 @@ window.COFFEE_DATA = {
       "SourceURL": "https://varieties.worldcoffeeresearch.org/arabica/varieties"
     },
     {
+      "Variety": "Kartika 2",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Catuai-related Indonesian selection",
+      "Typical_Regions": "Indonesia; Java; Bali; Sumatra",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 3,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Released/recommended Indonesian arabica variety alongside Kartika 1. Practical profile is balanced and medium-bodied for washed and honey lots.",
+      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
+    },
+    {
       "Variety": "Kent",
       "Species": "C. arabica",
       "Genetic_Market_Group": "Typica-related",
@@ -883,6 +1037,20 @@ window.COFFEE_DATA = {
       "SourceURL": "https://en.wikipedia.org/wiki/List_of_coffee_varieties"
     },
     {
+      "Variety": "Komasti",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Komposit Andungsari Tiga",
+      "Typical_Regions": "East Java; Indonesia",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 4,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Komasti is commonly expanded as Komposit Andungsari Tiga. Practical profile uses good sweetness, balanced acidity, and versatile processing tolerance.",
+      "SourceURL": "https://ottencoffee.co.id/majalah/15-varietas-kopi-di-dunia"
+    },
+    {
       "Variety": "Kona Typica",
       "Species": "C. arabica",
       "Genetic_Market_Group": "Typica regional label",
@@ -895,6 +1063,20 @@ window.COFFEE_DATA = {
       "Fermentation_Tolerance": 4,
       "Notes": "Regional Typica line from Kona, Hawaii.",
       "SourceURL": "https://en.wikipedia.org/wiki/List_of_coffee_varieties"
+    },
+    {
+      "Variety": "Kopyol Bali",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Balinese local arabica selection",
+      "Typical_Regions": "Bali; Kintamani; Indonesia",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 4,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Balinese local arabica variety included among released/recommended Indonesian arabica varieties. Practical profile emphasizes sweetness, balanced acidity, and citrus/spice potential in Kintamani-style lots.",
+      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
     },
     {
       "Variety": "KP423",
@@ -1303,6 +1485,20 @@ window.COFFEE_DATA = {
       "SourceURL": "https://varieties.worldcoffeeresearch.org/arabica/varieties"
     },
     {
+      "Variety": "P88",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Indonesian arabica selection",
+      "Typical_Regions": "Gayo; Aceh; North Sumatra; Indonesia",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 3,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Commonly referenced in Indonesian arabica material and Gayo cultivar discussions. Practical profile is balanced acidity, medium sweetness, and medium body.",
+      "SourceURL": "https://pdfs.semanticscholar.org/4970/be31049cdb8d22d3b9e12a01a6b0fdb9d5cd.pdf"
+    },
+    {
       "Variety": "Pacamara",
       "Species": "C. arabica",
       "Genetic_Market_Group": "Pacas x Maragogipe",
@@ -1611,6 +1807,20 @@ window.COFFEE_DATA = {
       "SourceURL": "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
     },
     {
+      "Variety": "S 795 / Lini S",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Kent x S288-related",
+      "Typical_Regions": "Java; Bali; Flores; Sulawesi; Sumatra; Indonesia",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 4,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Alias-friendly entry for Lini S / Linie-S / S-795 used widely in Indonesia. Practical profile is sweet, balanced, and versatile for washed and honey processing.",
+      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
+    },
+    {
       "Variety": "S4808",
       "Species": "C. arabica",
       "Genetic_Market_Group": "India breeding line",
@@ -1667,17 +1877,17 @@ window.COFFEE_DATA = {
       "SourceURL": "https://en.wikipedia.org/wiki/List_of_coffee_varieties"
     },
     {
-      "Variety": "Sigararutang",
+      "Variety": "Sigarar Utang / Sigararutang",
       "Species": "C. arabica",
       "Genetic_Market_Group": "Sigarar Utang / HdT-derived Indonesian selection",
-      "Typical_Regions": "North Sumatra; Simalungun; Tapanuli; Indonesia",
+      "Typical_Regions": "North Sumatra; Simalungun; Tapanuli; Humbang Hasundutan; Indonesia",
       "Acidity_Base": 3,
       "Sweetness_Base": 3,
       "Body_Base": 4,
       "Fruity_Base": 3,
       "Floral_Base": 2,
       "Fermentation_Tolerance": 3,
-      "Notes": "Also written Sigarar Utang; Indonesian arabica variety released as a superior variety in 2005 and known for high productivity. Cup target is balanced, medium acidity, medium sweetness, and medium-full body.",
+      "Notes": "Also written Sigararutang. Indonesian arabica variety released as a superior variety in 2005 and known for high productivity. Cup target is balanced, medium acidity, medium sweetness, and medium-full body.",
       "SourceURL": "https://balaimedan.ditjenbun.pertanian.go.id/sumber-benih-kopi-arabika-varietas-sigarar-utang-milik-awaluddin-sitompul/"
     },
     {
@@ -1891,6 +2101,20 @@ window.COFFEE_DATA = {
       "SourceURL": "https://varieties.worldcoffeeresearch.org/arabica/varieties"
     },
     {
+      "Variety": "Timtim / Timor Hybrid",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Timor Hybrid",
+      "Typical_Regions": "Timor; Flores; East Nusa Tenggara; Indonesia",
+      "Acidity_Base": 2,
+      "Sweetness_Base": 3,
+      "Body_Base": 4,
+      "Fruity_Base": 2,
+      "Floral_Base": 1,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Timor Hybrid/T-imtim background is important in Indonesian arabica and Catimor-derived cultivars. Practical profile leans fuller body, lower acidity, and high disease-resistance heritage.",
+      "SourceURL": "https://www.seriouseats.com/coffee-varieties-what-is-timor-hybrid-sumatran-coffee-catimor-what-does-it-taste-like-flavor"
+    },
+    {
       "Variety": "TR11",
       "Species": "C. canephora / Robusta",
       "Genetic_Market_Group": "Robusta clone or synthetic",
@@ -1959,6 +2183,20 @@ window.COFFEE_DATA = {
       "Fermentation_Tolerance": 4,
       "Notes": "Classic high-quality Arabica; rust susceptible.",
       "SourceURL": "https://varieties.worldcoffeeresearch.org/arabica/varieties"
+    },
+    {
+      "Variety": "USDA 762",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Typica-related selection",
+      "Typical_Regions": "Indonesia; Java; Sumatra; Sulawesi; Bali",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 3,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Older arabica selection released/recommended in Indonesia. Practical profile is balanced acidity, medium sweetness, and moderate body; often used as a familiar Indonesian cultivar label.",
+      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
     },
     {
       "Variety": "Venecia",

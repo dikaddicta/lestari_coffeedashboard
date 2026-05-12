@@ -1691,16 +1691,29 @@
     try {
       const saved = await insertCloud("stock_beans", toSnakeStock(bean), fromSnakeStock);
       state.cloudStock = uniqueByCloudId([saved, ...(state.cloudStock || [])]);
-      await syncFromCloud(false).catch(console.warn);
+      renderStockTable();
+      renderBeansTable();
+      renderMetrics();
+      showMessage("Stok kopi tersimpan. Memuat ulang tabel workspace...", "success");
+
+      const savedId = saved.CloudID;
+      const previousStock = state.cloudStock || [];
+      const syncError = await syncFromCloud(false).then(() => null).catch(err => err);
+      if (syncError) console.warn("Stock refresh failed after insert", syncError);
+      if (savedId && !(state.cloudStock || []).some(item => item.CloudID === savedId)) {
+        state.cloudStock = uniqueByCloudId([saved, ...previousStock, ...(state.cloudStock || [])]);
+      }
+
       renderStockTable();
       renderBeansTable();
       renderMetrics();
       e.target.reset();
       hydrateSelects();
-      showMessage("Stok kopi tersimpan di workspace aktif.", "success");
+      showMessage("Stok kopi berhasil masuk ke tabel workspace.", "success");
       return;
     } catch (err) {
       console.error(err);
+      showMessage(`Gagal menyimpan stok ke Supabase: ${err.message || err}`, "error");
       alert(`Gagal menyimpan stok ke Supabase. Data belum tersimpan. Detail: ${err.message || err}`);
     }
   }
