@@ -1,17 +1,5 @@
-// Konfigurasi Supabase untuk aplikasi Rekomendasi Seduh Kopi.
-// Isi hanya dengan Project URL dan anon/public key dari Supabase.
-//
-// Project URL yang benar bentuknya:
-// https://xxxxx.supabase.co
-//
-// Jangan pakai:
-// - URL dashboard Supabase
-// - URL yang berakhiran /rest/v1
-// - URL yang berakhiran /auth/v1
-// - service_role key
-
 window.SUPABASE_CONFIG = {
-  url: "https://mumaxugelqywxiaoarmy.supabase.co", // contoh: "https://abcdefghijklm.supabase.co"
-  anonKey: "sb_publishable_w2O-v6MlWztvrSXtnBrX7w_fw-_aGlF", // Project Settings > API > anon/public key
-  enabled: true
+  enabled: true,
+  url: "https://hqnkltnlybasvvwccwkn.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxbmtsdG5seWJhc3Z2d2Njd2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4NzIyMTUsImV4cCI6MjA3ODQ0ODIxNX0.hvKuoDz-Kt_Ma-fKYunTBfN5dsmAyptq26upQr-RQs"
 };

@@ -175,7 +175,7 @@
           <div class="table-wrap">
             <table id="beansTable">
               <thead>
-                <tr><th>Rank</th><th>Biji Kopi</th><th>Varietas</th><th>Proses</th><th>Sangrai</th><th>Rasa</th><th>Skor</th><th>Saran Seduh</th><th>Saran Dripper</th><th>Ringkasan Resep</th></tr>
+                <tr><th>Rank</th><th>Biji Kopi</th><th>Varietas</th><th>Proses</th><th>Roast Profile</th><th>Rasa</th><th>Skor</th><th>Saran Seduh</th><th>Saran Dripper</th><th>Ringkasan Resep</th></tr>
               </thead>
               <tbody></tbody>
             </table>
@@ -195,7 +195,7 @@
               <label>Varietas 1<select id="stockVariety1"></select></label>
               <label>Varietas 2 (opsional)<select id="stockVariety2"></select></label>
               <label>Proses<select id="stockProcess"></select></label>
-              <label>Profil Sangrai<select id="stockRoast"></select></label>
+              <label>Roast Profile<select id="stockRoast"></select></label>
               <label>Kelompok Rasa 1<select id="stockFlavor1"></select></label>
               <label>Kelompok Rasa 2<select id="stockFlavor2"></select></label>
               <label>Kelompok Rasa 3<select id="stockFlavor3"></select></label>
@@ -205,7 +205,7 @@
               <label>Stok (g)<input id="stockQty" type="number" min="0" value="100" /></label>
               <label>Seduhan Terbaik<select id="stockBestBrew"><option value="Both">Keduanya</option><option>Hot V60</option><option>Japanese Iced</option></select></label>
               <label>Harga<input id="stockPrice" type="number" min="0" value="0" /></label>
-              <label>Tanggal Sangrai<input id="stockRoastDate" type="date" /></label>
+              <label>Tanggal Roast<input id="stockRoastDate" type="date" /></label>
               <label>Aktif<select id="stockActive"><option value="Yes">Ya</option><option value="No">Tidak</option></select></label>
               <label class="span-2">Catatan<textarea id="stockNotes" rows="3" placeholder="tasting notes, roast info, dll"></textarea></label>
               <button class="primary span-2" type="submit">Simpan Stok Pribadi</button>
@@ -235,7 +235,7 @@
           <div class="section-title"><span>Tabel Stok</span><h2>Stok Biji Kopi</h2></div>
           <div class="table-wrap tall">
             <table id="stockTable">
-              <thead><tr><th>Biji Kopi</th><th>Asal Kopi</th><th>Varietas 1</th><th>Variety 2</th><th>Proses</th><th>Sangrai</th><th>Rasa 1–3</th><th>S/A/B</th><th>Stok</th><th>Seduhan Terbaik</th><th>Aktif</th></tr></thead>
+              <thead><tr><th>Biji Kopi</th><th>Asal Kopi</th><th>Varietas 1</th><th>Variety 2</th><th>Proses</th><th>Roast Profile</th><th>Rasa 1–3</th><th>S/A/B</th><th>Stok</th><th>Seduhan Terbaik</th><th>Aktif</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -427,6 +427,7 @@
         <section class="panel wide" id="memberApprovalPanel">
           <div class="section-title"><span>Approval</span><h2>Request Akses Workspace</h2></div>
           <p class="hint">Admin Workspace menyetujui atau menolak pendaftar Brewer/QA di company yang sama. Setelah disetujui, user bisa mengakses rekomendasi biji kopi, stok kopi, Brew Log & QA, dan fitur workspace terkait.</p>
+          <div class="admin-toolbar"><button id="refreshMemberRequests" class="secondary" type="button">Muat Ulang Request</button></div>
           <div class="table-wrap tall"><table id="memberRequestTable"><thead><tr><th>Nama / Email</th><th>Role Diminta</th><th>Status</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
         </section>
 
@@ -455,7 +456,7 @@
         <section class="panel wide">
           <div class="section-title"><span>Pustaka</span><h2>Data Referensi</h2></div>
           <div class="library-controls">
-            <select id="libraryDataset"><option value="varieties">Varietas</option><option value="drippers">Dripper</option><option value="processes">Proses</option><option value="roasts">Sangrai</option><option value="waters">Air</option><option value="grinders">Grinder</option></select>
+            <select id="libraryDataset"><option value="varieties">Varietas</option><option value="drippers">Dripper</option><option value="processes">Proses</option><option value="roasts">Roast Profile</option><option value="waters">Air</option><option value="grinders">Grinder</option></select>
             <input id="librarySearch" placeholder="Search data library..." />
           </div>
           <div class="table-wrap tall"><table id="libraryTable"><thead></thead><tbody></tbody></table></div>

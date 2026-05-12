@@ -1,16 +1,10 @@
--- Migration v9: modul privat per workspace + feed hasil seduhan publik
--- Jalankan setelah migration v8 jika database sudah aktif.
-
--- Stok tetap privat.
 alter table public.stock_beans alter column visibility set default 'private';
 update public.stock_beans set visibility = 'private' where visibility is null or visibility <> 'private';
 update public.stock_beans set moderation_status = 'approved' where moderation_status is null or moderation_status = 'pending';
 
--- Brew log dan QA disiapkan sebagai kandidat publik, tetapi hanya tampil publik setelah approved.
 alter table public.brew_logs alter column visibility set default 'public';
 alter table public.qa_scores alter column visibility set default 'public';
 
--- Brew log lama yang sebelumnya private dibuat public-pending agar tetap tidak tampil publik sebelum dimoderasi.
 update public.brew_logs
 set visibility = 'public',
     moderation_status = case
@@ -24,7 +18,6 @@ set visibility = 'public',
     moderation_status = coalesce(moderation_status, 'pending')
 where visibility is null or visibility = 'private';
 
--- Stock: hanya pemilik data atau admin workspace.
 DROP POLICY IF EXISTS "Stock read approved own or moderator" ON public.stock_beans;
 DROP POLICY IF EXISTS "Stock read private owner or admin" ON public.stock_beans;
 DROP POLICY IF EXISTS "Stock insert member" ON public.stock_beans;
@@ -52,7 +45,6 @@ CREATE POLICY "Stock update private owner or admin" ON public.stock_beans
 CREATE POLICY "Stock delete private owner or admin" ON public.stock_beans
   FOR DELETE USING (public.is_workspace_admin(workspace_id));
 
--- Brew Log: pemilik/workspace dapat melihat data sendiri; publik hanya melihat approved.
 DROP POLICY IF EXISTS "Brew read approved own or moderator" ON public.brew_logs;
 DROP POLICY IF EXISTS "Brew read public approved or workspace" ON public.brew_logs;
 DROP POLICY IF EXISTS "Brew insert member" ON public.brew_logs;
@@ -84,7 +76,6 @@ CREATE POLICY "Brew update owner or moderator" ON public.brew_logs
 CREATE POLICY "Brew delete admin" ON public.brew_logs
   FOR DELETE USING (public.is_workspace_admin(workspace_id));
 
--- QA: terkait workspace, publik hanya bila approved.
 DROP POLICY IF EXISTS "QA read approved own or moderator" ON public.qa_scores;
 DROP POLICY IF EXISTS "QA read public approved or workspace" ON public.qa_scores;
 DROP POLICY IF EXISTS "QA insert member" ON public.qa_scores;

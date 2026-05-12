@@ -1,9 +1,3 @@
--- Migration v15: threshold 6.5 + guest public brew submissions
--- Jalankan setelah migration v9 jika database sudah aktif.
-
--- Brew log/QA publik boleh dibuat oleh guest jika nilainya memenuhi threshold 6.5.
--- Stok tetap privat dan tidak ikut policy ini.
-
 DROP POLICY IF EXISTS "Brew insert member pending unless moderator" ON public.brew_logs;
 CREATE POLICY "Brew insert member or guest approved" ON public.brew_logs
   FOR INSERT WITH CHECK (
@@ -47,7 +41,6 @@ CREATE POLICY "QA insert member or guest approved" ON public.qa_scores
     )
   );
 
--- Turunkan threshold rekomendasi lama yang sebelumnya masih memakai 8.6.
 update public.brew_logs
 set moderation_status = 'approved',
     approved_for_recipe = 'Yes',

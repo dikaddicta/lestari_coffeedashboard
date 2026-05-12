@@ -1,19 +1,12 @@
--- Migration v17: role signup approval, private company workspace, suggestions box
--- Jalankan setelah migration v15 untuk project yang sudah berjalan.
-
--- 1) Workspace member status now supports pending/rejected for approval workflow.
 alter table public.workspace_members drop constraint if exists workspace_members_status_check;
 alter table public.workspace_members add constraint workspace_members_status_check
   check (status in ('pending', 'active', 'rejected', 'disabled'));
 
--- 2) Workspaces are listed as active companies for signup dropdown, but app modules
---    remain protected by workspace_members active membership and existing RLS.
 DROP POLICY IF EXISTS "Workspaces read public or member" ON public.workspaces;
 DROP POLICY IF EXISTS "Workspaces read active directory or member" ON public.workspaces;
 CREATE POLICY "Workspaces read active directory or member" ON public.workspaces
   FOR SELECT USING (status = 'active' OR public.is_workspace_member(id));
 
--- 3) Users can request Brewer/QA access. Admin still approves through update.
 DROP POLICY IF EXISTS "Members self join public or admin add" ON public.workspace_members;
 DROP POLICY IF EXISTS "Members request access or admin add" ON public.workspace_members;
 CREATE POLICY "Members request access or admin add" ON public.workspace_members
@@ -30,7 +23,6 @@ CREATE POLICY "Members request access or admin add" ON public.workspace_members
     OR public.is_workspace_admin(workspace_id)
   );
 
--- 4) Allow workspace admins to read pending users' profile names/emails.
 DROP POLICY IF EXISTS "Profiles select own" ON public.profiles;
 DROP POLICY IF EXISTS "Profiles select own or workspace admin" ON public.profiles;
 CREATE POLICY "Profiles select own or workspace admin" ON public.profiles
@@ -43,7 +35,6 @@ CREATE POLICY "Profiles select own or workspace admin" ON public.profiles
     )
   );
 
--- 5) Signup metadata creates pending membership automatically for Brewer/QA.
 create or replace function public.handle_new_user_profile()
 returns trigger
 language plpgsql
@@ -91,7 +82,6 @@ create trigger on_auth_user_created_profile
 after insert on auth.users
 for each row execute function public.handle_new_user_profile();
 
--- 6) Kotak Saran table.
 create table if not exists public.suggestions (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),

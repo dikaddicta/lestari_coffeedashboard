@@ -4713,16 +4713,16 @@ window.COFFEE_DATA = {
       "Unit": "44-click dial",
       "V60_Min": 7,
       "V60_Max": 29,
-      "Japanese_Min": 18,
-      "Japanese_Max": 34,
-      "Immersion_Min": 22,
+      "Japanese_Min": 12,
+      "Japanese_Max": 25,
+      "Immersion_Min": 11,
       "Immersion_Max": 38,
-      "MicronMin": 320,
+      "MicronMin": 500,
       "MicronMax": 900,
       "DisplayFormat": "{value}/44 clicks",
-      "MicronPerClick": "~13.5 µm/click (estimated from 320–900 µm over 44 settings)",
-      "Notes": "Hario lists 44 grind settings. Use click positions 1–44; HCG reference: V60 7–29, pour-over 8–44, steep-and-release 11–38. Start from formula output, then dial by drawdown/taste.",
-      "SourceURL": "https://global.hario.com/pickup_EVCG-8.html | https://honestcoffeeguide.com/hario-v60-evcg-8b-e-grind-settings/"
+      "MicronPerClick": "Mapped to 500–900 µm working filter range; start Japanese iced around 20–24/44 and adjust by drawdown/taste",
+      "Notes": "HCG lists EVCG-8B-E V60 7–29, pour-over 8–44, steep-and-release 11–38. Japanese iced is treated as medium-fine/medium filter, so the dashboard caps the starting recommendation below the coarse 30+ zone unless the brew stalls.",
+      "SourceURL": "https://global.hario.com/manual_pdf/EVCG-8B-E_manual16012.pdf | https://honestcoffeeguide.com/hario-v60-evcg-8b-e-grind-settings/ | https://kurasu.kyoto/blogs/recipe/japanese-brew-guide-on-iced-pour-over-coffee"
     },
     {
       "Grinder": "Timemore Chestnut C2",
@@ -4899,6 +4899,75 @@ window.COFFEE_DATA = {
       "MicronPerClick": "Mapped from HCG/Fellow ranges",
       "Notes": "HCG lists Ode Gen 2 V60 2.2–5.2, pour-over 2.2–8.1, steep-and-release 3–7. Fellow suggests setting 5 as a pour-over start point for Gen 2 burrs.",
       "SourceURL": "https://honestcoffeeguide.com/fellow-ode-brew-grinder-gen-2-grind-settings/ | https://fellowproducts.com/pages/how-to-pour-over"
+    },
+    {
+      "Grinder": "Hario Smart-G",
+      "Type": "Hand grinder",
+      "Unit": "clicks from zero",
+      "V60_Min": 3,
+      "V60_Max": 6,
+      "Japanese_Min": 3,
+      "Japanese_Max": 7,
+      "Immersion_Min": 4,
+      "Immersion_Max": 7,
+      "MicronMin": 400,
+      "MicronMax": 900,
+      "DisplayFormat": "{value} clicks",
+      "MicronPerClick": "HCG reports overall range about 230–1420 µm; filter mapping uses V60/pour-over range",
+      "Notes": "Compact Hario hand grinder common for home use. V60 3–6, pour-over 3–8, steep-and-release 4–7. Use finer side for Japanese iced or small dose.",
+      "SourceURL": "https://honestcoffeeguide.com/hario-smart-g-grind-settings/"
+    },
+    {
+      "Grinder": "Hario Mini Mill Slim / PLUS",
+      "Type": "Hand grinder",
+      "Unit": "clicks from zero",
+      "V60_Min": 5,
+      "V60_Max": 8,
+      "Japanese_Min": 5,
+      "Japanese_Max": 9,
+      "Immersion_Min": 5,
+      "Immersion_Max": 10,
+      "MicronMin": 400,
+      "MicronMax": 900,
+      "DisplayFormat": "{value} clicks",
+      "MicronPerClick": "Mapped from HCG method ranges",
+      "Notes": "Entry-level ceramic burr grinder. HCG lists V60 5–8, pour-over 5–12, steep-and-release 5–10. Coarser settings can be less uniform, so dial by taste carefully.",
+      "SourceURL": "https://honestcoffeeguide.com/hario-mini-mill-plus-grind-settings/ | https://honestcoffeeguide.com/hario-mini-mill-slim-grind-settings/"
+    },
+    {
+      "Grinder": "Hario Skerton PRO",
+      "Type": "Hand grinder",
+      "Unit": "notches from zero",
+      "V60_Min": 2,
+      "V60_Max": 3,
+      "Japanese_Min": 2,
+      "Japanese_Max": 4,
+      "Immersion_Min": 2,
+      "Immersion_Max": 4,
+      "MicronMin": 400,
+      "MicronMax": 900,
+      "DisplayFormat": "{value} notches",
+      "MicronPerClick": "Mapped from HCG method ranges",
+      "Notes": "Large-capacity Hario ceramic burr grinder. HCG lists V60 2–3, pour-over 2–5, steep-and-release 2–4. Use visual/taste confirmation because each notch is broad.",
+      "SourceURL": "https://honestcoffeeguide.com/hario-skerton-pro-grind-settings/"
+    },
+    {
+      "Grinder": "Latina / Feima N600",
+      "Type": "Electric flat burr grinder",
+      "Unit": "dial setting",
+      "V60_Min": 3,
+      "V60_Max": 4,
+      "Japanese_Min": 2.8,
+      "Japanese_Max": 3.8,
+      "Immersion_Min": 3.2,
+      "Immersion_Max": 4.5,
+      "MicronMin": 500,
+      "MicronMax": 900,
+      "DisplayFormat": "setting {value}",
+      "Precision": 1,
+      "MicronPerClick": "Practical Indonesian user range; not a lab-calibrated micron chart",
+      "Notes": "Common Indonesian grinder with dial scale usually 1–8 or 1–5 depending version. Cikopi reports filter/V60/Chemex use around 3–4; treat as practical starting point and recalibrate per unit.",
+      "SourceURL": "https://www.cikopi.com/2016/10/terbaik-feima-n600-a-k-a-latina-grinder/ | https://www.cikopi.com/2010/08/latina-grinder/"
     }
   ],
   "stockBeans": [
@@ -5309,7 +5378,6 @@ window.COFFEE_DATA = {
   ],
   "meta": {
     "sourceWorkbook": "coffee_competition_dashboard_v13.xlsx",
-    "generatedAt": "2026-05-11T11:29:53Z",
     "version": "web-v1"
   }
 };

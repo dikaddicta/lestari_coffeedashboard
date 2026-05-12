@@ -432,7 +432,6 @@ tr:hover td { background: #fffaf0; }
 .hidden { display: none !important; }
 
 
-/* v12 auth visibility */
 .inline-actions .hidden,
 .auth-card .hidden {
   display: none !important;
@@ -520,4 +519,62 @@ button[disabled] {
 #workspacePanel.hidden,
 #memberApprovalPanel.hidden {
   display: none !important;
+}
+
+.hero {
+  grid-template-columns: minmax(0, 1fr) 330px;
+  align-items: stretch;
+  padding: 34px 28px;
+  min-height: 350px;
+}
+.hero-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 790px;
+}
+.hero h1 {
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+}
+.hero-copy {
+  max-width: 760px;
+  font-size: 14.5px;
+  line-height: 1.64;
+  margin: 8px 0 0;
+}
+.hero-copy + .hero-copy { margin-top: 14px; }
+.hero-side {
+  align-content: center;
+  align-self: stretch;
+}
+.hero-card, .auth-card { min-width: 0; }
+.roast-visual {
+  display: grid;
+  grid-template-columns: repeat(3, 18px);
+  gap: 4px 6px;
+  align-items: center;
+  min-width: 74px;
+}
+.roast-visual span {
+  width: 18px;
+  height: 26px;
+  border-radius: 50%;
+  display: block;
+  transform: rotate(18deg);
+  box-shadow: inset -3px -4px 7px rgba(0,0,0,.18), inset 3px 2px 5px rgba(255,255,255,.16);
+  position: relative;
+}
+.roast-visual span::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 3px;
+  width: 2px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.18);
+}
+@media (max-width: 860px) {
+  .hero { min-height: 0; }
 }

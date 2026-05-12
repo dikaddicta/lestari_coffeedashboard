@@ -18,6 +18,7 @@
   let currentRole = "guest";
   let moderationRows = [];
   let pendingMemberRows = [];
+  let dashboardUserCount = 0;
   const LAST_WORKSPACE_KEY = "coffeeDashboardActiveWorkspace";
   const DEFAULT_PUBLIC_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -138,6 +139,29 @@
 
   function currentBrewerName() {
     return userProfile?.display_name || currentUser?.user_metadata?.display_name || currentUser?.email?.split("@")[0] || "Brewer";
+  }
+
+  function requestedMembershipFromMetadata() {
+    const meta = currentUser?.user_metadata || {};
+    const role = norm(meta.requested_role);
+    const workspaceId = String(meta.requested_workspace_id || "").trim();
+    if (!["brewer", "qa"].includes(role) || !workspaceId) return null;
+    return { role, workspaceId };
+  }
+
+  function displayRoleContext() {
+    const active = currentRole && currentRole !== "guest" && currentRole !== "viewer";
+    if (active) return { role: currentRole, workspace: currentWorkspace?.name || "-", status: "active" };
+    const pending = (userMemberships || []).find(ws => ws.membershipStatus === "pending");
+    if (pending) return { role: pending.role, workspace: pending.name || "-", status: "pending" };
+    const rejected = (userMemberships || []).find(ws => ws.membershipStatus === "rejected");
+    if (rejected) return { role: rejected.role, workspace: rejected.name || "-", status: "rejected" };
+    const requested = requestedMembershipFromMetadata();
+    if (requested) {
+      const workspace = (publicWorkspaces || []).find(ws => ws.id === requested.workspaceId);
+      return { role: requested.role, workspace: workspace?.name || "Menunggu data workspace", status: "pending" };
+    }
+    return { role: currentRole || "guest", workspace: currentWorkspace?.name || "-", status: currentUser ? "none" : "guest" };
   }
 
   let toastTimer = null;
@@ -286,17 +310,19 @@
     const title = $("authPanelTitle");
     const isLoggedIn = Boolean(currentUser);
 
+    const roleCtx = displayRoleContext();
+    const roleStatusClass = roleCtx.status === "active" ? "approved" : roleCtx.status === "rejected" ? "rejected" : roleCtx.status === "pending" ? "pending" : "";
+    const roleStatusText = roleCtx.status === "pending" ? "Menunggu approval" : roleCtx.status === "rejected" ? "Ditolak" : roleCtx.status === "active" ? "Aktif" : "Belum ada workspace";
+
     if (title) title.textContent = isLoggedIn ? "Akun Pengguna" : "Login Pengguna";
     if (userLabel) userLabel.textContent = isLoggedIn ? (userProfile?.display_name || currentUser.email) : "Mode Tamu";
     if (roleLabel) roleLabel.textContent = isLoggedIn
-      ? `${currentUser.email} · ${currentWorkspace?.name || "Belum ada workspace"} · ${currentRole}`
+      ? `${currentUser.email} · ${roleCtx.workspace || "-"} · ${roleCtx.role}`
       : "Masuk untuk menyimpan dan membagikan data.";
 
     if (accountBox) {
-      const pending = (userMemberships || []).filter(ws => ws.membershipStatus === "pending");
-      const pendingText = pending.length ? `<br>Request pending: ${html(pending.map(ws => `${ws.name} (${ws.role})`).join(", "))}` : "";
       accountBox.innerHTML = isLoggedIn
-        ? `<strong>${html(userProfile?.display_name || currentUser.email)}</strong><br>Email: ${html(currentUser.email)}<br>Workspace: ${html(currentWorkspace?.name || "-")}<br>Peran: <span class="status-pill approved">${html(currentRole)}</span>${pendingText}`
+        ? `<strong>${html(userProfile?.display_name || currentUser.email)}</strong><br>Email: ${html(currentUser.email)}<br>Workspace: ${html(roleCtx.workspace || "-")}<br>Peran: <span class="status-pill ${html(roleStatusClass)}">${html(roleCtx.role)}</span><br>Status: ${html(roleStatusText)}`
         : `Belum masuk. Tamu tetap bisa membaca data publik yang sudah disetujui, tetapi pengiriman data ke database online memerlukan akun.`;
     }
 
@@ -308,18 +334,44 @@
     setElementHidden(authJumpLink, isLoggedIn);
   }
 
+  async function ensureRequestedMembership() {
+    if (!supabaseClient || !currentUser) return;
+    const request = requestedMembershipFromMetadata();
+    if (!request) return;
+    const { data: existing, error: readError } = await supabaseClient
+      .from("workspace_members")
+      .select("workspace_id,user_id,role,status")
+      .eq("workspace_id", request.workspaceId)
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+    if (readError) return;
+    if (existing) return;
+    await requestWorkspaceAccess(request.workspaceId, request.role, currentUser.id);
+  }
+
   async function initAuth() {
     if (!supabaseClient) return;
     const { data: sessionData } = await supabaseClient.auth.getSession();
     currentSession = sessionData?.session || null;
     currentUser = currentSession?.user || null;
-    if (currentUser) await ensureProfile();
+    if (currentUser) {
+      await ensureProfile();
+      await ensureRequestedMembership().catch(console.warn);
+    }
     await loadWorkspaces();
     supabaseClient.auth.onAuthStateChange(async (_event, session) => {
       currentSession = session || null;
       currentUser = currentSession?.user || null;
-      if (currentUser) await ensureProfile();
-      else { userProfile = null; joinedWorkspaces = []; userMemberships = []; currentWorkspace = null; currentRole = "guest"; }
+      if (currentUser) {
+        await ensureProfile();
+        await ensureRequestedMembership().catch(console.warn);
+      } else {
+        userProfile = null;
+        joinedWorkspaces = [];
+        userMemberships = [];
+        currentWorkspace = null;
+        currentRole = "guest";
+      }
       await loadWorkspaces();
       await syncFromCloud(true).catch(console.warn);
     });
@@ -331,10 +383,15 @@
     const email = $("authEmail").value.trim();
     const password = $("authPassword").value;
     if (!email || !password) return showMessage("Isi email dan kata sandi untuk masuk.", "error");
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) return showMessage(`Gagal masuk: ${error.message}`, "error");
+    currentSession = data?.session || currentSession;
+    currentUser = data?.user || currentSession?.user || currentUser;
     await ensureProfile().catch(console.warn);
-    renderAuthUI();
+    await ensureRequestedMembership().catch(console.warn);
+    await loadWorkspaces().catch(console.warn);
+    await syncFromCloud(true).catch(console.warn);
+    renderAll();
     showMessage("Berhasil masuk.", "success");
   }
 
@@ -387,7 +444,7 @@
       role,
       status: "pending"
     });
-    if (error && !/duplicate|already exists/i.test(error.message || "")) throw error;
+    if (error && error.code !== "23505" && !/duplicate|already exists/i.test(error.message || "")) throw error;
   }
 
   async function handleLogout() {
@@ -422,6 +479,7 @@
       renderWorkspaceUI();
       renderAll();
       showMessage("Berhasil keluar.", "success");
+      setTimeout(() => window.location.reload(), 250);
     } catch (err) {
       console.error(err);
       showMessage(`Gagal keluar: ${err.message || err}`, "error");
@@ -791,6 +849,7 @@
     state.cloudStock = (stockRes.data || []).map(fromSnakeStock);
     state.cloudBrewLogs = uniqueByCloudId([...(publicBrewRes.data || []).map(fromSnakeBrew), ...(workspaceBrewRes.data || []).map(fromSnakeBrew)]);
     state.cloudQA = (workspaceQaRes.data || []).map(fromSnakeQA);
+    await loadDashboardUserCount().catch(console.warn);
     cloudLastSync = new Date();
     cloudReady = true;
     updateDbStatus("online", "Supabase online", `Data workspace dan hasil seduhan publik tersinkron. Sinkron terakhir: ${cloudLastSync.toLocaleTimeString()}`);
@@ -907,14 +966,37 @@
     if ($("stockFlavor1")) $("stockFlavor1").value = "Fruity";
   }
 
+  function localDashboardUserCount() {
+    const ids = new Set();
+    [state.cloudBrewLogs, state.cloudQA, state.cloudStock, state.userBrewLogs, state.userQA, state.userStock].forEach(rows => {
+      (rows || []).forEach(row => {
+        if (row.CreatedBy) ids.add(`u:${row.CreatedBy}`);
+        if (row.Evaluator && !row.CreatedBy) ids.add(`g:${norm(row.Evaluator)}`);
+        if (row.BrewerName && !row.CreatedBy) ids.add(`g:${norm(row.BrewerName)}`);
+      });
+    });
+    (userMemberships || []).forEach(ws => { if (ws.user_id) ids.add(`u:${ws.user_id}`); });
+    return Math.max(dashboardUserCount || 0, ids.size || (currentUser ? 1 : 0));
+  }
+
+  async function loadDashboardUserCount() {
+    if (!supabaseClient) {
+      dashboardUserCount = localDashboardUserCount();
+      return;
+    }
+    const { data, error } = await supabaseClient.rpc("get_dashboard_user_count");
+    if (!error && Number.isFinite(Number(data))) dashboardUserCount = Number(data);
+    else dashboardUserCount = localDashboardUserCount();
+  }
+
   function renderMetrics() {
     const metrics = [
       [DATA.varieties?.length || 0, "Varietas"],
       [DATA.drippers?.length || 0, "Dripper"],
       [DATA.processes?.length || 0, "Proses"],
-      [DATA.roasts?.length || 0, "Roast"],
+      [DATA.roasts?.length || 0, "Roast Profile"],
       [DATA.waters?.length || 0, "Water"],
-      [canUseWorkspaceModules() ? allStock().length : 0, "Stock Workspace"]
+      [localDashboardUserCount(), "Pengguna"]
     ];
     $("libraryMetrics").innerHTML = metrics.map(([n, label]) => `<div class="metric"><strong>${html(n)}</strong><span>${html(label)}</span></div>`).join("");
   }
@@ -1921,22 +2003,45 @@
     }).join("");
   }
 
+  function roastColorFromAgtron(value) {
+    const text = String(value || "");
+    const nums = text.match(/\d+/g)?.map(Number) || [];
+    const avg = nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : 65;
+    const lightness = clamp(18 + avg * 0.45, 22, 62);
+    return `hsl(28 44% ${lightness}%)`;
+  }
+
+  function roastVisual(row) {
+    const color = roastColorFromAgtron(row.AgtronApprox);
+    return `<div class="roast-visual" aria-label="${html(row.RoastProfile || "Roast")}">${Array.from({ length: 6 }).map(() => `<span style="background:${color}"></span>`).join("")}</div>`;
+  }
+
   function renderLibrary() {
     const dataset = $("libraryDataset").value;
     const search = norm($("librarySearch").value);
     const rows = (DATA[dataset] || []).filter(row => !search || Object.values(row).some(v => norm(v).includes(search)));
-    const cols = Object.keys(rows[0] || {}).slice(0, 8);
-    const labelMap = {
-      VarietyName: "Nama Varietas", Species: "Spesies", Group: "Kelompok", Origin: "Asal", Parentage: "Induk/Persilangan",
-      Acidity: "Acidity", Sweetness: "Sweetness", Body: "Body", ProcessName: "Nama Proses", Category: "Kategori",
-      FermentRisk: "Risiko Fermentasi", BrewingCue: "Catatan Seduh", DripperName: "Nama Dripper", Material: "Material",
-      FlowSpeed: "Kecepatan Flow", HeatRetention: "Retensi Panas", RoastName: "Profil Sangrai", WaterName: "Nama Air",
-      TDS: "TDS", Hardness: "Hardness", Alkalinity: "Alkalinitas", Grinder: "Grinder", Unit: "Unit", Type: "Jenis", V60_Min: "V60 Min", V60_Max: "V60 Max", Japanese_Min: "Japanese Min", Japanese_Max: "Japanese Max", Immersion_Min: "Immersion Min", Immersion_Max: "Immersion Max"
+    const columnsByDataset = {
+      varieties: ["Variety", "Species", "Genetic_Market_Group", "Typical_Regions", "Acidity_Base", "Sweetness_Base", "Body_Base", "Notes"],
+      drippers: ["DripperName", "Brand", "Material", "BrewFamily", "Geometry", "FlowSpeed_1slow_5fast", "HeatRetention_1low_5high", "RecommendedFor"],
+      processes: ["Process", "Category", "Stage", "FermentRisk_1low_5high", "TempMod_C", "GrindMod_coarser", "RatioMod_ml_per_g", "BrewingCue"],
+      roasts: ["RoastVisual", "RoastProfile", "Level", "AgtronApprox", "EndTempC", "DTR", "Solubility", "BestUse", "Notes"],
+      waters: ["Water", "Type", "TDS_ppm", "pH", "MineralProfile", "BrewImpact", "RecommendedUse"],
+      grinders: ["Grinder", "Type", "Unit", "V60_Min", "V60_Max", "Japanese_Min", "Japanese_Max", "Immersion_Min", "Immersion_Max", "Notes"]
     };
+    const labelMap = {
+      Variety: "Nama Varietas", Species: "Spesies", Genetic_Market_Group: "Kelompok Genetik", Typical_Regions: "Wilayah Umum", Acidity_Base: "Acidity", Sweetness_Base: "Sweetness", Body_Base: "Body", Notes: "Catatan",
+      DripperName: "Nama Dripper", Brand: "Brand", Material: "Material", BrewFamily: "Keluarga Seduh", Geometry: "Geometri", FlowSpeed_1slow_5fast: "Kecepatan Flow", HeatRetention_1low_5high: "Retensi Panas", RecommendedFor: "Direkomendasikan Untuk",
+      Process: "Pasca Panen", Category: "Kategori", Stage: "Tahap Proses", FermentRisk_1low_5high: "Risiko Fermentasi", TempMod_C: "Koreksi Suhu", GrindMod_coarser: "Koreksi Gilingan", RatioMod_ml_per_g: "Koreksi Rasio", BrewingCue: "Arahan Seduh",
+      RoastVisual: "Warna Biji", RoastProfile: "Roast Profile", Level: "Level", AgtronApprox: "Agtron", EndTempC: "Suhu Akhir", DTR: "Development Ratio", Solubility: "Solubility", BestUse: "Penggunaan Terbaik",
+      Water: "Nama Air", Type: "Jenis", TDS_ppm: "TDS", pH: "pH", MineralProfile: "Profil Mineral", BrewImpact: "Dampak Rasa", RecommendedUse: "Saran Pakai",
+      Grinder: "Nama Grinder", Unit: "Satuan Setting", V60_Min: "V60 Min", V60_Max: "V60 Max", Japanese_Min: "Japanese Min", Japanese_Max: "Japanese Max", Immersion_Min: "Immersion Min", Immersion_Max: "Immersion Max"
+    };
+    const cols = columnsByDataset[dataset] || Object.keys(rows[0] || {}).slice(0, 8);
     const table = $("libraryTable");
     table.querySelector("thead").innerHTML = `<tr>${cols.map(c => `<th>${html(labelMap[c] || c)}</th>`).join("")}</tr>`;
-    table.querySelector("tbody").innerHTML = rows.slice(0, 200).map(row => `<tr>${cols.map(c => `<td>${html(row[c])}</td>`).join("")}</tr>`).join("");
+    table.querySelector("tbody").innerHTML = rows.slice(0, 200).map(row => `<tr>${cols.map(c => `<td>${c === "RoastVisual" ? roastVisual(row) : html(row[c])}</td>`).join("")}</tr>`).join("");
   }
+
 
   function exportJson() {
     const blob = new Blob([JSON.stringify({ ...state, exportedAt: new Date().toISOString() }, null, 2)], { type: "application/json" });
@@ -1985,12 +2090,13 @@
     const memberArea = $("workspaceMemberArea");
     if (!workspacePanel) return;
     const loggedIn = Boolean(currentUser);
+    const requestedRole = norm(currentUser?.user_metadata?.requested_role || "admin");
     const hasPendingMembership = (userMemberships || []).some(ws => ws.membershipStatus === "pending");
-    const canCreateWorkspace = loggedIn && (currentRole === "admin" || (!currentWorkspace && !hasPendingMembership));
-    const showForUser = loggedIn && (currentRole === "admin" || canCreateWorkspace || hasPendingMembership || !currentWorkspace);
+    const canCreateWorkspace = loggedIn && (currentRole === "admin" || (!currentWorkspace && !hasPendingMembership && requestedRole === "admin"));
+    const showForUser = loggedIn && (currentRole === "admin" || canCreateWorkspace);
     setElementHidden(workspacePanel, !showForUser);
     setElementHidden(createArea, !canCreateWorkspace);
-    setElementHidden(memberArea, !(loggedIn && currentRole !== "admin" && (currentWorkspace || hasPendingMembership)));
+    setElementHidden(memberArea, true);
   }
 
   function renderAccessUI() {
@@ -2009,7 +2115,7 @@
       showTab("brew");
     }
     if (currentUser && currentRole !== "admin" && document.querySelector(".tab-btn.active")?.dataset.tab === "admin" && $("workspacePanel")?.hidden) {
-      // tetap biarkan user melihat panel akun dan peran; hanya area workspace/admin yang disembunyikan.
+      return;
     }
   }
 
@@ -2104,6 +2210,7 @@
     $("moderationDataset")?.addEventListener("change", loadModerationRows);
     $("moderationStatus")?.addEventListener("change", loadModerationRows);
     $("refreshModeration")?.addEventListener("click", loadModerationRows);
+    $("refreshMemberRequests")?.addEventListener("click", loadMemberRequests);
     $("moderationTable")?.addEventListener("click", e => {
       const btn = e.target.closest("button[data-mod-action]");
       if (!btn) return;

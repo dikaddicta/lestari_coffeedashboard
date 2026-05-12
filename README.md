@@ -1,160 +1,53 @@
-# Rekomendasi Seduh Kopi — MVP Komersial
+# Coffee Dashboard by Lestari
 
-Aplikasi web ini dibuat sebagai versi web dari dashboard Excel rekomendasi seduh kopi.
+Dashboard web untuk rekomendasi seduh kopi, manajemen stok, brew log, QA, dan pustaka data.
 
-Fitur utama:
-- Rekomendasi seduh berdasarkan varietas, proses pascapanen, profil sangrai, dripper, grinder, air, dosis, dan metode seduh.
-- Rekomendasi biji kopi dari stok.
-- Brew Log dan QA.
-- Opsi resep terverifikasi berdasarkan nilai QA.
-- Supabase Auth untuk login.
-- Workspace untuk coffee shop, roastery, komunitas, atau tim kompetisi.
-- Peran pengguna: brewer, QA, dan admin.
-- Moderasi data: menunggu review, disetujui, ditolak.
-- Panel admin untuk meninjau, mengedit, menyetujui, menolak, dan menghapus data bermasalah.
+## Fitur
 
-## Cara menjalankan lokal
+- Rekomendasi seduh berdasarkan varietas, pascapanen, roast profile, dripper, grinder, air, dosis, dan metode seduh.
+- Custom grinder untuk pengguna yang memakai grinder di luar daftar pustaka.
+- Stok kopi privat per workspace.
+- Brew Log & QA dengan status review.
+- Feed hasil seduhan publik untuk data yang sudah lolos QA dan approval.
+- Role Admin Workspace, Brewer, dan QA.
+- Approval akses workspace untuk Brewer/QA.
+- Kotak Saran.
+- Pustaka data varietas, dripper, proses, roast profile, air mineral, dan grinder.
 
-Buka `index.html` langsung di browser.
+## Menjalankan lokal
 
-Jika Supabase belum dikonfigurasi, aplikasi tetap berjalan dengan penyimpanan lokal browser (`localStorage`).
+Buka `index.html` di browser atau gunakan Live Server di VS Code.
 
-## Setup Supabase
+## Supabase
 
-1. Buat project baru di Supabase.
-2. Buka SQL Editor.
-3. Jalankan file `supabase/schema.sql`.
-4. Buka Project Settings > API.
-5. Salin Project URL dan anon/public key.
-6. Isi file `assets/supabase-config.js`.
-7. Upload folder ini ke GitHub Pages atau hosting static lain.
+Untuk project baru, jalankan:
 
-Jangan pernah memasukkan `service_role key` ke frontend.
-
-## Catatan operasional
-
-- Data publik sebaiknya hanya memakai status `approved`.
-- Data baru dari user masuk sebagai `pending`.
-- QA/Admin bertugas mengecek dan menyetujui data.
-- Untuk penggunaan komersial, resep sebaiknya baru disetujui setelah hasilnya konsisten, misalnya 2 dari 3 brew ulang tetap mendapatkan nilai QA minimal 6.5.
-
-
-## Troubleshooting Supabase
-
-Jika muncul pesan `Invalid path specified in request URL` saat daftar/login, biasanya nilai `url` di `assets/supabase-config.js` salah.
-
-Gunakan Project URL utama dari Supabase:
-
-```js
-url: "https://xxxxx.supabase.co"
+```sql
+supabase/schema.sql
 ```
 
-Jangan gunakan URL dashboard, `/rest/v1`, `/auth/v1`, atau `service_role key`.
+Untuk project yang sudah memakai versi sebelumnya, jalankan migration sesuai urutan yang belum diterapkan:
 
+```text
+supabase/migration_v8_public_brews_private_stock.sql
+supabase/migration_v9_private_workspace_modules.sql
+supabase/migration_v15_guest_public_brew_threshold_65.sql
+supabase/migration_v17_roles_workspace_suggestions.sql
+supabase/migration_v18_access_logout_metrics.sql
+```
 
-## Perubahan v8
+Isi konfigurasi publik Supabase di:
 
-- Stok kopi bersifat privat untuk akun/workspace aktif.
-- Brew log yang sudah disetujui tampil di tab **Hasil Seduhan Publik**.
-- Halaman publik menampilkan nama brewer, profil kopi, metode seduh, recipe ringkas, nilai QA, dan catatan dial-in.
-- Untuk project Supabase yang sudah berjalan, jalankan `supabase/migration_v8_public_brews_private_stock.sql` di SQL Editor.
+```text
+assets/supabase-config.js
+```
 
+Gunakan Project URL utama dan anon/public key. Jangan taruh service role key di frontend.
 
-## Catatan v9 — Modul privat dan feed publik
+## Alur role
 
-Mulai v9:
-- Stok Kopi hanya muncul jika pengguna sudah login dan punya workspace aktif.
-- Brew Log & QA juga hanya bisa digunakan setelah login dan memilih workspace.
-- Hitungan `Stock Workspace` di header mengikuti jumlah stok pada workspace aktif.
-- Hasil seduhan dari semua pengguna ditampilkan di tab `Hasil Seduhan Publik`, tetapi hanya untuk brew log yang sudah berstatus `approved`.
-- Stok kopi tidak masuk feed publik.
+Admin Workspace membuat workspace/company dan menyetujui request akses. Brewer dan QA memilih workspace saat pendaftaran. Selama belum disetujui, status akun tampil sebagai pending dan fitur workspace tetap terkunci.
 
-Jika project Supabase sudah berjalan, jalankan migration:
-`supabase/migration_v9_private_workspace_modules.sql`
+## Catatan dial-in
 
-
-## Catatan v10 — Penguncian feed publik
-
-Mulai v10, tab Hasil Seduhan Publik hanya menampilkan brew log yang memenuhi semua syarat berikut:
-- visibility = public
-- moderation_status = approved
-- ApprovedForRecipe = Yes
-- QA_Final minimal 6.5
-
-Draft brew tanpa QA tidak akan tampil di feed publik.
-
-
-## Catatan v11 — Feedback Workspace
-
-Mulai v11, aksi `Buat Workspace` menampilkan notifikasi/toast yang jelas:
-- sedang membuat workspace,
-- berhasil dibuat,
-- gagal karena slug sudah dipakai,
-- atau gagal karena user belum login.
-
-
-## Catatan v12 — Login/logout
-
-Mulai v12:
-- Setelah pengguna login, tombol `Masuk` dan `Daftar` disembunyikan.
-- Tombol `Keluar` hanya muncul saat pengguna sudah login.
-- Link `Masuk / Daftar` di card akun header ikut hilang setelah login.
-- Logout membersihkan state akun, workspace aktif, dan data privat di tampilan.
-
-
-## Catatan v13 — Form login dan daftar dipisah
-
-Mulai v13:
-- Login hanya memakai email dan kata sandi.
-- Nama Tampilan hanya muncul di area daftar akun baru.
-- Area daftar dibuat sebagai bagian collapsible agar tidak terlihat seperti login ulang.
-
-
-## Catatan v14 — Tampilan akun setelah login
-
-Mulai v14:
-- Setelah user login, seluruh area form login dan form daftar benar-benar disembunyikan.
-- Judul panel berubah dari `Login Pengguna` menjadi `Akun Pengguna`.
-- Yang tersisa hanya ringkasan akun dan tombol `Keluar`.
-
-
-## Catatan v15 — Brew Log flow dan threshold 6.5
-
-Mulai v15:
-- Batas lolos QA diturunkan dari 8.6 menjadi 6.5.
-- Tombol `Simpan draft ke Brew Log` hanya muncul setelah user login dan memiliki workspace aktif.
-- Draft dari menu Rekomendasi Seduh masuk ke tabel Brew Log dengan status `belum diverifikasi`.
-- Di menu Brew Log & QA, user login wajib memilih `BrewID Asal` dari draft yang sudah dibuat.
-- `Variabel Utama yang Diubah` memakai checklist. Jika tidak dicentang, sistem menyimpan `Tidak ada perubahan variabel`.
-- Saat belum login, tabel Brew Log pribadi disembunyikan. Guest tetap bisa mengisi form QA publik, dan hasilnya masuk ke feed publik jika QA minimal 6.5.
-- Menu Rekomendasi Biji Kopi hanya tampil saat user login dan memiliki workspace aktif.
-- Jalankan migration: `supabase/migration_v15_guest_public_brew_threshold_65.sql`
-
-
-## Catatan v16 — Perbaikan tombol draft Brew Log
-
-Mulai v16:
-- Tombol `Simpan draft ke Brew Log` punya loading state `Menyimpan draft...`.
-- Jika Supabase menolak insert, pesan error muncul sebagai toast dan alert.
-- Setelah draft berhasil tersimpan, app melakukan sync ulang agar BrewID langsung muncul di Brew Log & QA.
-- Event tombol dibuat lebih kuat dengan fallback event delegation.
-- Debug helper tersedia di browser console: `COFFEE_APP_DEBUG.getState()`.
-
-## Catatan v17 — Revisi kompetisi / komersial
-
-Mulai v17:
-- Draft dari menu **Rekomendasi Seduh** menyimpan detail resep lengkap ke Brew Log, termasuk tahapan Bloom/Pour/Ice dan rencana valve, sehingga halaman publik tidak lagi menampilkan `N/A` untuk recipe step jika draft dibuat dari form 1.1 Data Seduhan.
-- Tombol **Setujui** di panel moderasi kini memperbarui status publik, `manual_approval`, `approved_for_recipe`, dan `qa_status` untuk brew log yang memenuhi threshold QA.
-- Tombol **Hapus** kini memakai validasi delete dengan `.select().single()` agar kegagalan RLS/row tidak ditemukan terbaca jelas. Admin juga bisa menghapus brew log yang sudah ada di workspace aktif.
-- Tombol **Edit JSON** disembunyikan dari UI produksi.
-- Data grinder diperluas dan rekomendasi klik/dial dipetakan dari target mikron per metode seduh.
-- Data air mineral Indonesia diperluas dengan TDS untuk membantu rekomendasi seduh.
-- Menu **Rekomendasi Seduh** memiliki opsi grinder **Custom** dengan input Nama Grinder dan Setting Grinder; nilai custom ini ikut tersimpan ke Brew Log.
-- Signup sekarang memiliki pilihan role Admin Workspace, Brewer, dan QA. Brewer/QA memilih Workspace/Company dan masuk sebagai request pending hingga disetujui Admin Workspace.
-- Panel Workspace hanya ditampilkan untuk Admin atau user yang belum memiliki workspace aktif; Brewer/QA melihat informasi akses saja.
-- Field visibility workspace dihapus dari UI. Workspace dibuat privat; akses modul mengikuti membership aktif pada company yang sama.
-- Judul tab, judul halaman, subtitle, dan menu **Kotak Saran** diperbarui.
-- Tabel `suggestions` ditambahkan untuk menyimpan saran/masukan publik.
-
-Untuk project Supabase yang sudah berjalan, jalankan migration:
-`supabase/migration_v17_roles_workspace_suggestions.sql`
+Rekomendasi grinder adalah titik awal. Final setting tetap perlu disesuaikan dari drawdown, rasa, roast freshness, filter, dripper, dan kalibrasi tiap unit grinder.

@@ -1,6 +1,3 @@
--- Migration v8: stok privat, hasil seduhan publik
--- Jalankan di Supabase SQL Editor jika project sudah memakai schema versi sebelumnya.
-
 alter table public.brew_logs add column if not exists brewer_name text;
 alter table public.stock_beans alter column visibility set default 'private';
 update public.stock_beans set visibility = 'private' where visibility = 'public';

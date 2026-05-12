@@ -1,13 +1,5 @@
--- Coffee Brew & Beans Recommendation Web App
--- Supabase Commercial MVP schema: Auth + Workspace + Roles + Moderation
--- Run in Supabase Dashboard > SQL Editor.
--- Safe to run more than once for most objects/policies.
-
 create extension if not exists pgcrypto;
 
--- -----------------------------------------------------------------------------
--- Utility
--- -----------------------------------------------------------------------------
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -18,9 +10,6 @@ begin
 end;
 $$;
 
--- -----------------------------------------------------------------------------
--- Auth profile
--- -----------------------------------------------------------------------------
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   created_at timestamptz not null default now(),
@@ -36,7 +25,6 @@ create trigger trg_profiles_updated_at
 before update on public.profiles
 for each row execute function public.set_updated_at();
 
--- Optional trigger: create profile automatically when Auth user is created.
 create or replace function public.handle_new_user_profile()
 returns trigger
 language plpgsql
@@ -55,7 +43,7 @@ begin
   )
   on conflict (id) do update set
     email = excluded.email,
-    display_name = coalesce(public.profiles.display_name, excluded.display_name),
+    display_name = coalesce(nullif(excluded.display_name, ''), public.profiles.display_name),
     updated_at = now();
 
   requested_role := lower(coalesce(new.raw_user_meta_data ->> 'requested_role', ''));
@@ -68,14 +56,13 @@ begin
       where w.id = requested_workspace and w.status = 'active'
     )
     on conflict (workspace_id, user_id) do update set
-      role = excluded.role,
+      role = case when public.workspace_members.status = 'active' then public.workspace_members.role else excluded.role end,
       status = case when public.workspace_members.status = 'active' then 'active' else 'pending' end,
       updated_at = now();
   end if;
 
   return new;
 exception when others then
-  -- Profile creation should never block Auth signup.
   return new;
 end;
 $$;
@@ -85,9 +72,6 @@ create trigger on_auth_user_created_profile
 after insert on auth.users
 for each row execute function public.handle_new_user_profile();
 
--- -----------------------------------------------------------------------------
--- Workspaces: coffee shop / roastery / community tenant
--- -----------------------------------------------------------------------------
 create table if not exists public.workspaces (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
@@ -120,7 +104,6 @@ create trigger trg_workspace_members_updated_at
 before update on public.workspace_members
 for each row execute function public.set_updated_at();
 
--- Default public workspace for demo/community browsing.
 insert into public.workspaces (id, name, slug, description, visibility, status)
 values (
   '00000000-0000-0000-0000-000000000001',
@@ -132,7 +115,6 @@ values (
 )
 on conflict (id) do nothing;
 
--- When a user creates a workspace, they automatically become admin.
 create or replace function public.handle_new_workspace_admin()
 returns trigger
 language plpgsql
@@ -154,9 +136,6 @@ create trigger on_workspace_created_admin
 after insert on public.workspaces
 for each row execute function public.handle_new_workspace_admin();
 
--- -----------------------------------------------------------------------------
--- Role helper functions used by RLS policies
--- -----------------------------------------------------------------------------
 create or replace function public.get_workspace_role(ws uuid)
 returns text
 language sql
@@ -207,9 +186,6 @@ as $$
   select coalesce(public.get_workspace_role(ws), '') = 'admin';
 $$;
 
--- -----------------------------------------------------------------------------
--- Data tables
--- -----------------------------------------------------------------------------
 create table if not exists public.stock_beans (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
@@ -333,7 +309,6 @@ create table if not exists public.qa_scores (
   moderated_at timestamptz
 );
 
--- Add v2 columns when upgrading from v1 schema.
 alter table public.stock_beans add column if not exists workspace_id uuid references public.workspaces(id) default '00000000-0000-0000-0000-000000000001';
 alter table public.stock_beans add column if not exists created_by uuid references auth.users(id) on delete set null;
 alter table public.stock_beans add column if not exists moderation_status text not null default 'pending';
@@ -356,12 +331,10 @@ alter table public.qa_scores add column if not exists moderation_notes text;
 alter table public.qa_scores add column if not exists moderated_by uuid references auth.users(id) on delete set null;
 alter table public.qa_scores add column if not exists moderated_at timestamptz;
 
--- Existing v1 published rows become approved.
 update public.stock_beans set moderation_status = 'approved' where moderation_status = 'pending' and status = 'published';
 update public.brew_logs set moderation_status = 'approved' where moderation_status = 'pending' and status = 'published';
 update public.qa_scores set moderation_status = 'approved' where moderation_status = 'pending' and visibility = 'public';
 
--- Triggers
 drop trigger if exists trg_stock_beans_updated_at on public.stock_beans;
 create trigger trg_stock_beans_updated_at
 before update on public.stock_beans
@@ -377,7 +350,6 @@ create trigger trg_qa_scores_updated_at
 before update on public.qa_scores
 for each row execute function public.set_updated_at();
 
--- Prevent ordinary row owners from self-approving data through direct API calls.
 create or replace function public.enforce_moderation_permissions()
 returns trigger
 language plpgsql
@@ -418,7 +390,6 @@ create trigger trg_qa_scores_moderation_guard
 before update on public.qa_scores
 for each row execute function public.enforce_moderation_permissions();
 
--- Indexes
 create index if not exists idx_workspaces_visibility on public.workspaces (visibility, status, name);
 create index if not exists idx_workspace_members_user on public.workspace_members (user_id, status);
 create index if not exists idx_workspace_members_workspace_role on public.workspace_members (workspace_id, role, status);
@@ -431,9 +402,6 @@ create index if not exists idx_brew_logs_recipe_key on public.brew_logs (recipe_
 create index if not exists idx_qa_scores_public on public.qa_scores (visibility, moderation_status, created_at desc);
 create index if not exists idx_qa_scores_workspace_status on public.qa_scores (workspace_id, moderation_status, created_at desc);
 
--- -----------------------------------------------------------------------------
--- RLS
--- -----------------------------------------------------------------------------
 alter table public.profiles enable row level security;
 alter table public.workspaces enable row level security;
 alter table public.workspace_members enable row level security;
@@ -441,7 +409,6 @@ alter table public.stock_beans enable row level security;
 alter table public.brew_logs enable row level security;
 alter table public.qa_scores enable row level security;
 
--- Remove v1 public MVP policies if upgrading from the previous schema.
 DROP POLICY IF EXISTS "Public read stock beans" ON public.stock_beans;
 DROP POLICY IF EXISTS "Public read brew logs" ON public.brew_logs;
 DROP POLICY IF EXISTS "Public read qa scores" ON public.qa_scores;
@@ -449,7 +416,6 @@ DROP POLICY IF EXISTS "Public insert stock beans" ON public.stock_beans;
 DROP POLICY IF EXISTS "Public insert brew logs" ON public.brew_logs;
 DROP POLICY IF EXISTS "Public insert qa scores" ON public.qa_scores;
 
--- Profiles
 DROP POLICY IF EXISTS "Profiles select own" ON public.profiles;
 DROP POLICY IF EXISTS "Profiles select own or workspace admin" ON public.profiles;
 CREATE POLICY "Profiles select own or workspace admin" ON public.profiles
@@ -468,7 +434,6 @@ DROP POLICY IF EXISTS "Profiles update own" ON public.profiles;
 CREATE POLICY "Profiles update own" ON public.profiles
   FOR UPDATE USING (id = auth.uid()) WITH CHECK (id = auth.uid());
 
--- Workspaces
 DROP POLICY IF EXISTS "Workspaces read public or member" ON public.workspaces;
 DROP POLICY IF EXISTS "Workspaces read active directory or member" ON public.workspaces;
 CREATE POLICY "Workspaces read active directory or member" ON public.workspaces
@@ -483,7 +448,6 @@ DROP POLICY IF EXISTS "Workspaces delete admin" ON public.workspaces;
 CREATE POLICY "Workspaces delete admin" ON public.workspaces
   FOR DELETE USING (public.is_workspace_admin(id));
 
--- Workspace members
 DROP POLICY IF EXISTS "Members read own or admin" ON public.workspace_members;
 CREATE POLICY "Members read own or admin" ON public.workspace_members
   FOR SELECT USING (user_id = auth.uid() OR public.is_workspace_admin(workspace_id));
@@ -509,7 +473,6 @@ DROP POLICY IF EXISTS "Members delete admin" ON public.workspace_members;
 CREATE POLICY "Members delete admin" ON public.workspace_members
   FOR DELETE USING (public.is_workspace_admin(workspace_id));
 
--- Public approved read; own pending read; moderator read.
 DROP POLICY IF EXISTS "Stock read approved own or moderator" ON public.stock_beans;
 CREATE POLICY "Stock read approved own or moderator" ON public.stock_beans
   FOR SELECT USING (
@@ -610,9 +573,6 @@ CREATE POLICY "QA delete admin" ON public.qa_scores
 
 
 
--- -----------------------------------------------------------------------------
--- Suggestions / Kotak Saran
--- -----------------------------------------------------------------------------
 create table if not exists public.suggestions (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
@@ -653,21 +613,8 @@ CREATE POLICY "Suggestions update workspace admin" ON public.suggestions
 create index if not exists idx_suggestions_status_created on public.suggestions (status, created_at desc);
 create index if not exists idx_suggestions_workspace on public.suggestions (workspace_id, created_at desc);
 
--- -----------------------------------------------------------------------------
--- Important operational note
--- -----------------------------------------------------------------------------
--- To promote a user to QA/Admin in a workspace, an existing workspace admin can update
--- workspace_members.role from the SQL editor or a future user-management UI.
--- Example:
--- update public.workspace_members
--- set role = 'qa'
--- where workspace_id = '<workspace_uuid>' and user_id = '<user_uuid>';
 
 
--- -----------------------------------------------------------------------------
--- v8 migration: stok privat per akun/workspace, brew log approved tampil publik.
--- Aman dijalankan di project yang sudah dibuat.
--- -----------------------------------------------------------------------------
 alter table public.brew_logs add column if not exists brewer_name text;
 alter table public.stock_beans alter column visibility set default 'private';
 update public.stock_beans set visibility = 'private' where visibility = 'public';
@@ -702,6 +649,23 @@ CREATE POLICY "Stock delete private owner or admin" ON public.stock_beans
 create index if not exists idx_brew_logs_public_feed on public.brew_logs (moderation_status, visibility, qa_final desc, created_at desc);
 
 
--- v15 note:
--- For existing Supabase projects, run supabase/migration_v15_guest_public_brew_threshold_65.sql
--- after v9 migration.
+create or replace function public.get_dashboard_user_count()
+returns integer
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select greatest(
+    0,
+    coalesce((select count(*)::integer from public.profiles), 0)
+    + coalesce((
+      select count(distinct lower(coalesce(nullif(evaluator, ''), source_client_id)))::integer
+      from public.qa_scores
+      where created_by is null
+        and coalesce(nullif(evaluator, ''), source_client_id) is not null
+    ), 0)
+  );
+$$;
+
+grant execute on function public.get_dashboard_user_count() to anon, authenticated;
