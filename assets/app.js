@@ -4,6 +4,7 @@
   const DATA = window.COFFEE_DATA || {};
   const STORAGE_KEY = "coffeeDashboardWebV1";
   const APPROVAL_THRESHOLD = 6.5;
+  let stockSaving = false;
   const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
   let supabaseClient = null;
   let cloudReady = false;
@@ -1660,17 +1661,24 @@
   }
 
   async function saveStock(e) {
-    e.preventDefault();
+    e?.preventDefault?.();
+    const form = $("stockForm");
+    const submitBtn = $("stockSubmitBtn");
+
+    if (stockSaving) return;
+    if (form?.reportValidity && !form.reportValidity()) return;
+
     if (!canUseWorkspaceModules()) {
-      showMessage(privateModuleMessage("Stok Kopi"));
+      showMessage(privateModuleMessage("Stok Kopi"), "error");
       showTab("admin");
       return;
     }
+
     const bean = {
       BeanID: nextId("B", allStock(), "BeanID"),
-      CoffeeName: $("stockName").value,
-      Origin: $("stockOrigin").value,
-      Producer: $("stockProducer").value,
+      CoffeeName: $("stockName").value.trim(),
+      Origin: $("stockOrigin").value.trim(),
+      Producer: $("stockProducer").value.trim(),
       Variety: $("stockVariety1").value,
       Variety2_optional: $("stockVariety2").value,
       Process: $("stockProcess").value,
@@ -1678,7 +1686,7 @@
       FlavorFamily: $("stockFlavor1").value,
       FlavorFamily2_optional: $("stockFlavor2").value,
       FlavorFamily3_optional: $("stockFlavor3").value,
-      Notes: $("stockNotes").value,
+      Notes: $("stockNotes").value.trim(),
       Sweetness: Number($("stockSweet").value),
       Acidity: Number($("stockAcid").value),
       Body: Number($("stockBody").value),
@@ -1688,13 +1696,20 @@
       RoastDate: $("stockRoastDate").value,
       Active: $("stockActive").value
     };
+
+    stockSaving = true;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Menyimpan...";
+    }
+    showMessage("Menyimpan stok kopi ke workspace...", "info");
+
     try {
       const saved = await insertCloud("stock_beans", toSnakeStock(bean), fromSnakeStock);
       state.cloudStock = uniqueByCloudId([saved, ...(state.cloudStock || [])]);
       renderStockTable();
       renderBeansTable();
       renderMetrics();
-      showMessage("Stok kopi tersimpan. Memuat ulang tabel workspace...", "success");
 
       const savedId = saved.CloudID;
       const previousStock = state.cloudStock || [];
@@ -1707,14 +1722,19 @@
       renderStockTable();
       renderBeansTable();
       renderMetrics();
-      e.target.reset();
+      form?.reset();
       hydrateSelects();
       showMessage("Stok kopi berhasil masuk ke tabel workspace.", "success");
-      return;
     } catch (err) {
-      console.error(err);
+      console.error("Stock save failed", err);
       showMessage(`Gagal menyimpan stok ke Supabase: ${err.message || err}`, "error");
       alert(`Gagal menyimpan stok ke Supabase. Data belum tersimpan. Detail: ${err.message || err}`);
+    } finally {
+      stockSaving = false;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Simpan Stok Pribadi";
+      }
     }
   }
 
@@ -2329,7 +2349,8 @@
     ["targetSweet", "targetAcid", "targetBody", "minStock"].forEach(id => $(id).addEventListener("input", renderBeansTable));
     $("saveCurrentBrew")?.addEventListener("click", saveCurrentBrewDraft);
     $("applyBeanToBrew")?.addEventListener("click", applyTopBeanToBrew);
-    $("stockForm").addEventListener("submit", saveStock);
+    $("stockForm")?.addEventListener("submit", saveStock);
+    $("stockSubmitBtn")?.addEventListener("click", saveStock);
     $("qaForm").addEventListener("submit", saveQA);
     document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("input", renderQAPreview));
     document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("change", renderQAPreview));
