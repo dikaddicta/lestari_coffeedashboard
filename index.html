@@ -12,9 +12,15 @@
     <header class="hero">
       <div class="hero-main">
         <p class="eyebrow">Coffee Dashboard by Lestari</p>
-        <h1>☕ Coffee Dashboard</h1>
-        <p class="hero-copy">Dashboard yang dibuat untuk penggunaan pribadi sebagai homebrewer. Jika ingin menggunakan dipersilakan secara gratis. Jika ada kesalahan, ketidaksesuaian dan ataupun kekurangan data (dripper, varietas, pasca panen, roastprofile maupun setting grinder) boleh dibantu untuk mengisi kotak saran <button class="hero-inline-link" type="button" data-jump-tab="suggestion">berikut</button>.</p>
-        <p class="hero-copy">Semoga Dashboard ini bisa bermanfaat bagi teman-teman yang sedang belajar tentang Kopi maupun bagi teman-teman yang ingin sharing mengenai Kopi. Dashboard ini tentu jauh dari Sempurna, maka dari itu harapan saya teman-teman bisa bantu saya melalui kotak saran untuk menyempurnakan-nya, terimakasih dan selamat menggunakan!</p>
+        <div class="hero-title-row">
+          <span class="hero-icon" aria-hidden="true">☕</span>
+          <h1>Coffee Dashboard</h1>
+        </div>
+        <div class="hero-text">
+          <p class="hero-lead">Dashboard pribadi untuk homebrewer yang ingin mencatat, membandingkan, dan membagikan pengalaman seduh kopi dengan lebih rapi.</p>
+          <p class="hero-copy">Silakan digunakan secara gratis. Jika ada kesalahan, ketidaksesuaian, atau kekurangan data seperti dripper, varietas, pasca panen, roast profile, maupun setting grinder, bantu lengkapi melalui <button class="hero-inline-link" type="button" data-jump-tab="suggestion">kotak saran</button>.</p>
+          <p class="hero-copy">Semoga dashboard ini bermanfaat bagi teman-teman yang sedang belajar dan berbagi tentang kopi. Dashboard ini masih jauh dari sempurna, jadi setiap masukan akan sangat membantu. Terima kasih dan selamat menggunakan.</p>
+        </div>
       </div>
       <div class="hero-side">
         <div class="hero-card">
@@ -429,6 +435,13 @@
           <p class="hint">Admin Workspace menyetujui atau menolak pendaftar Brewer/QA di company yang sama. Setelah disetujui, user bisa mengakses rekomendasi biji kopi, stok kopi, Brew Log & QA, dan fitur workspace terkait.</p>
           <div class="admin-toolbar"><button id="refreshMemberRequests" class="secondary" type="button">Muat Ulang Request</button></div>
           <div class="table-wrap tall"><table id="memberRequestTable"><thead><tr><th>Nama / Email</th><th>Role Diminta</th><th>Status</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+        </section>
+
+        <section class="panel wide" id="workspaceUserPanel">
+          <div class="section-title"><span>Pengguna</span><h2>Pengguna Workspace</h2></div>
+          <p class="hint">Daftar akun yang tergabung dalam workspace aktif. Admin dapat menghentikan akses sementara atau menghapus akses user dari workspace tanpa menghapus akun Supabase user tersebut.</p>
+          <div class="admin-toolbar"><button id="refreshWorkspaceUsers" class="secondary" type="button">Muat Ulang Pengguna</button></div>
+          <div class="table-wrap tall"><table id="workspaceUserTable"><thead><tr><th>Nama / Email</th><th>Role</th><th>Status</th><th>Bergabung</th><th>Update Terakhir</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
         </section>
 
         <section class="panel wide">

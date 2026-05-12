@@ -18,6 +18,7 @@
   let currentRole = "guest";
   let moderationRows = [];
   let pendingMemberRows = [];
+  let workspaceMemberRows = [];
   let dashboardUserCount = 0;
   const LAST_WORKSPACE_KEY = "coffeeDashboardActiveWorkspace";
   const DEFAULT_PUBLIC_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001";
@@ -32,6 +33,7 @@
   const isSwitch = (dripperName) => /switch/i.test(dripperName || "");
   const html = (s) => String(s ?? "").replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;","\"":"&quot;"}[ch]));
   const statusLabel = (status) => ({ pending: "Menunggu review", approved: "Disetujui", rejected: "Ditolak" }[String(status || "").toLowerCase()] || status || "-");
+  const memberStatusLabel = (status) => ({ pending: "Menunggu approval", active: "Aktif", rejected: "Ditolak", disabled: "Suspend" }[String(status || "").toLowerCase()] || status || "-");
 
   const state = loadState();
 
@@ -154,6 +156,8 @@
     if (active) return { role: currentRole, workspace: currentWorkspace?.name || "-", status: "active" };
     const pending = (userMemberships || []).find(ws => ws.membershipStatus === "pending");
     if (pending) return { role: pending.role, workspace: pending.name || "-", status: "pending" };
+    const disabled = (userMemberships || []).find(ws => ws.membershipStatus === "disabled");
+    if (disabled) return { role: disabled.role, workspace: disabled.name || "-", status: "disabled" };
     const rejected = (userMemberships || []).find(ws => ws.membershipStatus === "rejected");
     if (rejected) return { role: rejected.role, workspace: rejected.name || "-", status: "rejected" };
     const requested = requestedMembershipFromMetadata();
@@ -290,7 +294,10 @@
     renderWorkspaceUI();
     await syncFromCloud(true).catch(console.warn);
     if (canModerate()) await loadModerationRows().catch(console.warn);
-    if (canAdmin()) await loadMemberRequests().catch(console.warn);
+    if (canAdmin()) {
+      await loadMemberRequests().catch(console.warn);
+      await loadWorkspaceMembers().catch(console.warn);
+    }
   }
 
   function setElementHidden(el, hidden) {
@@ -311,8 +318,8 @@
     const isLoggedIn = Boolean(currentUser);
 
     const roleCtx = displayRoleContext();
-    const roleStatusClass = roleCtx.status === "active" ? "approved" : roleCtx.status === "rejected" ? "rejected" : roleCtx.status === "pending" ? "pending" : "";
-    const roleStatusText = roleCtx.status === "pending" ? "Menunggu approval" : roleCtx.status === "rejected" ? "Ditolak" : roleCtx.status === "active" ? "Aktif" : "Belum ada workspace";
+    const roleStatusClass = roleCtx.status === "active" ? "approved" : roleCtx.status === "rejected" ? "rejected" : roleCtx.status === "pending" ? "pending" : roleCtx.status === "disabled" ? "disabled" : "";
+    const roleStatusText = roleCtx.status === "pending" ? "Menunggu approval" : roleCtx.status === "rejected" ? "Ditolak" : roleCtx.status === "disabled" ? "Akses disuspend" : roleCtx.status === "active" ? "Aktif" : "Belum ada workspace";
 
     if (title) title.textContent = isLoggedIn ? "Akun Pengguna" : "Login Pengguna";
     if (userLabel) userLabel.textContent = isLoggedIn ? (userProfile?.display_name || currentUser.email) : "Mode Tamu";
@@ -1932,7 +1939,115 @@
       .single();
     if (error || !data) return showMessage(`Gagal memproses request: ${(error && error.message) || "row tidak ditemukan"}`, "error");
     await loadMemberRequests();
+    await loadWorkspaceMembers();
     showMessage(action === "approve" ? "Request akses disetujui. User sekarang bisa mengakses workspace." : "Request akses ditolak.", action === "approve" ? "success" : "info");
+  }
+
+  async function loadWorkspaceMembers(message = "") {
+    if (!supabaseClient || !currentUser || !currentWorkspace || !canAdmin()) {
+      workspaceMemberRows = [];
+      renderWorkspaceMembers();
+      return;
+    }
+    const { data, error } = await supabaseClient
+      .from("workspace_members")
+      .select("workspace_id,user_id,role,status,created_at,updated_at")
+      .eq("workspace_id", currentWorkspace.id)
+      .in("status", ["active", "disabled"])
+      .order("role", { ascending: true })
+      .order("created_at", { ascending: true });
+    if (error) {
+      workspaceMemberRows = [];
+      renderWorkspaceMembers(message || `Gagal membaca pengguna workspace: ${error.message}`);
+      return;
+    }
+    const userIds = (data || []).map(row => row.user_id).filter(Boolean);
+    let profiles = [];
+    if (userIds.length) {
+      const profileRes = await supabaseClient.from("profiles").select("id,email,display_name").in("id", userIds);
+      if (!profileRes.error) profiles = profileRes.data || [];
+    }
+    workspaceMemberRows = (data || []).map(row => ({ ...row, profile: profiles.find(p => p.id === row.user_id) || {} }));
+    renderWorkspaceMembers();
+  }
+
+  function renderWorkspaceMembers(message = "") {
+    const table = $("workspaceUserTable");
+    if (!table) return;
+    const tbody = table.querySelector("tbody");
+    if (!canAdmin()) {
+      tbody.innerHTML = `<tr><td colspan="6">Panel ini hanya untuk Admin Workspace.</td></tr>`;
+      return;
+    }
+    if (message) {
+      tbody.innerHTML = `<tr><td colspan="6">${html(message)}</td></tr>`;
+      return;
+    }
+    if (!workspaceMemberRows.length) {
+      tbody.innerHTML = `<tr><td colspan="6">Belum ada pengguna aktif di workspace ini.</td></tr>`;
+      return;
+    }
+    const activeAdminCount = workspaceMemberRows.filter(row => row.role === "admin" && row.status === "active").length;
+    tbody.innerHTML = workspaceMemberRows.map(row => {
+      const display = row.profile?.display_name || row.profile?.email || row.user_id;
+      const email = row.profile?.email || row.user_id;
+      const statusClass = row.status === "active" ? "approved" : row.status === "disabled" ? "disabled" : row.status === "rejected" ? "rejected" : "pending";
+      const isSelf = row.user_id === currentUser?.id;
+      const protectLastAdmin = row.role === "admin" && activeAdminCount <= 1;
+      const disableDanger = isSelf || protectLastAdmin;
+      let actions = `<span class="member-self-note">${isSelf ? "Akun admin aktif" : protectLastAdmin ? "Admin terakhir tidak bisa diubah" : "-"}</span>`;
+      if (!disableDanger) {
+        const firstAction = row.status === "disabled"
+          ? `<button class="secondary" data-workspace-user-action="activate" data-user-id="${html(row.user_id)}">Aktifkan</button>`
+          : `<button class="ghost" data-workspace-user-action="suspend" data-user-id="${html(row.user_id)}">Suspend</button>`;
+        actions = `${firstAction}<button class="danger" data-workspace-user-action="delete" data-user-id="${html(row.user_id)}">Hapus</button>`;
+      }
+      return `<tr>
+        <td><strong>${html(display)}</strong><br><small>${html(email)}</small></td>
+        <td>${html(row.role)}</td>
+        <td><span class="status-pill ${html(statusClass)}">${html(memberStatusLabel(row.status))}</span></td>
+        <td>${html((row.created_at || "").slice(0, 10))}</td>
+        <td>${html((row.updated_at || "").slice(0, 10))}</td>
+        <td><div class="moderation-actions">${actions}</div></td>
+      </tr>`;
+    }).join("");
+  }
+
+  async function updateWorkspaceMember(userId, action) {
+    if (!supabaseClient || !canAdmin() || !currentWorkspace) return showMessage("Butuh role Admin Workspace.", "error");
+    const row = workspaceMemberRows.find(member => member.user_id === userId);
+    if (!row) return showMessage("Data pengguna tidak ditemukan. Muat ulang tabel pengguna.", "error");
+    if (userId === currentUser?.id) return showMessage("Admin tidak bisa mengubah akses akunnya sendiri dari panel ini.", "error");
+    const activeAdminCount = workspaceMemberRows.filter(member => member.role === "admin" && member.status === "active").length;
+    if (row.role === "admin" && activeAdminCount <= 1) return showMessage("Admin terakhir tidak bisa disuspend atau dihapus.", "error");
+
+    if (action === "delete") {
+      const label = row.profile?.display_name || row.profile?.email || row.user_id;
+      if (!confirm(`Hapus akses ${label} dari workspace ${currentWorkspace.name}? Akun Supabase user tidak dihapus.`)) return;
+      const { data, error } = await supabaseClient
+        .from("workspace_members")
+        .delete()
+        .eq("workspace_id", currentWorkspace.id)
+        .eq("user_id", userId)
+        .select("workspace_id,user_id")
+        .single();
+      if (error || !data) return showMessage(`Gagal menghapus akses: ${(error && error.message) || "row tidak ditemukan"}`, "error");
+      await loadWorkspaceMembers();
+      showMessage("Akses user ke workspace berhasil dihapus.", "success");
+      return;
+    }
+
+    const status = action === "activate" ? "active" : "disabled";
+    const { data, error } = await supabaseClient
+      .from("workspace_members")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("workspace_id", currentWorkspace.id)
+      .eq("user_id", userId)
+      .select("workspace_id,user_id,status")
+      .single();
+    if (error || !data) return showMessage(`Gagal memperbarui akses: ${(error && error.message) || "row tidak ditemukan"}`, "error");
+    await loadWorkspaceMembers();
+    showMessage(status === "active" ? "Akses user diaktifkan kembali." : "Akses user disuspend sementara.", status === "active" ? "success" : "info");
   }
 
   async function submitSuggestion(e) {
@@ -2130,6 +2245,7 @@
     setElementHidden($("qaVariableWrap"), !currentUser);
     renderWorkspacePanelAccess();
     setElementHidden($("memberApprovalPanel"), !canAdmin());
+    setElementHidden($("workspaceUserPanel"), !canAdmin());
     setElementHidden($("adminPanel"), !canModerate());
 
     if (!privateReady && document.querySelector(".tab-btn.active")?.dataset.tab === "beans") {
@@ -2232,6 +2348,7 @@
     $("moderationStatus")?.addEventListener("change", loadModerationRows);
     $("refreshModeration")?.addEventListener("click", loadModerationRows);
     $("refreshMemberRequests")?.addEventListener("click", loadMemberRequests);
+    $("refreshWorkspaceUsers")?.addEventListener("click", loadWorkspaceMembers);
     $("moderationTable")?.addEventListener("click", e => {
       const btn = e.target.closest("button[data-mod-action]");
       if (!btn) return;
@@ -2241,6 +2358,11 @@
       const btn = e.target.closest("button[data-member-action]");
       if (!btn) return;
       updateMemberRequest(btn.dataset.userId, btn.dataset.memberAction);
+    });
+    $("workspaceUserTable")?.addEventListener("click", e => {
+      const btn = e.target.closest("button[data-workspace-user-action]");
+      if (!btn) return;
+      updateWorkspaceMember(btn.dataset.userId, btn.dataset.workspaceUserAction);
     });
     $("syncCloud")?.addEventListener("click", async () => {
       try {
@@ -2278,8 +2400,13 @@
     renderWorkspaceUI();
     if (canModerate()) loadModerationRows().catch(console.warn);
     else renderModerationTable?.();
-    if (canAdmin()) loadMemberRequests().catch(console.warn);
-    else renderMemberRequests?.();
+    if (canAdmin()) {
+      loadMemberRequests().catch(console.warn);
+      loadWorkspaceMembers().catch(console.warn);
+    } else {
+      renderMemberRequests?.();
+      renderWorkspaceMembers?.();
+    }
   }
 
 
