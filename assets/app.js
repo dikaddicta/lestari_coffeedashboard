@@ -793,19 +793,24 @@
       updateDbStatus("offline", "Supabase library tidak terbaca", "Cek koneksi internet atau CDN supabase-js.");
       return;
     }
+
+    let clientCreated = false;
     try {
       updateDbStatus("syncing", "Menghubungkan ke Supabase...", "Membaca sesi pengguna, workspace, dan data publik yang sudah disetujui.");
       const projectUrl = getSupabaseProjectUrl();
       const anonKey = getSupabaseAnonKey();
       supabaseClient = window.supabase.createClient(projectUrl, anonKey);
+      clientCreated = true;
       cloudReady = true;
       await initAuth();
       await syncFromCloud(false);
       updateDbStatus("online", "Supabase online", `Data publik yang sudah disetujui tersinkron. Sinkron terakhir: ${new Date().toLocaleTimeString()}`);
     } catch (err) {
       cloudReady = false;
-      supabaseClient = null;
-      updateDbStatus("offline", "Supabase gagal tersambung", err.message || "Cek config, schema, atau RLS policy.");
+      if (!clientCreated) supabaseClient = null;
+      const detail = err.message || "Cek config, schema, atau RLS policy.";
+      const title = clientCreated ? "Supabase tersambung, sinkron awal gagal" : "Supabase gagal tersambung";
+      updateDbStatus("offline", title, detail);
     }
   }
 
