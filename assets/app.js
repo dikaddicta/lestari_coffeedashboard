@@ -447,9 +447,39 @@
     if (error && error.code !== "23505" && !/duplicate|already exists/i.test(error.message || "")) throw error;
   }
 
-  async function handleLogout() {
-    if (!supabaseClient) return showMessage("Supabase belum aktif.", "error");
+  function clearLocalAuthState() {
+    currentSession = null;
+    currentUser = null;
+    userProfile = null;
+    joinedWorkspaces = [];
+    userMemberships = [];
+    currentWorkspace = null;
+    currentRole = "guest";
+    state.cloudStock = [];
+    state.cloudBrewLogs = [];
+    state.cloudQA = [];
+    localStorage.removeItem(LAST_WORKSPACE_KEY);
 
+    Object.keys(localStorage).forEach(key => {
+      if (/^sb-.*-auth-token$/.test(key) || key.includes("supabase.auth.token")) {
+        localStorage.removeItem(key);
+      }
+    });
+    Object.keys(sessionStorage || {}).forEach(key => {
+      if (/^sb-.*-auth-token$/.test(key) || key.includes("supabase.auth.token")) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  }
+
+  function withTimeout(promise, ms, label) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timeout`)), ms))
+    ]);
+  }
+
+  async function handleLogout() {
     const btn = $("logoutBtn");
     const originalText = btn?.textContent || "Keluar";
     if (btn) {
@@ -458,32 +488,18 @@
     }
 
     try {
-      const { error } = await supabaseClient.auth.signOut();
-      if (error) {
-        showMessage(`Gagal keluar: ${error.message}`, "error");
-        return;
+      if (supabaseClient) {
+        const { error } = await withTimeout(supabaseClient.auth.signOut({ scope: "local" }), 2500, "logout");
+        if (error) console.warn("logout warning", error);
       }
-
-      currentSession = null;
-      currentUser = null;
-      userProfile = null;
-      joinedWorkspaces = [];
-      userMemberships = [];
-      currentWorkspace = null;
-      currentRole = "guest";
-      state.cloudStock = [];
-      state.cloudBrewLogs = [];
-      state.cloudQA = [];
-      localStorage.removeItem(LAST_WORKSPACE_KEY);
-
+    } catch (err) {
+      console.warn("logout fallback", err);
+    } finally {
+      clearLocalAuthState();
       renderWorkspaceUI();
       renderAll();
       showMessage("Berhasil keluar.", "success");
-      setTimeout(() => window.location.reload(), 250);
-    } catch (err) {
-      console.error(err);
-      showMessage(`Gagal keluar: ${err.message || err}`, "error");
-    } finally {
+      setTimeout(() => window.location.reload(), 150);
       if (btn) {
         btn.disabled = false;
         btn.textContent = originalText;
