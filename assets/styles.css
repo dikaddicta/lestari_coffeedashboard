@@ -1057,3 +1057,40 @@ button[disabled] {
 .guide-sub strong { display: block; margin-top: 8px; color: var(--ink); }
 .guide-sub strong:first-child { margin-top: 0; }
 #stockCancelEditBtn.hidden { display: none !important; }
+
+/* v18.16 single-line main navigation */
+.tabs {
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.tab-btn {
+  flex: 0 1 auto;
+  white-space: nowrap;
+  padding: 11px clamp(10px, 1.05vw, 16px);
+  font-size: clamp(12px, .92vw, 14px);
+  line-height: 1.1;
+}
+
+.tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tabs::-webkit-scrollbar-thumb {
+  background: rgba(91, 50, 28, .22);
+  border-radius: 999px;
+}
+
+@media (max-width: 920px) {
+  .tabs {
+    justify-content: flex-start;
+  }
+
+  .tab-btn {
+    flex: 0 0 auto;
+  }
+}
