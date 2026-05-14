@@ -440,9 +440,9 @@
     }
 
     const roleMessage = requestedRole === "admin"
-      ? "Pendaftaran berhasil. Setelah masuk, buat workspace/company sebagai Admin Workspace."
-      : "Pendaftaran berhasil. Request akses workspace sudah dikirim dan menunggu approval Admin Workspace.";
-    showMessage(`${roleMessage} Jika konfirmasi email aktif, cek inbox untuk verifikasi.`, "success");
+      ? "Pendaftaran berhasil. Konfirmasi pendaftaran melalui email. Setelah email terverifikasi dan masuk, buat workspace/company sebagai Admin Workspace."
+      : "Pendaftaran berhasil. Konfirmasi pendaftaran melalui email. Setelah email terverifikasi, request akses workspace akan menunggu approval Admin Workspace.";
+    showMessage(`${roleMessage} Cek inbox atau folder spam/promosi.`, "success");
   }
 
   async function requestWorkspaceAccess(workspaceId, role, userId = currentUser?.id) {
