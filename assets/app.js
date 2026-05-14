@@ -2096,7 +2096,7 @@
       showMessage("Menghapus Brew Log dan memulihkan stok jika ada...", "info");
       let result = null;
       const rpc = supabaseClient.rpc("delete_brew_log_and_restore_stock", { p_brew_id: log.CloudID });
-      const { data, error } = await withTimeout(rpc, 18000, "Hapus Brew Log");
+      const { data, error } = await withTimeout(rpc, 70000, "Hapus Brew Log");
       if (error) throw error;
       result = data || {};
 
