@@ -1835,11 +1835,8 @@
       ? (hasVariable ? ($("qaVariable").value.trim() || "Ada perubahan variabel") : "Tidak ada perubahan variabel")
       : "Input publik tanpa draft";
 
-    const log = currentBrewLogBase({
-      BrewID: draft?.BrewID || nextId("BL", allBrewLogs(), "BrewID"),
+    const qaLogFields = {
       QA_ID: qaId,
-      BeanName: $("qaBeanName").value || draft?.BeanName || $("brewVariety").value,
-      ParentBrewID: currentUser ? (draft?.BrewID || "") : "",
       PrimaryVariableChanged: variableText,
       Hypothesis: $("qaHypothesis").value,
       ResultNotes: $("qaNotes").value,
@@ -1847,7 +1844,32 @@
       QA_Status: final >= APPROVAL_THRESHOLD ? "QA PASS" : "RETEST",
       ManualApproval: approvalRequested ? "Yes" : "No",
       ApprovedForRecipe: approved ? "Yes" : "No"
-    });
+    };
+
+    const log = draft
+      ? {
+          ...draft,
+          ...qaLogFields,
+          BrewID: draft.BrewID,
+          Date: draft.Date || todayISO(),
+          BrewerName: draft.BrewerName || currentBrewerName(),
+          BeanName: draft.BeanName || $("qaBeanName").value || "",
+          Origin: draft.Origin || "",
+          StockBeanID: draft.StockBeanID || "",
+          StockBeanCode: draft.StockBeanCode || "",
+          StockUsage_g: draft.StockUsage_g ?? "",
+          ParentBrewID: draft.ParentBrewID || "",
+          RecipeKey: draft.RecipeKey || recipeKey(draft.Variety, draft.Process, draft.RoastProfile),
+          WorkspaceID: draft.WorkspaceID || activeWorkspaceId(),
+          CloudID: draft.CloudID,
+          Source: draft.Source || "Supabase"
+        }
+      : currentBrewLogBase({
+          BrewID: nextId("BL", allBrewLogs(), "BrewID"),
+          BeanName: $("qaBeanName").value || $("brewVariety").value,
+          ParentBrewID: "",
+          ...qaLogFields
+        });
 
     const qa = {
       QA_ID: qaId,
