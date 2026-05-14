@@ -1094,3 +1094,33 @@ button[disabled] {
     flex: 0 0 auto;
   }
 }
+
+/* v18.17 brew log admin edit */
+.admin-edit-panel {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 244, 211, .42);
+}
+
+.compact-title {
+  margin-bottom: 14px;
+}
+
+.compact-title h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.notes-cell {
+  min-width: 220px;
+  max-width: 360px;
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.small-action {
+  padding: 8px 12px;
+  min-height: auto;
+}
