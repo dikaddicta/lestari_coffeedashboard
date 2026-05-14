@@ -40,10 +40,10 @@
   const statusLabel = (status) => ({ pending: "Menunggu review", approved: "Disetujui", rejected: "Ditolak" }[String(status || "").toLowerCase()] || status || "-");
   const memberStatusLabel = (status) => ({ pending: "Menunggu approval", active: "Aktif", rejected: "Ditolak", disabled: "Suspend" }[String(status || "").toLowerCase()] || status || "-");
 
-  function withTimeout(promise, label = "request", ms = 25000) {
+  function withTimeout(promise, label = "request", ms = 60000) {
     let timer;
     const timeout = new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new Error(`${label} terlalu lama merespons. Cek koneksi internet lalu coba lagi.`)), ms);
+      timer = setTimeout(() => reject(new Error(`${label} belum memberi respons dari Supabase. Coba lagi beberapa saat atau refresh halaman.`)), ms);
     });
     return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
   }
@@ -502,8 +502,8 @@
     });
   }
 
-  function withTimeout(request, arg2 = 18000, arg3 = "request") {
-    const ms = typeof arg2 === "number" ? arg2 : 18000;
+  function withTimeout(request, arg2 = 60000, arg3 = "request") {
+    const ms = typeof arg2 === "number" ? arg2 : 60000;
     const label = typeof arg2 === "string" ? arg2 : arg3;
     const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
     let task = request;
@@ -514,13 +514,13 @@
     const timeout = new Promise((_, reject) => {
       timer = setTimeout(() => {
         try { controller?.abort?.(); } catch (_err) {}
-        reject(new Error(`${label} terlalu lama merespons. Cek koneksi internet lalu coba lagi.`));
+        reject(new Error(`${label} belum memberi respons dari Supabase. Coba lagi beberapa saat atau refresh halaman.`));
       }, ms);
     });
     return Promise.race([Promise.resolve(task), timeout]).finally(() => clearTimeout(timer));
   }
 
-  function createButtonWatchdog({ key, button, originalText, label, ms = 24000 }) {
+  function createButtonWatchdog({ key, button, originalText, label, ms = 70000 }) {
     return setTimeout(() => {
       if (key === "brew") brewDraftSaving = false;
       if (key === "qa") qaSaving = false;
@@ -529,7 +529,7 @@
         button.disabled = false;
         button.textContent = originalText;
       }
-      showMessage(`${label} belum selesai karena koneksi terlalu lama merespons. Coba klik simpan lagi setelah koneksi stabil.`, "error");
+      showMessage(`${label} belum selesai karena Supabase belum memberi respons. Tombol sudah diaktifkan kembali; coba ulangi atau refresh halaman.`, "error");
     }, ms);
   }
 
@@ -949,6 +949,13 @@
     const { data, error } = await withTimeout(supabaseClient.from(table).update(payload).eq("id", id).select().single(), `Update ${table}`);
     if (error) throw error;
     return mapper(data);
+  }
+
+  async function updateCloudNoReturn(table, id, payload, label = "Update data") {
+    if (!cloudReady || !supabaseClient) throw new Error("Supabase belum siap.");
+    const { error } = await withTimeout(supabaseClient.from(table).update(payload).eq("id", id), 60000, label);
+    if (error) throw error;
+    return true;
   }
 
   function isActiveWorkspaceMember() {
@@ -1876,8 +1883,9 @@
 
       let savedLog;
       if (draft?.CloudID) {
-        savedLog = await updateCloud("brew_logs", draft.CloudID, toSnakeBrew(log), fromSnakeBrew);
-        state.cloudBrewLogs = state.cloudBrewLogs.map(item => item.CloudID === savedLog.CloudID ? savedLog : item);
+        await updateCloudNoReturn("brew_logs", draft.CloudID, toSnakeBrew(log), "Update Brew Log");
+        savedLog = { ...draft, ...log, CloudID: draft.CloudID, WorkspaceID: draft.WorkspaceID || activeWorkspaceId(), Source: "Supabase" };
+        state.cloudBrewLogs = uniqueByCloudId([savedLog, ...(state.cloudBrewLogs || []).filter(item => item.CloudID !== savedLog.CloudID)]);
       } else {
         savedLog = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
         state.cloudBrewLogs.unshift(savedLog);
