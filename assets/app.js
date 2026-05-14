@@ -5,7 +5,10 @@
   const STORAGE_KEY = "coffeeDashboardWebV1";
   const APPROVAL_THRESHOLD = 6.5;
   let stockSaving = false;
+  let brewDraftSaving = false;
+  let qaSaving = false;
   let editingStockId = null;
+  let brewStockOptionsSignature = "";
   const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
   let supabaseClient = null;
   let cloudReady = false;
@@ -36,6 +39,24 @@
   const html = (s) => String(s ?? "").replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;","\"":"&quot;"}[ch]));
   const statusLabel = (status) => ({ pending: "Menunggu review", approved: "Disetujui", rejected: "Ditolak" }[String(status || "").toLowerCase()] || status || "-");
   const memberStatusLabel = (status) => ({ pending: "Menunggu approval", active: "Aktif", rejected: "Ditolak", disabled: "Suspend" }[String(status || "").toLowerCase()] || status || "-");
+
+  function withTimeout(promise, label = "request", ms = 25000) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`${label} terlalu lama merespons. Cek koneksi internet lalu coba lagi.`)), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+  }
+
+  window.addEventListener("unhandledrejection", event => {
+    console.error("Unhandled promise rejection", event.reason);
+    showMessage(`Terjadi error proses: ${event.reason?.message || event.reason || "unknown error"}`, "error");
+  });
+
+  window.addEventListener("error", event => {
+    console.error("Unhandled error", event.error || event.message);
+    showMessage(`Terjadi error aplikasi: ${event.message || "unknown error"}`, "error");
+  });
 
   const state = loadState();
 
@@ -481,11 +502,14 @@
     });
   }
 
-  function withTimeout(promise, ms, label) {
-    return Promise.race([
-      promise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timeout`)), ms))
-    ]);
+  function withTimeout(promise, arg2 = 25000, arg3 = "request") {
+    const ms = typeof arg2 === "number" ? arg2 : 25000;
+    const label = typeof arg2 === "string" ? arg2 : arg3;
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`${label} terlalu lama merespons. Cek koneksi internet lalu coba lagi.`)), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
   }
 
   async function handleLogout() {
@@ -876,7 +900,7 @@
       ? supabaseClient.from("qa_scores").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false }).limit(1000)
       : Promise.resolve(empty);
 
-    const [stockRes, publicBrewRes, workspaceBrewRes, workspaceQaRes] = await Promise.all([stockPromise, publicBrewPromise, workspaceBrewPromise, workspaceQaPromise]);
+    const [stockRes, publicBrewRes, workspaceBrewRes, workspaceQaRes] = await withTimeout(Promise.all([stockPromise, publicBrewPromise, workspaceBrewPromise, workspaceQaPromise]), "Sinkronisasi Supabase");
     if (stockRes.error) throw stockRes.error;
     if (publicBrewRes.error) throw publicBrewRes.error;
     if (workspaceBrewRes.error) throw workspaceBrewRes.error;
@@ -894,14 +918,14 @@
 
   async function insertCloud(table, payload, mapper) {
     if (!cloudReady || !supabaseClient) throw new Error("Supabase belum siap.");
-    const { data, error } = await supabaseClient.from(table).insert(payload).select().single();
+    const { data, error } = await withTimeout(supabaseClient.from(table).insert(payload).select().single(), `Simpan ${table}`);
     if (error) throw error;
     return mapper(data);
   }
 
   async function updateCloud(table, id, payload, mapper) {
     if (!cloudReady || !supabaseClient) throw new Error("Supabase belum siap.");
-    const { data, error } = await supabaseClient.from(table).update(payload).eq("id", id).select().single();
+    const { data, error } = await withTimeout(supabaseClient.from(table).update(payload).eq("id", id).select().single(), `Update ${table}`);
     if (error) throw error;
     return mapper(data);
   }
@@ -1008,7 +1032,7 @@
     return stockBean;
   }
 
-  function renderBrewStockOptions() {
+  function renderBrewStockOptions(force = false) {
     const select = $("brewStockSelect");
     if (!select) return;
     const hasWorkspace = canUseWorkspaceModules();
@@ -1016,6 +1040,12 @@
     const beans = hasWorkspace
       ? allStock().filter(bean => String(bean.Active || "Yes").toLowerCase() !== "no")
       : [];
+    const signature = `${hasWorkspace}|${beans.map(bean => [bean.CloudID || bean.BeanID, bean.CoffeeName, bean.Stock_g, bean.Active].join(":"))}`;
+    if (!force && signature === brewStockOptionsSignature) {
+      syncBrewStockUI({ apply: false });
+      return;
+    }
+    brewStockOptionsSignature = signature;
     const options = [`<option value="non_stock">Non Stock / Manual</option>`]
       .concat(beans.map(bean => `<option value="${html(bean.CloudID || bean.BeanID)}">${html(stockOptionLabel(bean))}</option>`));
     select.innerHTML = options.join("");
@@ -1643,10 +1673,10 @@
 
   async function consumeStockForBrew(stockBean, amount) {
     if (!stockBean?.CloudID || !amount) return null;
-    const { data, error } = await supabaseClient.rpc("consume_stock_for_brew", {
+    const { data, error } = await withTimeout(supabaseClient.rpc("consume_stock_for_brew", {
       p_stock_id: stockBean.CloudID,
       p_amount: Number(amount || 0)
-    });
+    }), "Update stok kopi");
     if (error) throw error;
     const updated = fromSnakeStock(data);
     state.cloudStock = uniqueByCloudId([updated, ...(state.cloudStock || []).filter(bean => bean.CloudID !== updated.CloudID)]);
@@ -1656,8 +1686,9 @@
   async function saveCurrentBrewDraft(event) {
     event?.preventDefault?.();
     event?.stopPropagation?.();
+    if (brewDraftSaving) return;
 
-    const btn = $("saveCurrentBrew");
+    const btn = event?.target?.closest?.("#saveCurrentBrew,[data-action='save-brew-draft']") || $("saveCurrentBrew");
     const originalText = btn?.textContent || "Simpan draft ke Brew Log";
 
     if (!cloudReady || !supabaseClient) {
@@ -1671,6 +1702,7 @@
     }
 
     try {
+      brewDraftSaving = true;
       if (btn) {
         btn.disabled = true;
         btn.textContent = "Menyimpan draft...";
@@ -1709,6 +1741,7 @@
       showMessage(`Gagal menyimpan draft ke Supabase: ${detail}`, "error");
       alert(`Gagal menyimpan draft ke Supabase. Detail: ${detail}`);
     } finally {
+      brewDraftSaving = false;
       if (btn) {
         btn.disabled = false;
         btn.textContent = originalText;
@@ -1733,7 +1766,12 @@
   }
 
   async function saveQA(e) {
-    e.preventDefault();
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+    if (qaSaving) return;
+
+    const btn = e?.target?.closest?.("#qaSubmitBtn") || $("qaSubmitBtn");
+    const originalText = btn?.textContent || "Simpan Brew Log + QA";
 
     if (!cloudReady || !supabaseClient) {
       showMessage("Database belum tersambung. Hubungkan Supabase terlebih dahulu.", "error");
@@ -1803,6 +1841,13 @@
     };
 
     try {
+      qaSaving = true;
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Menyimpan QA...";
+      }
+      showMessage("Sedang menyimpan Brew Log & QA...", "info");
+
       let savedLog;
       if (draft?.CloudID) {
         savedLog = await updateCloud("brew_logs", draft.CloudID, toSnakeBrew(log), fromSnakeBrew);
@@ -1829,7 +1874,15 @@
       }
     } catch (err) {
       console.error(err);
-      showMessage(`Gagal menyimpan Brew Log & QA ke Supabase: ${err.message || err}`, "error");
+      const detail = err?.message || err?.details || err?.hint || String(err);
+      showMessage(`Gagal menyimpan Brew Log & QA ke Supabase: ${detail}`, "error");
+      alert(`Gagal menyimpan Brew Log & QA. Detail: ${detail}`);
+    } finally {
+      qaSaving = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
     }
   }
 
@@ -2671,9 +2724,21 @@
       if (applyBtn) {
         e.preventDefault();
         applyTopBeanToBrew();
+        return;
+      }
+      const qaBtn = e.target.closest?.("#qaSubmitBtn");
+      if (qaBtn) {
+        saveQA(e);
       }
     });
-    ["brewVariety", "brewProcess", "brewRoast", "brewDripper", "brewMode", "switchValveMode", "brewGrinder", "brewWater", "brewDose", "pourPattern"].forEach(id => $(id)?.addEventListener("change", renderBrew));
+    const brewFieldIds = ["brewVariety", "brewProcess", "brewRoast", "brewDripper", "brewMode", "switchValveMode", "brewGrinder", "brewWater", "brewDose", "pourPattern"];
+    brewFieldIds.forEach(id => $(id)?.addEventListener("change", renderBrew));
+    $("brewDose")?.addEventListener("input", renderBrew);
+    document.addEventListener("change", e => {
+      if (brewFieldIds.includes(e.target?.id)) renderBrew();
+      if (e.target?.id === "brewStockSelect") { syncBrewStockUI({ apply: true }); renderBrew(); }
+      if (e.target?.id === "qaParent") applySelectedDraftToQA();
+    });
     $("brewStockSelect")?.addEventListener("change", () => { syncBrewStockUI({ apply: true }); renderBrew(); });
     $("brewBeanName")?.addEventListener("input", () => syncBrewStockUI({ apply: false }));
     ["customGrinderName", "customGrinderSetting"].forEach(id => $(id)?.addEventListener("input", renderBrew));
@@ -2698,7 +2763,8 @@
       if (btn.dataset.stockAction === "edit") return editStockBean(btn.dataset.stockId);
       if (btn.dataset.stockAction === "delete") return deleteStockBean(btn.dataset.stockId);
     });
-    $("qaForm").addEventListener("submit", saveQA);
+    $("qaForm")?.addEventListener("submit", saveQA);
+    $("qaSubmitBtn")?.addEventListener("click", saveQA);
     $("brewLogTable")?.addEventListener("click", e => {
       const btn = e.target.closest("button[data-brew-edit]");
       if (!btn) return;
