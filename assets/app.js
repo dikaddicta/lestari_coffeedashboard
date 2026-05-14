@@ -502,14 +502,35 @@
     });
   }
 
-  function withTimeout(promise, arg2 = 25000, arg3 = "request") {
-    const ms = typeof arg2 === "number" ? arg2 : 25000;
+  function withTimeout(request, arg2 = 18000, arg3 = "request") {
+    const ms = typeof arg2 === "number" ? arg2 : 18000;
     const label = typeof arg2 === "string" ? arg2 : arg3;
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    let task = request;
+    if (task && typeof task.abortSignal === "function" && controller) {
+      task = task.abortSignal(controller.signal);
+    }
     let timer;
     const timeout = new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new Error(`${label} terlalu lama merespons. Cek koneksi internet lalu coba lagi.`)), ms);
+      timer = setTimeout(() => {
+        try { controller?.abort?.(); } catch (_err) {}
+        reject(new Error(`${label} terlalu lama merespons. Cek koneksi internet lalu coba lagi.`));
+      }, ms);
     });
-    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+    return Promise.race([Promise.resolve(task), timeout]).finally(() => clearTimeout(timer));
+  }
+
+  function createButtonWatchdog({ key, button, originalText, label, ms = 24000 }) {
+    return setTimeout(() => {
+      if (key === "brew") brewDraftSaving = false;
+      if (key === "qa") qaSaving = false;
+      if (key === "stock") stockSaving = false;
+      if (button) {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+      showMessage(`${label} belum selesai karena koneksi terlalu lama merespons. Coba klik simpan lagi setelah koneksi stabil.`, "error");
+    }, ms);
   }
 
   async function handleLogout() {
@@ -1701,12 +1722,14 @@
       return;
     }
 
+    let watchdog;
     try {
       brewDraftSaving = true;
       if (btn) {
         btn.disabled = true;
         btn.textContent = "Menyimpan draft...";
       }
+      watchdog = createButtonWatchdog({ key: "brew", button: btn, originalText, label: "Simpan draft Brew Log" });
       showMessage("Sedang menyimpan draft ke Brew Log...", "info");
 
       const stockBean = selectedBrewStockBean();
@@ -1741,6 +1764,7 @@
       showMessage(`Gagal menyimpan draft ke Supabase: ${detail}`, "error");
       alert(`Gagal menyimpan draft ke Supabase. Detail: ${detail}`);
     } finally {
+      if (watchdog) clearTimeout(watchdog);
       brewDraftSaving = false;
       if (btn) {
         btn.disabled = false;
@@ -1840,12 +1864,14 @@
       QA_Notes: $("qaNotes").value
     };
 
+    let watchdog;
     try {
       qaSaving = true;
       if (btn) {
         btn.disabled = true;
         btn.textContent = "Menyimpan QA...";
       }
+      watchdog = createButtonWatchdog({ key: "qa", button: btn, originalText, label: "Simpan Brew Log + QA" });
       showMessage("Sedang menyimpan Brew Log & QA...", "info");
 
       let savedLog;
@@ -1878,6 +1904,7 @@
       showMessage(`Gagal menyimpan Brew Log & QA ke Supabase: ${detail}`, "error");
       alert(`Gagal menyimpan Brew Log & QA. Detail: ${detail}`);
     } finally {
+      if (watchdog) clearTimeout(watchdog);
       qaSaving = false;
       if (btn) {
         btn.disabled = false;
@@ -1928,7 +1955,7 @@
         <td class="notes-cell">${variableText}</td>
         <td class="notes-cell">${hypothesisText}</td>
         <td class="notes-cell">${resultText}</td>
-        ${adminView ? `<td><button class="secondary small-action" type="button" data-brew-edit="${editKey}">Edit</button></td>` : ""}
+        ${adminView ? `<td><div class="moderation-actions"><button class="secondary small-action" type="button" data-brew-edit="${editKey}">Edit</button><button class="danger small-action" type="button" data-brew-delete="${editKey}">Hapus</button></div></td>` : ""}
       </tr>`;
     }).join("");
   }
@@ -2022,10 +2049,60 @@
     }
   }
 
+  async function deleteBrewLog(key) {
+    if (!canAdmin()) return showMessage("Hapus Brew Log hanya untuk Admin Workspace.", "error");
+    if (!cloudReady || !supabaseClient) return showMessage("Supabase belum tersambung.", "error");
+
+    const log = findBrewLogForEdit(key);
+    if (!log) return showMessage("Brew Log tidak ditemukan. Muat ulang data lalu coba lagi.", "error");
+    if (!log.CloudID) return showMessage("Brew Log ini belum memiliki ID Supabase, sehingga belum bisa dihapus.", "error");
+
+    const stockText = log.StockBeanID && Number(log.StockUsage_g || 0) > 0
+      ? ` Stok kopi akan dikembalikan sebesar ${fmt(log.StockUsage_g)}g.`
+      : "";
+    if (!confirm(`Hapus Brew Log ${log.BrewID || "ini"}?${stockText}`)) return;
+
+    try {
+      showMessage("Menghapus Brew Log dan memulihkan stok jika ada...", "info");
+      let result = null;
+      const rpc = supabaseClient.rpc("delete_brew_log_and_restore_stock", { p_brew_id: log.CloudID });
+      const { data, error } = await withTimeout(rpc, 18000, "Hapus Brew Log");
+      if (error) throw error;
+      result = data || {};
+
+      state.cloudBrewLogs = (state.cloudBrewLogs || []).filter(item => item.CloudID !== log.CloudID);
+      state.cloudQA = (state.cloudQA || []).filter(item => item.BrewID !== log.BrewID);
+
+      if (log.StockBeanID && Number(result.stock_g ?? NaN) >= 0) {
+        state.cloudStock = (state.cloudStock || []).map(bean => String(bean.CloudID) === String(log.StockBeanID)
+          ? { ...bean, Stock_g: Number(result.stock_g) }
+          : bean);
+      }
+
+      await syncFromCloud(false).catch(console.warn);
+      renderStockTable();
+      renderBeansTable();
+      renderBrewLogTable();
+      renderQABrewOptions();
+      renderRecipeOptions(computeBrew());
+      renderPublicBrewTable();
+      if (canModerate()) loadModerationRows().catch(console.warn);
+
+      const restored = result?.stock_restored ? ` Stok dikembalikan ${fmt(result.stock_usage_g)}g.` : "";
+      showMessage(`Brew Log berhasil dihapus.${restored}`, "success");
+    } catch (err) {
+      console.error("delete brew log failed", err);
+      const detail = err?.message || err?.details || err?.hint || String(err);
+      showMessage(`Gagal menghapus Brew Log: ${detail}`, "error");
+      alert(`Gagal menghapus Brew Log. Detail: ${detail}`);
+    }
+  }
+
   async function saveStock(e) {
     e?.preventDefault?.();
     const form = $("stockForm");
     const submitBtn = $("stockSubmitBtn");
+    const originalText = submitBtn?.textContent || (editingStockId ? "Simpan Perubahan Stok" : "Simpan Stok Pribadi");
 
     if (stockSaving) return;
     if (form?.reportValidity && !form.reportValidity()) return;
@@ -2060,10 +2137,12 @@
     };
 
     stockSaving = true;
+    let watchdog;
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.textContent = "Menyimpan...";
     }
+    watchdog = createButtonWatchdog({ key: "stock", button: submitBtn, originalText, label: "Simpan stok kopi" });
     showMessage("Menyimpan stok kopi ke workspace...", "info");
 
     try {
@@ -2112,6 +2191,7 @@
       showMessage(`Gagal menyimpan stok ke Supabase: ${err.message || err}`, "error");
       alert(`Gagal menyimpan stok ke Supabase. Data belum tersimpan. Detail: ${err.message || err}`);
     } finally {
+      if (watchdog) clearTimeout(watchdog);
       stockSaving = false;
       if (submitBtn) {
         submitBtn.disabled = false;
@@ -2766,9 +2846,10 @@
     $("qaForm")?.addEventListener("submit", saveQA);
     $("qaSubmitBtn")?.addEventListener("click", saveQA);
     $("brewLogTable")?.addEventListener("click", e => {
-      const btn = e.target.closest("button[data-brew-edit]");
-      if (!btn) return;
-      openBrewLogEdit(btn.dataset.brewEdit);
+      const editBtn = e.target.closest("button[data-brew-edit]");
+      if (editBtn) return openBrewLogEdit(editBtn.dataset.brewEdit);
+      const deleteBtn = e.target.closest("button[data-brew-delete]");
+      if (deleteBtn) return deleteBrewLog(deleteBtn.dataset.brewDelete);
     });
     $("brewLogEditForm")?.addEventListener("submit", saveBrewLogEdit);
     $("cancelBrewEdit")?.addEventListener("click", closeBrewLogEdit);
