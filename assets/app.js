@@ -743,6 +743,24 @@
     };
   }
 
+
+  function toSnakeBrewQAUpdate(log) {
+    return {
+      primary_variable_changed: log.PrimaryVariableChanged || null,
+      hypothesis: log.Hypothesis || null,
+      result_notes: log.ResultNotes || null,
+      qa_code: log.QA_ID || null,
+      qa_final: log.QA_Final === "" ? null : Number(log.QA_Final || 0),
+      qa_status: log.QA_Status || null,
+      manual_approval: log.ManualApproval || "No",
+      approved_for_recipe: log.ApprovedForRecipe || "No",
+      status: moderationStatusForBrew(log),
+      moderation_status: moderationStatusForBrew(log),
+      moderated_by: canModerate() ? currentUser?.id : null,
+      moderated_at: canModerate() ? new Date().toISOString() : null
+    };
+  }
+
   function fromSnakeBrew(row) {
     return {
       CloudID: row.id,
@@ -1755,14 +1773,18 @@
           stockMessage = ` Draft tersimpan, tetapi stok belum berkurang: ${stockErr.message || stockErr}`;
         }
       }
-      await syncFromCloud(false).catch(console.warn);
-
       renderStockTable();
       renderBeansTable();
       renderBrewLogTable();
       renderQABrewOptions();
       renderRecipeOptions(computeBrew());
       renderPublicBrewTable();
+      syncFromCloud(false).then(() => {
+        renderStockTable();
+        renderBrewLogTable();
+        renderQABrewOptions();
+        renderPublicBrewTable();
+      }).catch(console.warn);
 
       showMessage(`Draft ${saved.BrewID} berhasil tersimpan. Buka Brew Log & QA lalu pilih BrewID tersebut untuk verifikasi.${stockMessage}`, stockMessage.includes("belum berkurang") ? "error" : "success");
     } catch (err) {
@@ -1905,7 +1927,7 @@
 
       let savedLog;
       if (draft?.CloudID) {
-        await updateCloudNoReturn("brew_logs", draft.CloudID, toSnakeBrew(log), "Update Brew Log");
+        await updateCloudNoReturn("brew_logs", draft.CloudID, toSnakeBrewQAUpdate(log), "Update ringkas Brew Log");
         savedLog = { ...draft, ...log, CloudID: draft.CloudID, WorkspaceID: draft.WorkspaceID || activeWorkspaceId(), Source: "Supabase" };
         state.cloudBrewLogs = uniqueByCloudId([savedLog, ...(state.cloudBrewLogs || []).filter(item => item.CloudID !== savedLog.CloudID)]);
       } else {
