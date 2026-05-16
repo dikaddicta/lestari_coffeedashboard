@@ -432,7 +432,7 @@
           <div class="section-title"><span>Publik</span><h2>Hasil Seduhan dari Komunitas</h2></div>
           <p class="hint">Halaman ini menampilkan brew log yang sudah disetujui. Data stok kopi tetap privat di akun/workspace masing-masing.</p>
           <div class="public-feed-toolbar">
-            <input id="publicBrewSearch" placeholder="Cari kopi, brewer, varietas, proses, dripper..." />
+            <input id="publicBrewSearch" placeholder="Cari kopi, brewer, metode, detail seduhan..." />
             <select id="publicBrewMethod"><option value="all">Semua metode</option><option>Hot V60</option><option>Japanese Iced</option></select>
             <select id="publicBrewMinQA"><option value="0">Semua nilai QA</option><option value="6.5">QA ≥ 6.5</option><option value="7">QA ≥ 7.0</option><option value="8">QA ≥ 8.0</option></select>
             <button id="refreshPublicBrews" class="secondary" type="button">Muat Ulang</button>
@@ -440,7 +440,7 @@
           <div class="table-wrap tall">
             <table id="publicBrewTable">
               <thead>
-                <tr><th>Tanggal</th><th>Kopi</th><th>Brewer</th><th>Profil</th><th>Metode</th><th>Recipe</th><th>QA</th><th>Catatan</th></tr>
+                <tr><th>Kopi</th><th>Brewer</th><th>Metode</th><th>QA</th><th>Detail</th></tr>
               </thead>
               <tbody></tbody>
             </table>
@@ -602,6 +602,14 @@
         </section>
       </section>
     </main>
+  </div>
+
+
+  <div id="publicBrewModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="publicBrewModalTitle">
+    <div class="modal-card public-brew-detail-card">
+      <button id="publicBrewModalClose" class="modal-close" type="button" aria-label="Tutup detail">×</button>
+      <div id="publicBrewModalBody"></div>
+    </div>
   </div>
 
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>

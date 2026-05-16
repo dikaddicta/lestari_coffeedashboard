@@ -2722,34 +2722,104 @@
       .sort((a, b) => new Date(b.Date || 0) - new Date(a.Date || 0));
   }
 
+  function publicBrewKey(log) {
+    return String(log.CloudID || log.BrewID || "");
+  }
+
+  function findPublicBrewLog(key) {
+    return publicBrewRows().find(log => publicBrewKey(log) === String(key))
+      || (state.cloudBrewLogs || []).find(log => publicBrewKey(log) === String(key));
+  }
+
+  function detailLine(label, value) {
+    const text = value === 0 ? "0" : (value || "-");
+    return `<div class="detail-line"><span>${html(label)}</span><strong>${html(text)}</strong></div>`;
+  }
+
+  function publicBrewDetailHtml(log) {
+    const profile = [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · ") || "-";
+    const grinderRecipe = [log.Grinder, log.GrindSetting].filter(Boolean).join(" · ") || "-";
+    const stepSummary = formatPublicRecipeSteps(log);
+    const waterInfo = [
+      log.TotalWater_ml ? `Total ${log.TotalWater_ml} ml` : "",
+      log.HotWater_ml ? `Air panas ${log.HotWater_ml} ml` : "",
+      Number(log.Ice_g) ? `Es ${log.Ice_g} g` : ""
+    ].filter(Boolean).join(" · ") || "-";
+    return `
+      <div class="modal-header-block">
+        <span class="edit-kicker">Detail Seduhan Publik</span>
+        <h3 id="publicBrewModalTitle">${html(log.BeanName || "Tanpa nama")}</h3>
+        <p>${html(log.BrewerName || "Brewer")} · ${html(log.Method || "-")} · QA ${html(log.QA_Final || "-")}</p>
+      </div>
+      <div class="public-detail-grid">
+        <section>
+          <h4>Identitas Kopi</h4>
+          ${detailLine("Tanggal", log.Date)}
+          ${detailLine("Kopi", log.BeanName || "Tanpa nama")}
+          ${detailLine("Asal", log.Origin)}
+          ${detailLine("Profil", profile)}
+          ${detailLine("Brewer", log.BrewerName || "Brewer")}
+        </section>
+        <section>
+          <h4>Parameter Seduh</h4>
+          ${detailLine("Metode", log.Method)}
+          ${detailLine("Dripper", log.Dripper)}
+          ${detailLine("Grinder", log.Grinder)}
+          ${detailLine("Gilingan", log.GrindSetting)}
+          ${detailLine("Suhu", log.Temp_C ? `${log.Temp_C}°C` : "-")}
+          ${detailLine("Rasio", log.Ratio ? `1:${log.Ratio}` : "-")}
+          ${detailLine("Dose", log.Dose_g ? `${log.Dose_g} g` : "-")}
+          ${detailLine("Air", waterInfo)}
+          ${detailLine("Brew Time", log.BrewTime_sec ? fmtTime(log.BrewTime_sec) : "-")}
+        </section>
+        <section class="detail-section-wide">
+          <h4>Recipe / Tahapan Seduh</h4>
+          <p class="detail-text">${html(stepSummary || "Detail tahapan belum tersedia")}</p>
+        </section>
+        <section class="detail-section-wide">
+          <h4>Evaluasi</h4>
+          ${detailLine("QA", log.QA_Final || "-")}
+          ${detailLine("Variabel", log.PrimaryVariableChanged || "Tidak ada perubahan variabel")}
+          ${detailLine("Hipotesis", log.Hypothesis || "-")}
+          <p class="detail-text"><strong>Catatan Hasil</strong><br>${html(log.ResultNotes || "-")}</p>
+        </section>
+      </div>`;
+  }
+
+  function openPublicBrewDetail(key) {
+    const modal = $("publicBrewModal");
+    const body = $("publicBrewModalBody");
+    if (!modal || !body) return;
+    const log = findPublicBrewLog(key);
+    if (!log) return showMessage("Detail seduhan tidak ditemukan. Muat ulang data lalu coba lagi.", "error");
+    body.innerHTML = publicBrewDetailHtml(log);
+    modal.classList.remove("hidden");
+    document.body.classList.add("modal-open");
+    $("publicBrewModalClose")?.focus();
+  }
+
+  function closePublicBrewDetail() {
+    $("publicBrewModal")?.classList.add("hidden");
+    document.body.classList.remove("modal-open");
+  }
+
   function renderPublicBrewTable() {
     const table = $("publicBrewTable");
     if (!table) return;
     const rows = publicBrewRows();
     const tbody = table.querySelector("tbody");
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="8">Belum ada hasil seduhan publik yang sesuai filter. Brew log akan tampil di sini setelah QA ≥ 6.5 dan disetujui.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5">Belum ada hasil seduhan publik yang sesuai filter. Brew log akan tampil di sini setelah QA ≥ 6.5 dan disetujui.</td></tr>`;
       return;
     }
     tbody.innerHTML = rows.map(log => {
-      const profile = [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · ");
-      const grinderRecipe = [log.Grinder, log.GrindSetting].filter(Boolean).join(" · ") || "-";
-      const recipe = [grinderRecipe, `${log.Temp_C || "-"}°C`, `1:${log.Ratio || "-"}`, `${log.TotalWater_ml || "-"} ml`].join(" · ");
-      const stepSummary = formatPublicRecipeSteps(log);
-      const notes = [
-        log.PrimaryVariableChanged ? `Variabel: ${log.PrimaryVariableChanged}` : "",
-        log.Hypothesis ? `Hipotesis: ${log.Hypothesis}` : "",
-        log.ResultNotes ? `Hasil: ${log.ResultNotes}` : ""
-      ].filter(Boolean).join(" — ");
+      const key = html(publicBrewKey(log));
       return `<tr>
-        <td>${html(log.Date || "-")}</td>
-        <td><strong>${html(log.BeanName || "Tanpa nama")}</strong><br><small>${html(log.Origin || "")}</small></td>
+        <td><strong>${html(log.BeanName || "Tanpa nama")}</strong></td>
         <td>${html(log.BrewerName || "Brewer")}</td>
-        <td>${html(profile)}</td>
-        <td>${html(log.Method || "-")}<br><small>${html(log.Dripper || "")}</small></td>
-        <td>${html(recipe)}<br><small>${html(stepSummary)}</small></td>
+        <td>${html(log.Method || "-")}</td>
         <td><span class="score-pill">${html(log.QA_Final || "-")}</span></td>
-        <td>${html(notes || "-")}</td>
+        <td><button class="secondary small-action" type="button" data-public-brew-detail="${key}">Detail</button></td>
       </tr>`;
     }).join("");
   }
@@ -2980,6 +3050,18 @@
     $("publicBrewSearch")?.addEventListener("input", renderPublicBrewTable);
     $("publicBrewMethod")?.addEventListener("change", renderPublicBrewTable);
     $("publicBrewMinQA")?.addEventListener("change", renderPublicBrewTable);
+    $("publicBrewTable")?.addEventListener("click", e => {
+      const btn = e.target.closest("button[data-public-brew-detail]");
+      if (!btn) return;
+      openPublicBrewDetail(btn.dataset.publicBrewDetail);
+    });
+    $("publicBrewModalClose")?.addEventListener("click", closePublicBrewDetail);
+    $("publicBrewModal")?.addEventListener("click", e => {
+      if (e.target.id === "publicBrewModal") closePublicBrewDetail();
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && !$("publicBrewModal")?.classList.contains("hidden")) closePublicBrewDetail();
+    });
     $("refreshPublicBrews")?.addEventListener("click", async () => { await syncFromCloud(true).catch(err => alert(`Gagal memuat hasil seduhan publik: ${err.message || err}`)); });
     $("loginBtn")?.addEventListener("click", handleLogin);
     $("signupBtn")?.addEventListener("click", handleSignup);
