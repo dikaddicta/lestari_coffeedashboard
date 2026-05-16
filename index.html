@@ -369,28 +369,53 @@
           <div class="table-wrap tall">
             <table id="brewLogTable"><thead></thead><tbody></tbody></table>
           </div>
-          <div id="brewLogEditPanel" class="admin-edit-panel hidden">
-            <div class="section-title compact-title"><span>Edit</span><h3>Edit Brew Log</h3></div>
-            <form id="brewLogEditForm" class="form-grid compact">
+          <div id="brewLogEditPanel" class="admin-edit-panel professional-edit-panel hidden">
+            <div class="edit-panel-header">
+              <div>
+                <span class="edit-kicker">Admin Edit</span>
+                <h3>Perbaiki Brew Log</h3>
+                <p>Gunakan panel ini hanya untuk koreksi data salah input. Perubahan akan tersimpan ke data workspace dan memengaruhi tampilan publik jika brew log sudah disetujui.</p>
+              </div>
+              <div class="edit-brew-summary">
+                <small>BrewID</small>
+                <strong id="editBrewHeaderId">-</strong>
+              </div>
+            </div>
+            <form id="brewLogEditForm" class="brew-edit-form">
               <input id="editBrewCloudId" type="hidden" />
-              <label>BrewID<input id="editBrewId" readonly /></label>
-              <label>Tanggal<input id="editBrewDate" type="date" /></label>
-              <label>Nama Kopi<input id="editBrewBeanName" /></label>
-              <label>Origin<input id="editBrewOrigin" /></label>
-              <label>Varietas<input id="editBrewVariety" /></label>
-              <label>Pasca Panen<input id="editBrewProcess" /></label>
-              <label>Roast Profile<input id="editBrewRoast" /></label>
-              <label>Metode<input id="editBrewMethod" /></label>
-              <label>Dripper<input id="editBrewDripper" /></label>
-              <label>Gilingan<input id="editBrewGrind" /></label>
-              <label>Suhu (°C)<input id="editBrewTemp" type="number" step="0.1" /></label>
-              <label>Ratio<input id="editBrewRatio" type="number" step="0.1" /></label>
-              <label>QA<input id="editBrewQA" type="number" min="0" max="10" step="0.1" /></label>
-              <label>Disetujui<select id="editBrewApproved"><option value="No">No</option><option value="Yes">Yes</option><option value="Belum diverifikasi">Belum diverifikasi</option></select></label>
-              <label class="span-2">Variabel Utama<textarea id="editBrewVariable" rows="2"></textarea></label>
-              <label class="span-2">Hipotesis<textarea id="editBrewHypothesis" rows="2"></textarea></label>
-              <label class="span-2">Catatan Hasil<textarea id="editBrewResultNotes" rows="3"></textarea></label>
-              <div class="span-2 inline-actions">
+              <section class="edit-group">
+                <h4>Identitas Kopi</h4>
+                <div class="form-grid compact nested-grid">
+                  <label>BrewID<input id="editBrewId" readonly /></label>
+                  <label>Tanggal<input id="editBrewDate" type="date" /></label>
+                  <label>Nama Kopi<input id="editBrewBeanName" /></label>
+                  <label>Origin<input id="editBrewOrigin" /></label>
+                  <label>Varietas<input id="editBrewVariety" /></label>
+                  <label>Pasca Panen<input id="editBrewProcess" /></label>
+                  <label class="span-2">Roast Profile<input id="editBrewRoast" /></label>
+                </div>
+              </section>
+              <section class="edit-group">
+                <h4>Parameter Seduh</h4>
+                <div class="form-grid compact nested-grid">
+                  <label>Metode<input id="editBrewMethod" /></label>
+                  <label>Dripper<input id="editBrewDripper" /></label>
+                  <label>Gilingan<input id="editBrewGrind" /></label>
+                  <label>Suhu (°C)<input id="editBrewTemp" type="number" step="0.1" /></label>
+                  <label>Ratio<input id="editBrewRatio" type="number" step="0.1" /></label>
+                  <label>QA<input id="editBrewQA" type="number" min="0" max="10" step="0.1" /></label>
+                  <label class="span-2">Disetujui<select id="editBrewApproved"><option value="No">No</option><option value="Yes">Yes</option><option value="Belum diverifikasi">Belum diverifikasi</option></select></label>
+                </div>
+              </section>
+              <section class="edit-group edit-group-wide">
+                <h4>Detail Evaluasi</h4>
+                <div class="form-grid compact nested-grid">
+                  <label class="span-2">Variabel Utama<textarea id="editBrewVariable" rows="2" placeholder="Contoh: grind lebih halus / suhu +1°C"></textarea></label>
+                  <label class="span-2">Hipotesis<textarea id="editBrewHypothesis" rows="2" placeholder="Apa yang ingin diperbaiki dari brew sebelumnya?"></textarea></label>
+                  <label class="span-2">Catatan Hasil<textarea id="editBrewResultNotes" rows="3" placeholder="Catatan sensorik dan hasil dial-in"></textarea></label>
+                </div>
+              </section>
+              <div class="edit-actions">
                 <button class="primary" type="submit">Simpan Perubahan Brew Log</button>
                 <button class="ghost" id="cancelBrewEdit" type="button">Batal</button>
               </div>

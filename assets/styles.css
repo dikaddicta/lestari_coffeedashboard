@@ -1124,3 +1124,139 @@ button[disabled] {
   padding: 8px 12px;
   min-height: auto;
 }
+
+/* v18.25 professional brew edit + faster QA detail flow */
+.professional-edit-panel {
+  margin-top: 22px;
+  padding: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 250, 239, .96), rgba(255, 244, 211, .48));
+  border: 1px solid var(--line);
+  box-shadow: 0 14px 36px rgba(76, 42, 20, .08);
+}
+
+.edit-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 253, 249, .72);
+}
+
+.edit-panel-header h3 {
+  margin: 4px 0 6px;
+  font-size: 22px;
+  letter-spacing: -.02em;
+}
+
+.edit-panel-header p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 760px;
+}
+
+.edit-kicker {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--espresso);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.edit-brew-summary {
+  min-width: 140px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(91, 50, 28, .08);
+  border: 1px solid rgba(91, 50, 28, .14);
+  text-align: right;
+}
+
+.edit-brew-summary small {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.edit-brew-summary strong {
+  color: var(--espresso);
+  font-size: 20px;
+}
+
+.brew-edit-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+
+.edit-group {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 253, 249, .84);
+}
+
+.edit-group h4 {
+  margin: 0 0 12px;
+  color: var(--espresso);
+  font-size: 15px;
+}
+
+.edit-group-wide,
+.edit-actions {
+  grid-column: 1 / -1;
+}
+
+.nested-grid {
+  gap: 12px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 2px;
+}
+
+@media (max-width: 860px) {
+  .edit-panel-header,
+  .brew-edit-form {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-panel-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .edit-brew-summary {
+    width: 100%;
+    text-align: left;
+  }
+
+  .brew-edit-form {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .edit-group {
+    grid-column: 1 / -1;
+  }
+
+  .edit-actions {
+    justify-content: stretch;
+    flex-direction: column;
+  }
+}

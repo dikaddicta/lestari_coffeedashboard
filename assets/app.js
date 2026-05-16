@@ -837,6 +837,9 @@
       status: qa.Status || null,
       approver: qa.Approver || null,
       qa_notes: qa.QA_Notes || null,
+      primary_variable_changed: qa.PrimaryVariableChanged || null,
+      hypothesis: qa.Hypothesis || null,
+      result_notes: qa.ResultNotes || qa.QA_Notes || null,
       visibility: "public",
       moderation_status: moderationStatusForQA(qa),
       workspace_id: qa.WorkspaceID || activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID,
@@ -869,6 +872,9 @@
       Status: row.status,
       Approver: row.approver,
       QA_Notes: row.qa_notes,
+      PrimaryVariableChanged: row.primary_variable_changed,
+      Hypothesis: row.hypothesis,
+      ResultNotes: row.result_notes,
       WorkspaceID: row.workspace_id,
       CreatedBy: row.created_by,
       ModerationStatus: row.moderation_status || "approved",
@@ -918,6 +924,42 @@
     });
   }
 
+  function enrichBrewLogsWithQADetails(logs, qaRows) {
+    const qaByBrew = new Map();
+    (qaRows || []).forEach(qa => {
+      if (!qa?.BrewID) return;
+      const existing = qaByBrew.get(qa.BrewID);
+      if (!existing || String(qa.Date || "") >= String(existing.Date || "")) qaByBrew.set(qa.BrewID, qa);
+    });
+    return (logs || []).map(log => {
+      const qa = qaByBrew.get(log.BrewID);
+      if (!qa) return log;
+      return {
+        ...log,
+        QA_ID: log.QA_ID || qa.QA_ID,
+        QA_Final: log.QA_Final ?? qa.Final_QA,
+        QA_Status: log.QA_Status || qa.Status,
+        PrimaryVariableChanged: log.PrimaryVariableChanged || qa.PrimaryVariableChanged || "",
+        Hypothesis: log.Hypothesis || qa.Hypothesis || "",
+        ResultNotes: log.ResultNotes || qa.ResultNotes || qa.QA_Notes || ""
+      };
+    });
+  }
+
+  function backgroundBrewLogQAUpdate(cloudId, payload, localLog) {
+    if (!cloudId || !payload || !supabaseClient) return;
+    updateCloudNoReturn("brew_logs", cloudId, payload, "Sinkronisasi detail Brew Log")
+      .then(() => {
+        if (localLog?.CloudID) {
+          state.cloudBrewLogs = uniqueByCloudId([localLog, ...(state.cloudBrewLogs || []).filter(item => item.CloudID !== localLog.CloudID)]);
+        }
+      })
+      .catch(err => {
+        console.warn("Sinkronisasi detail Brew Log tertunda", err);
+        showMessage("QA sudah tersimpan. Detail Brew Log akan tetap tampil dari data QA; sinkronisasi detail Brew Log ke Supabase bisa dicoba ulang dengan refresh/simpan ulang jika diperlukan.", "info");
+      });
+  }
+
   async function syncFromCloud(shouldRender = true) {
     if (!supabaseClient) throw new Error("Supabase belum aktif.");
     updateDbStatus("syncing", "Menyinkronkan data dari Supabase...", "Mengambil data privat workspace dan hasil seduhan publik terbaru.");
@@ -946,8 +988,11 @@
     if (workspaceQaRes.error) throw workspaceQaRes.error;
 
     state.cloudStock = (stockRes.data || []).map(fromSnakeStock);
-    state.cloudBrewLogs = uniqueByCloudId([...(publicBrewRes.data || []).map(fromSnakeBrew), ...(workspaceBrewRes.data || []).map(fromSnakeBrew)]);
     state.cloudQA = (workspaceQaRes.data || []).map(fromSnakeQA);
+    state.cloudBrewLogs = enrichBrewLogsWithQADetails(
+      uniqueByCloudId([...(publicBrewRes.data || []).map(fromSnakeBrew), ...(workspaceBrewRes.data || []).map(fromSnakeBrew)]),
+      state.cloudQA
+    );
     await loadDashboardUserCount().catch(console.warn);
     cloudLastSync = new Date();
     cloudReady = true;
@@ -1912,7 +1957,12 @@
       Final_QA: final,
       Status: final >= APPROVAL_THRESHOLD ? "QA PASS" : "RETEST",
       Approver: approved ? ($("qaEvaluator").value || currentBrewerName()) : "",
-      QA_Notes: $("qaNotes").value
+      QA_Notes: $("qaNotes").value,
+      PrimaryVariableChanged: qaLogFields.PrimaryVariableChanged,
+      Hypothesis: qaLogFields.Hypothesis,
+      ResultNotes: qaLogFields.ResultNotes,
+      WorkspaceID: log.WorkspaceID || activeWorkspaceId(),
+      CreatedBy: currentUser?.id || null
     };
 
     let watchdog;
@@ -1927,16 +1977,17 @@
 
       let savedLog;
       if (draft?.CloudID) {
-        await updateCloudNoReturn("brew_logs", draft.CloudID, toSnakeBrewQAUpdate(log), "Update ringkas Brew Log");
         savedLog = { ...draft, ...log, CloudID: draft.CloudID, WorkspaceID: draft.WorkspaceID || activeWorkspaceId(), Source: "Supabase" };
         state.cloudBrewLogs = uniqueByCloudId([savedLog, ...(state.cloudBrewLogs || []).filter(item => item.CloudID !== savedLog.CloudID)]);
+        const savedQA = await insertCloud("qa_scores", toSnakeQA(qa), fromSnakeQA);
+        state.cloudQA = uniqueByCloudId([savedQA, ...(state.cloudQA || [])]);
+        backgroundBrewLogQAUpdate(draft.CloudID, toSnakeBrewQAUpdate(log), savedLog);
       } else {
         savedLog = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
         state.cloudBrewLogs.unshift(savedLog);
+        const savedQA = await insertCloud("qa_scores", toSnakeQA(qa), fromSnakeQA);
+        state.cloudQA = uniqueByCloudId([savedQA, ...(state.cloudQA || [])]);
       }
-
-      const savedQA = await insertCloud("qa_scores", toSnakeQA(qa), fromSnakeQA);
-      state.cloudQA.unshift(savedQA);
 
       renderBrewLogTable();
       renderQABrewOptions();
@@ -2023,6 +2074,7 @@
     if (!log.CloudID) return showMessage("Brew Log ini belum memiliki ID Supabase, sehingga belum bisa diedit dari panel admin.", "error");
 
     $("editBrewCloudId").value = log.CloudID || "";
+    if ($("editBrewHeaderId")) $("editBrewHeaderId").textContent = log.BrewID || "-";
     $("editBrewId").value = log.BrewID || "";
     $("editBrewDate").value = log.Date || todayISO();
     $("editBrewBeanName").value = log.BeanName || "";
