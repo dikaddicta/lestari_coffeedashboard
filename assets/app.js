@@ -1481,8 +1481,12 @@
       .sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0))
       .slice(0, 3);
 
-    const baseCard = `<article class="recipe-card base"><span class="badge">Opsi 1 · Rekomendasi Dasar</span><h3>Rekomendasi Dasar</h3><p><strong>${html($("brewDripper").value)}</strong> · ${html(brew.mode)} · ${html(brew.switchMode)}</p><p>${html(brew.grinderSetting)} · ${brew.temp}°C · 1:${fmt(brew.ratio, 1)}</p><p>Dosis ${fmt(brew.dose, 1)}g · Total ${brew.totalWater}ml · ${brew.pourCount} tuangan utama</p><p>Dasar: varietas × proses × profil sangrai × dripper × air.</p></article>`;
-    const approvedCards = approved.map((log, idx) => `<article class="recipe-card"><span class="badge">Opsi ${idx + 2} · QA ${fmt(log.QA_Final, 2)}</span><h3>${html(log.BrewID)}</h3><p><strong>${html(log.Dripper)}</strong> · ${html(log.Method)} · ${html(log.SwitchValveMode || "N/A")}</p><p>${html(log.GrindSetting)} · ${html(log.Temp_C)}°C · 1:${html(log.Ratio)}</p><p>Dosis ${html(log.Dose_g)}g · Total ${html(log.TotalWater_ml)}ml · Air panas ${html(log.HotWater_ml)}ml${Number(log.Ice_g) ? ` · Es ${html(log.Ice_g)}g` : ""}</p><p>${html(log.PrimaryVariableChanged || "Resep terverifikasi dari brew log")}</p></article>`);
+    const baseGrinder = [getSelectedGrinderName(), brew.grinderSetting].filter(Boolean).join(" · ");
+    const baseCard = `<article class="recipe-card base"><span class="badge">Opsi 1 · Rekomendasi Dasar</span><h3>Rekomendasi Dasar</h3><p><strong>${html($("brewDripper").value)}</strong> · ${html(brew.mode)} · ${html(brew.switchMode)}</p><p>${html(baseGrinder)} · ${brew.temp}°C · 1:${fmt(brew.ratio, 1)}</p><p>Dosis ${fmt(brew.dose, 1)}g · Total ${brew.totalWater}ml · ${brew.pourCount} tuangan utama</p><p>Dasar: varietas × proses × profil sangrai × dripper × air.</p></article>`;
+    const approvedCards = approved.map((log, idx) => {
+      const grinderText = [log.Grinder, log.GrindSetting].filter(Boolean).join(" · ") || "-";
+      return `<article class="recipe-card"><span class="badge">Opsi ${idx + 2} · QA ${fmt(log.QA_Final, 2)}</span><h3>${html(log.BrewID)}</h3><p><strong>${html(log.Dripper)}</strong> · ${html(log.Method)} · ${html(log.SwitchValveMode || "N/A")}</p><p>${html(grinderText)} · ${html(log.Temp_C)}°C · 1:${html(log.Ratio)}</p><p>Dosis ${html(log.Dose_g)}g · Total ${html(log.TotalWater_ml)}ml · Air panas ${html(log.HotWater_ml)}ml${Number(log.Ice_g) ? ` · Es ${html(log.Ice_g)}g` : ""}</p><p>${html(log.PrimaryVariableChanged || "Resep terverifikasi dari brew log")}</p></article>`;
+    });
     $("recipeOptions").innerHTML = baseCard + (approvedCards.join("") || `<article class="recipe-card"><span class="badge">Belum ada opsi terverifikasi</span><h3>Belum ada opsi dari Brew Log</h3><p>Resep dengan QA ≥ 6.5 dan persetujuan manual akan muncul di sini jika key varietas × proses × profil sangrai cocok.</p></article>`);
   }
 
@@ -2026,7 +2030,7 @@
     if (locked) return;
 
     const adminView = canAdmin();
-    const baseHeaders = ["BrewID", "Tanggal", "Biji Kopi", "Key", "Metode", "Dripper", "Gilingan", "Suhu", "Ratio", "QA", "Disetujui", "Variabel", "Hipotesis", "Catatan Hasil"];
+    const baseHeaders = ["BrewID", "Tanggal", "Biji Kopi", "Key", "Metode", "Dripper", "Grinder", "Gilingan", "Suhu", "Ratio", "QA", "Disetujui", "Variabel", "Hipotesis", "Catatan Hasil"];
     thead.innerHTML = `<tr>${baseHeaders.map(label => `<th>${html(label)}</th>`).join("")}${adminView ? "<th>Aksi</th>" : ""}</tr>`;
 
     const rows = allBrewLogs().slice().reverse();
@@ -2050,7 +2054,8 @@
         <td>${html(log.RecipeKey)}</td>
         <td>${html(log.Method)}</td>
         <td>${html(log.Dripper)}</td>
-        <td>${html(log.GrindSetting)}</td>
+        <td>${html(log.Grinder || "-")}</td>
+        <td>${html(log.GrindSetting || "-")}</td>
         <td>${html(log.Temp_C)}°C</td>
         <td>1:${html(log.Ratio)}</td>
         <td>${qaText}</td>
@@ -2084,6 +2089,7 @@
     $("editBrewRoast").value = log.RoastProfile || "";
     $("editBrewMethod").value = log.Method || "";
     $("editBrewDripper").value = log.Dripper || "";
+    $("editBrewGrinder").value = log.Grinder || "";
     $("editBrewGrind").value = log.GrindSetting || "";
     $("editBrewTemp").value = log.Temp_C || "";
     $("editBrewRatio").value = log.Ratio || "";
@@ -2123,6 +2129,7 @@
       RoastProfile: $("editBrewRoast").value.trim() || current.RoastProfile,
       Method: $("editBrewMethod").value.trim() || current.Method,
       Dripper: $("editBrewDripper").value.trim() || current.Dripper,
+      Grinder: $("editBrewGrinder").value.trim() || current.Grinder,
       GrindSetting: $("editBrewGrind").value.trim() || current.GrindSetting,
       Temp_C: $("editBrewTemp").value === "" ? current.Temp_C : Number($("editBrewTemp").value),
       Ratio: $("editBrewRatio").value === "" ? current.Ratio : Number($("editBrewRatio").value),
@@ -2726,7 +2733,8 @@
     }
     tbody.innerHTML = rows.map(log => {
       const profile = [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · ");
-      const recipe = [`${log.GrindSetting || "-"}`, `${log.Temp_C || "-"}°C`, `1:${log.Ratio || "-"}`, `${log.TotalWater_ml || "-"} ml`].join(" · ");
+      const grinderRecipe = [log.Grinder, log.GrindSetting].filter(Boolean).join(" · ") || "-";
+      const recipe = [grinderRecipe, `${log.Temp_C || "-"}°C`, `1:${log.Ratio || "-"}`, `${log.TotalWater_ml || "-"} ml`].join(" · ");
       const stepSummary = formatPublicRecipeSteps(log);
       const notes = [
         log.PrimaryVariableChanged ? `Variabel: ${log.PrimaryVariableChanged}` : "",
