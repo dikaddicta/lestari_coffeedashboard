@@ -683,6 +683,8 @@
       ModerationStatus: row.moderation_status || row.status || "approved",
       Visibility: row.visibility || "public",
       WorkspaceName: row.workspaces?.name || row.workspace_name || "",
+      CreatedAt: row.created_at || "",
+      UpdatedAt: row.updated_at || "",
       Source: "Supabase"
     };
   }
@@ -971,10 +973,10 @@
       ? supabaseClient.from("stock_beans").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false }).limit(1000)
       : Promise.resolve(empty);
 
-    const publicBrewPromise = supabaseClient.from("brew_logs").select("*").eq("visibility", "public").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(1000);
+    const publicBrewPromise = supabaseClient.from("brew_logs").select("*").eq("visibility", "public").eq("moderation_status", "approved").order("brew_date", { ascending: false }).order("created_at", { ascending: false }).limit(1000);
 
     const workspaceBrewPromise = currentUser && workspaceId
-      ? supabaseClient.from("brew_logs").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false }).limit(1000)
+      ? supabaseClient.from("brew_logs").select("*").eq("workspace_id", workspaceId).order("brew_date", { ascending: false }).order("created_at", { ascending: false }).limit(1000)
       : Promise.resolve(empty);
 
     const workspaceQaPromise = currentUser && workspaceId
@@ -1143,6 +1145,32 @@
     const values = new Set(["non_stock", ...beans.map(bean => String(bean.CloudID || bean.BeanID))]);
     select.value = values.has(previous) ? previous : "non_stock";
     syncBrewStockUI({ apply: false });
+  }
+
+  function brewDateValue(log) {
+    const rawDate = log?.Date || log?.BrewDate || "";
+    const parsed = rawDate ? Date.parse(`${rawDate}T00:00:00`) : 0;
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function brewCreatedValue(log) {
+    const parsed = Date.parse(log?.CreatedAt || log?.created_at || log?.UpdatedAt || log?.updated_at || "");
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function brewSerialValue(log) {
+    const match = String(log?.BrewID || "").match(/(\d+)(?!.*\d)/);
+    return match ? Number(match[1]) : 0;
+  }
+
+  function sortBrewNewest(rows) {
+    return (rows || []).slice().sort((a, b) => {
+      const dateDiff = brewDateValue(b) - brewDateValue(a);
+      if (dateDiff) return dateDiff;
+      const createdDiff = brewCreatedValue(b) - brewCreatedValue(a);
+      if (createdDiff) return createdDiff;
+      return brewSerialValue(b) - brewSerialValue(a);
+    });
   }
 
   function allBrewLogs() {
@@ -1762,7 +1790,9 @@
       CurrentMatchScore: "",
       Water_Formula_Note: "TotalWater_ml = Rasio × Dosis_g. Japanese: air panas = 60%, es = 40%.",
       SwitchValveMode: brew.switchMode,
-      ValvePlan: formatValvePlan(brew.steps)
+      ValvePlan: formatValvePlan(brew.steps),
+      CreatedAt: extra.CreatedAt || new Date().toISOString(),
+      UpdatedAt: extra.UpdatedAt || new Date().toISOString()
     };
   }
 
@@ -2033,7 +2063,7 @@
     const baseHeaders = ["BrewID", "Tanggal", "Biji Kopi", "Key", "Metode", "Dripper", "Grinder", "Gilingan", "Suhu", "Ratio", "QA", "Disetujui", "Variabel", "Hipotesis", "Catatan Hasil"];
     thead.innerHTML = `<tr>${baseHeaders.map(label => `<th>${html(label)}</th>`).join("")}${adminView ? "<th>Aksi</th>" : ""}</tr>`;
 
-    const rows = allBrewLogs().slice().reverse();
+    const rows = sortBrewNewest(allBrewLogs());
     const colSpan = baseHeaders.length + (adminView ? 1 : 0);
     if (!rows.length) {
       tbody.innerHTML = `<tr><td colspan="${colSpan}">Belum ada brew log di workspace ini. Buat draft dari menu Rekomendasi Seduh terlebih dahulu.</td></tr>`;
@@ -2707,7 +2737,7 @@
     const search = norm($("publicBrewSearch")?.value || "");
     const method = $("publicBrewMethod")?.value || "all";
     const minQA = Number($("publicBrewMinQA")?.value || 0);
-    return (state.cloudBrewLogs || [])
+    const filteredRows = (state.cloudBrewLogs || [])
       .filter(log => log.Source === "Supabase")
       .filter(log => norm(log.ModerationStatus) === "approved")
       .filter(log => norm(log.Visibility || "public") === "public")
@@ -2718,8 +2748,8 @@
         if (!search) return true;
         return [log.BeanName, log.BrewerName, log.Variety, log.Process, log.RoastProfile, log.Method, log.Dripper, log.ResultNotes, log.PrimaryVariableChanged]
           .some(v => norm(v).includes(search));
-      })
-      .sort((a, b) => new Date(b.Date || 0) - new Date(a.Date || 0));
+      });
+    return sortBrewNewest(filteredRows);
   }
 
   function publicBrewKey(log) {
