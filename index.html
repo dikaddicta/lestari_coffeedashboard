@@ -38,6 +38,7 @@
 
     <nav class="tabs" aria-label="Main navigation">
       <button class="tab-btn active" data-tab="guide">Cara Pakai</button>
+      <button class="tab-btn" data-tab="input">Input Seduhan</button>
       <button class="tab-btn" data-tab="brew">Rekomendasi Seduh</button>
       <button class="tab-btn" data-tab="beans">Rekomendasi Biji Kopi</button>
       <button class="tab-btn" data-tab="stock">Stok Kopi</button>
@@ -64,9 +65,10 @@
             <h3>Guest</h3>
             <ol class="guide-list">
               <li><strong>Rekomendasi Seduh</strong><p>Gunakan menu ini untuk rekomendasi seduh.</p><div class="guide-sub"><strong>Data Seduhan</strong><p>Isi bagian ini untuk mendapatkan rekomendasi seduh. Sesuaikan dengan kebutuhan kamu.</p><strong>Rekomendasi Seduh Dasar</strong><p>Bagian ini akan menampilkan rekomendasi seduh berdasarkan data yang sudah kamu input pada <strong>Data Seduhan</strong>. Rekomendasi ini bersifat <strong>dasar</strong>, sehingga jika rasa yang dihasilkan kurang sesuai, adjust sesuai kebutuhan kamu.</p><strong>Tahapan Seduh + Rencana Valve</strong><p>Bagian ini akan menampilkan rekomendasi seduh beserta detail pour, interval, dan brew time berdasarkan data yang sudah kamu input.</p><strong>Rekomendasi Dasar + Brew Log Terverifikasi</strong><p>Bagian ini menampilkan Opsi 1 sebagai rangkuman data yang sudah kamu input dan opsi lain yang menampilkan rekomendasi seduh dari teman-teman yang pernah menyeduh dengan salah satu atau lebih variabel yang sama seperti varietas, proses pasca panen, dan/atau roast profile dengan QA ≥ 6.5.</p></div></li>
+              <li><strong>Input Seduhan</strong><p>Gunakan menu ini untuk memasukkan resep seduhan pribadi. Untuk Guest, bagian Evaluasi Seduhan tersedia langsung di menu ini dan hasil dengan QA ≥ 6.5 bisa tampil di Hasil Seduhan Publik.</p></li>
               <li><strong>Rekomendasi Biji Kopi</strong><p>Hanya muncul ketika kamu login.</p></li>
-              <li><strong>Stok Kopi</strong><p>Hanya bisa diakses untuk pengguna yang login.</p></li>
-              <li><strong>Brew Log &amp; QA</strong><p>Menu ini ditujukan untuk kamu menyimpan hasil seduhan kamu. Hasil seduhan kamu bisa membantu teman-teman lain untuk menyeduh jika ada kesamaan variabel beans atau alat yang digunakan. Hasil seduhan dengan QA ≥ 6.5 saja yang akan ditampilkan secara publik.</p></li>
+              <li><strong>Stok Kopi</strong><p>Menu ini disembunyikan untuk Guest dan hanya tersedia setelah login.</p></li>
+              <li><strong>Brew Log &amp; QA</strong><p>Menu ini disembunyikan untuk Guest. Pengguna login bisa menyimpan resep dan melakukan QA dari draft BrewID.</p></li>
               <li><strong>Hasil Seduhan Publik</strong><p>Menu ini menampilkan semua hasil seduhan teman-teman yang telah diinput dengan QA ≥ 6.5. Kamu bisa mencari berdasarkan metode seduh ataupun nilai QA, atau menampilkan seluruh data.</p></li>
               <li><strong>Kotak Saran</strong><p>Bagian ini ditujukan agar teman-teman bisa membantu saya dalam pengembangan dashboard ini. Sedikit atau banyak akan sangat membantu perkembangan dashboard ini.</p></li>
               <li><strong>Akun &amp; Admin</strong><p>Menu ini digunakan untuk mendaftar ataupun login.</p></li>
@@ -78,6 +80,7 @@
             <h3>Admin</h3>
             <ol class="guide-list">
               <li><strong>Rekomendasi Seduh</strong><p>Gunakan menu ini untuk rekomendasi seduh.</p><div class="guide-sub"><strong>Data Seduhan</strong><p>Isi bagian ini untuk mendapatkan rekomendasi seduh. Sesuaikan dengan kebutuhan kamu.</p><strong>Rekomendasi Seduh Dasar</strong><p>Bagian ini akan menampilkan rekomendasi seduh berdasarkan data yang sudah kamu input pada <strong>Data Seduhan</strong>. Rekomendasi ini bersifat <strong>dasar</strong>, sehingga jika rasa yang dihasilkan kurang sesuai, adjust sesuai kebutuhan kamu.</p><strong>Tahapan Seduh + Rencana Valve</strong><p>Bagian ini akan menampilkan rekomendasi seduh beserta detail pour, interval, dan brew time berdasarkan data yang sudah kamu input.</p><strong>Rekomendasi Dasar + Brew Log Terverifikasi</strong><p>Bagian ini menampilkan Opsi 1 sebagai rangkuman data yang sudah kamu input dan opsi lain dari brew log terverifikasi dengan variabel yang sama dan QA ≥ 6.5.</p></div></li>
+              <li><strong>Input Seduhan</strong><p>Gunakan menu ini untuk menyimpan resep pribadi. Resep yang tersimpan akan muncul sebagai pilihan BrewID Asal di menu Brew Log &amp; QA.</p></li>
               <li><strong>Rekomendasi Biji Kopi</strong><p>Gunakan menu ini untuk menampilkan rekomendasi biji kopi untuk kamu seduh sesuai kriteria yang kamu tentukan.</p><div class="guide-sub"><strong>Filter Rekomendasi Biji Kopi dari Stok</strong><p>Isi bagian ini sesuai kebutuhan.</p><strong>Rekomendasi Biji Kopi</strong><p>Bagian ini menampilkan urutan biji kopi yang paling sesuai dengan data yang telah kamu input di bagian filter.</p></div></li>
               <li><strong>Stok Kopi</strong><p>Menu ini digunakan untuk melihat stok kopi beserta ketersediaannya. Admin dapat menambah, mengedit, dan menghapus stok kopi.</p></li>
               <li><strong>Brew Log &amp; QA</strong><p>Menu ini ditujukan untuk menyimpan hasil seduhan. Hasil seduhan dengan QA ≥ 6.5 saja yang akan ditampilkan secara publik.</p></li>
@@ -92,6 +95,7 @@
             <h3>QA</h3>
             <ol class="guide-list">
               <li><strong>Rekomendasi Seduh</strong><p>Gunakan menu ini untuk rekomendasi seduh berdasarkan data seduhan yang kamu input.</p></li>
+              <li><strong>Input Seduhan</strong><p>Gunakan menu ini untuk menyimpan resep pribadi. Resep yang tersimpan akan muncul sebagai pilihan BrewID Asal di menu Brew Log &amp; QA.</p></li>
               <li><strong>Rekomendasi Biji Kopi</strong><p>Gunakan menu ini untuk menampilkan rekomendasi biji kopi sesuai kriteria yang kamu tentukan.</p></li>
               <li><strong>Stok Kopi</strong><p>QA dapat melihat stok workspace dan menambah stok kopi baru. Edit dan hapus stok hanya tersedia untuk Admin.</p></li>
               <li><strong>Brew Log &amp; QA</strong><p>Menu ini digunakan untuk menyimpan hasil seduhan dan evaluasi QA. Hasil seduhan dengan QA ≥ 6.5 saja yang akan tampil secara publik setelah disetujui.</p></li>
@@ -104,12 +108,132 @@
             <h3>Brewer</h3>
             <ol class="guide-list">
               <li><strong>Rekomendasi Seduh</strong><p>Gunakan menu ini untuk rekomendasi seduh berdasarkan kebutuhan brew kamu.</p></li>
+              <li><strong>Input Seduhan</strong><p>Gunakan menu ini untuk menyimpan resep pribadi. Resep yang tersimpan akan muncul sebagai pilihan BrewID Asal di menu Brew Log &amp; QA.</p></li>
               <li><strong>Rekomendasi Biji Kopi</strong><p>Gunakan menu ini untuk menampilkan rekomendasi biji kopi yang paling sesuai dengan filter dari stok workspace.</p></li>
               <li><strong>Stok Kopi</strong><p>Brewer dapat melihat stok workspace dan menambah stok kopi baru. Edit dan hapus stok hanya tersedia untuk Admin.</p></li>
               <li><strong>Brew Log &amp; QA</strong><p>Menu ini digunakan untuk menyimpan hasil seduhan. Hasil seduhan dengan QA ≥ 6.5 saja yang akan ditampilkan secara publik setelah disetujui.</p></li>
               <li><strong>Hasil Seduhan Publik, Kotak Saran, Akun, dan Pustaka Data</strong><p>Gunakan menu ini untuk membaca hasil seduhan publik, memberi masukan, mengelola akun, dan melihat pustaka data.</p></li>
             </ol>
           </div>
+        </section>
+      </section>
+
+      <section id="tab-input" class="tab-panel">
+        <div class="grid two-col top-align">
+          <section class="panel input-panel">
+            <div class="section-title">
+              <span>Input</span>
+              <h2>Input Seduhan</h2>
+            </div>
+            <p id="inputLoginSubtitle" class="hint small-note hidden">Input seduhan dengan resep pribadi.</p>
+            <form id="inputBrewForm" class="form-grid compact">
+              <label class="span-2">Nama Kopi
+                <input id="inputBeanName" placeholder="Contoh: Gayo Natural Lot 03" />
+              </label>
+              <label>Origin
+                <input id="inputOrigin" placeholder="Contoh: Aceh Gayo / Ciwidey" />
+              </label>
+              <label>Varietas
+                <select id="inputVariety"></select>
+              </label>
+              <label>Pasca Panen
+                <select id="inputProcess"></select>
+              </label>
+              <label>Roast Profile
+                <select id="inputRoast"></select>
+              </label>
+              <label>Dripper
+                <select id="inputDripper"></select>
+              </label>
+              <label>Mode Seduh
+                <select id="inputBrewMode">
+                  <option>Hot V60</option>
+                  <option>Japanese Iced</option>
+                </select>
+              </label>
+              <label id="inputSwitchModeWrap">Switch Valve Mode
+                <select id="inputSwitchValveMode">
+                  <option value="Auto">Otomatis</option>
+                  <option>Full Immersion</option>
+                  <option>Hybrid</option>
+                  <option>Full Open</option>
+                </select>
+              </label>
+              <label>Grinder
+                <select id="inputGrinder"></select>
+              </label>
+              <label id="inputCustomGrinderNameWrap" class="hidden">Nama Grinder
+                <input id="inputCustomGrinderName" placeholder="Contoh: Grinder manual 38mm" />
+              </label>
+              <label id="inputCustomGrinderSettingWrap" class="hidden">Setting Grinder
+                <input id="inputCustomGrinderSetting" placeholder="klik/dial" />
+              </label>
+              <label>Air
+                <select id="inputWater"></select>
+              </label>
+              <label>Dose (g)
+                <input id="inputDose" type="number" min="5" max="50" step="0.1" value="15" />
+              </label>
+              <label>Ratio
+                <input id="inputRatio" type="number" min="10" max="25" step="0.1" value="16" />
+              </label>
+              <label>Suhu (°C)
+                <input id="inputTemp" type="number" min="80" max="100" step="0.1" value="93" />
+              </label>
+              <label>Brew Time (detik)
+                <input id="inputBrewTime" type="number" min="30" max="600" step="1" value="180" />
+              </label>
+              <label>Pour Pattern
+                <select id="inputPourPattern">
+                  <option value="Auto">Otomatis</option>
+                  <option>2x Tuang</option>
+                  <option>3x Tuang</option>
+                  <option>4x Tuang</option>
+                  <option value="Immersion Full">Full Immersion</option>
+                </select>
+              </label>
+              <div class="span-2 input-pour-editor">
+                <div class="mini-section-title">
+                  <strong>Detail Pour Pattern</strong>
+                  <small id="inputPourHint">Jumlah kolom mengikuti pilihan Pour Pattern.</small>
+                </div>
+                <div id="inputPourRows" class="input-pour-grid"></div>
+              </div>
+              <button id="inputSaveBtn" class="primary span-2" type="button">Simpan Seduhan</button>
+            </form>
+          </section>
+
+          <section class="panel output-panel">
+            <div class="section-title">
+              <span>Preview</span>
+              <h2>Ringkasan Resep</h2>
+            </div>
+            <div class="output-grid" id="inputRecipePreview"></div>
+            <div class="callout" id="inputRecipeNote"></div>
+          </section>
+        </div>
+
+        <section id="inputGuestQASection" class="panel wide">
+          <div class="section-title"><span>Guest</span><h2>Evaluasi Seduhan</h2></div>
+          <p class="hint small-note">Untuk Guest, isi evaluasi agar hasil seduhan bisa masuk ke Hasil Seduhan Publik jika nilai QA minimal 6.5.</p>
+          <form id="inputGuestQAForm" class="form-grid qa-form">
+            <label>Nama / Brewer<input id="inputGuestBrewer" placeholder="Nama kamu" /></label>
+            <label>Penilai<input id="inputQaEvaluator" value="Guest Brewer" /></label>
+            <label class="span-2">Hipotesis<textarea id="inputQaHypothesis" rows="2" placeholder="Apa yang ingin diuji dari resep ini?"></textarea></label>
+            <label>Aroma<input class="input-qa-score" id="inputQaAroma" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Rasa<input class="input-qa-score" id="inputQaFlavor" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Aftertaste<input class="input-qa-score" id="inputQaAftertaste" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Kualitas Acidity<input class="input-qa-score" id="inputQaAcidityQuality" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Sweetness<input class="input-qa-score" id="inputQaSweetness" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Body<input class="input-qa-score" id="inputQaBody" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Balance<input class="input-qa-score" id="inputQaBalance" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Clarity<input class="input-qa-score" id="inputQaClarity" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Finish<input class="input-qa-score" id="inputQaFinish" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Konsistensi<input class="input-qa-score" id="inputQaConsistency" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Pengurang Nilai<input id="inputQaDefect" type="number" min="0" max="10" step="0.1" value="0" /></label>
+            <label class="span-2">Catatan Hasil<textarea id="inputQaNotes" rows="3" placeholder="Catat hasil sensorik dan keputusan resep"></textarea></label>
+            <div class="qa-total span-2">Final QA: <strong id="inputQaFinalPreview">8.50</strong> <span id="inputQaStatusPreview">QA PASS</span></div>
+          </form>
         </section>
       </section>
 

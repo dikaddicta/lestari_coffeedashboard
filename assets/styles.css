@@ -1411,3 +1411,85 @@ body.modal-open {
     gap: 4px;
   }
 }
+
+/* Input Seduhan */
+.input-pour-editor {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 248, 237, .55);
+  padding: 14px;
+}
+
+.mini-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mini-section-title strong {
+  color: var(--espresso);
+  font-size: 14px;
+}
+
+.mini-section-title small {
+  color: var(--muted);
+  font-weight: 700;
+  text-align: right;
+}
+
+.input-pour-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.input-pour-row {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr 1fr .85fr;
+  gap: 10px;
+  align-items: end;
+  padding: 12px;
+  border: 1px solid rgba(234, 217, 196, .78);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .64);
+}
+
+.input-pour-row label {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.input-pour-row label span,
+.input-pour-row label {
+  font-size: 12px;
+}
+
+.input-pour-row strong {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.input-pour-row input,
+.input-pour-row select {
+  width: 100%;
+}
+
+@media (max-width: 860px) {
+  .mini-section-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mini-section-title small {
+    text-align: left;
+  }
+
+  .input-pour-row {
+    grid-template-columns: 1fr;
+  }
+}

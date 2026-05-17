@@ -7,6 +7,7 @@
   let stockSaving = false;
   let brewDraftSaving = false;
   let qaSaving = false;
+  let inputRecipeSaving = false;
   let editingStockId = null;
   let brewStockOptionsSignature = "";
   const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
@@ -525,6 +526,7 @@
       if (key === "brew") brewDraftSaving = false;
       if (key === "qa") qaSaving = false;
       if (key === "stock") stockSaving = false;
+      if (key === "input") inputRecipeSaving = false;
       if (button) {
         button.disabled = false;
         button.textContent = originalText;
@@ -1210,6 +1212,12 @@
     makeOptions($("brewDripper"), drippers, { selected: drippers.includes("Hario Switch 02 Glass") ? "Hario Switch 02 Glass" : drippers[0] });
     makeOptions($("brewGrinder"), grinders, { selected: grinders.includes("Hario EVCG-8B") ? "Hario EVCG-8B" : grinders[0] });
     makeOptions($("brewWater"), waters, { selected: waters.includes("Cleo 1:1 Le Minerale") ? "Cleo 1:1 Le Minerale" : waters[0] });
+    makeOptions($("inputVariety"), varieties, { selected: varieties.includes("Catimor 129") ? "Catimor 129" : varieties[0] });
+    makeOptions($("inputProcess"), processes, { selected: processes.includes("Carbonic Maceration - Original") ? "Carbonic Maceration - Original" : processes[0] });
+    makeOptions($("inputRoast"), roasts, { selected: roasts.includes("Medium") ? "Medium" : roasts[0] });
+    makeOptions($("inputDripper"), drippers, { selected: drippers.includes("Hario Switch 02 Glass") ? "Hario Switch 02 Glass" : drippers[0] });
+    makeOptions($("inputGrinder"), grinders, { selected: grinders.includes("Hario EVCG-8B") ? "Hario EVCG-8B" : grinders[0] });
+    makeOptions($("inputWater"), waters, { selected: waters.includes("Cleo 1:1 Le Minerale") ? "Cleo 1:1 Le Minerale" : waters[0] });
 
     ["filterVariety1", "filterVariety2", "stockVariety1", "stockVariety2"].forEach(id => makeOptions($(id), varieties, { blank: id.includes("2") || id.startsWith("filter"), blankLabel: id.includes("2") ? "Opsional" : "Semua" }));
     ["stockProcess"].forEach(id => makeOptions($(id), processes));
@@ -1315,6 +1323,354 @@
   function getSelectedGrinderName() {
     if (isCustomGrinderSelected()) return $("customGrinderName")?.value.trim() || "Custom Grinder";
     return $("brewGrinder")?.value || "";
+  }
+
+  function isCustomInputGrinderSelected() {
+    return norm($("inputGrinder")?.value) === "custom";
+  }
+
+  function getSelectedInputGrinderName() {
+    if (isCustomInputGrinderSelected()) return $("inputCustomGrinderName")?.value.trim() || "Custom Grinder";
+    return $("inputGrinder")?.value || "";
+  }
+
+  function resolveInputSwitchMode() {
+    const dripper = $("inputDripper")?.value || "";
+    const selected = $("inputSwitchValveMode")?.value || "Auto";
+    if (!isSwitch(dripper)) return "-";
+    if (selected === "Auto") return $("inputBrewMode")?.value === "Japanese Iced" ? "Hybrid" : "Hybrid";
+    return selected;
+  }
+
+  function resolveInputPourCount(pattern, isImmersion) {
+    if (isImmersion) return 0;
+    if (/2x/.test(pattern)) return 2;
+    if (/3x/.test(pattern)) return 3;
+    if (/4x/.test(pattern)) return 4;
+    const process = getBy(DATA.processes, "Process", $("inputProcess")?.value);
+    const roast = getBy(DATA.roasts, "RoastProfile", $("inputRoast")?.value);
+    const risk = Number(process.FermentRisk_1low_5high) || 2;
+    const body = Number(roast.BodyMod || 0) + 3;
+    return resolvePourCount("Auto", false, risk, body);
+  }
+
+  function inputRecipeValues() {
+    const dose = clamp($("inputDose")?.value, 1, 100);
+    const ratio = round(clamp($("inputRatio")?.value, 10, 25), 1);
+    const temp = round(clamp($("inputTemp")?.value, 80, 100), 1);
+    const brewTime = round(clamp($("inputBrewTime")?.value, 30, 600));
+    const mode = $("inputBrewMode")?.value || "Hot V60";
+    const pattern = $("inputPourPattern")?.value || "Auto";
+    const switchMode = resolveInputSwitchMode();
+    const isImmersion = pattern === "Immersion Full" || switchMode === "Full Immersion";
+    const totalWater = Math.round(dose * ratio);
+    const hotWater = mode === "Japanese Iced" ? Math.round(totalWater * 0.6) : totalWater;
+    const ice = mode === "Japanese Iced" ? totalWater - hotWater : 0;
+    const pourCount = resolveInputPourCount(pattern, isImmersion);
+    const defaultBloom = isImmersion ? 0 : Math.round(dose * 2.5);
+    return { dose, ratio, temp, brewTime, mode, pattern, switchMode, isImmersion, totalWater, hotWater, ice, pourCount, defaultBloom };
+  }
+
+  function inputPourFieldState() {
+    const state = new Map();
+    document.querySelectorAll("#inputPourRows [data-input-pour-stage]").forEach(row => {
+      const stage = row.dataset.inputPourStage || "";
+      state.set(stage, {
+        water: row.querySelector("[data-input-pour-water]")?.value,
+        time: row.querySelector("[data-input-pour-time]")?.value,
+        valve: row.querySelector("[data-input-pour-valve]")?.value
+      });
+    });
+    return state;
+  }
+
+  function defaultInputPourStages(values = inputRecipeValues()) {
+    if (values.isImmersion) {
+      return [
+        { stage: "Full Pour", water: values.hotWater, time: "0:00 - 0:30", valve: isSwitch($("inputDripper")?.value) ? "Closed" : "N/A" },
+        { stage: "Steep", water: 0, time: `0:30 - ${fmtTime(values.brewTime)}`, valve: isSwitch($("inputDripper")?.value) ? "Closed" : "N/A" },
+        { stage: "Release", water: 0, time: fmtTime(values.brewTime), valve: isSwitch($("inputDripper")?.value) ? "Open" : "N/A" }
+      ];
+    }
+    const mainWater = Math.max(0, values.hotWater - values.defaultBloom);
+    const pours = splitWater(mainWater, values.pourCount || 1);
+    return [
+      { stage: "Bloom", water: values.defaultBloom, time: "0:00 - 0:35", valve: isSwitch($("inputDripper")?.value) ? "Closed" : "N/A" },
+      ...pours.map((water, idx) => {
+        const start = 35 + idx * 30;
+        const end = start + 30;
+        return { stage: `Pour ${idx + 1}`, water, time: `${fmtTime(start)} - ${fmtTime(end)}`, valve: isSwitch($("inputDripper")?.value) ? (idx === 0 && values.switchMode !== "Full Open" ? "Closed" : "Open") : "N/A" };
+      })
+    ];
+  }
+
+  function renderInputPourPlan(preserveValues = true) {
+    const wrap = $("inputPourRows");
+    if (!wrap) return;
+    const previous = preserveValues ? inputPourFieldState() : new Map();
+    const values = inputRecipeValues();
+    const switchActive = isSwitch($("inputDripper")?.value);
+    const stages = defaultInputPourStages(values).map(row => ({ ...row, ...(previous.get(row.stage) || {}) }));
+    wrap.innerHTML = stages.map(row => {
+      const valveCell = switchActive
+        ? `<select data-input-pour-valve><option${row.valve === "Open" ? " selected" : ""}>Open</option><option${row.valve === "Closed" ? " selected" : ""}>Closed</option></select>`
+        : `<span class="badge">N/A</span>`;
+      return `<div class="input-pour-row" data-input-pour-stage="${html(row.stage)}">
+        <label><span>Tahap</span><strong>${html(row.stage)}</strong></label>
+        <label>Air (g/ml)<input data-input-pour-water type="number" min="0" step="1" value="${html(row.water)}" /></label>
+        <label>Waktu<input data-input-pour-time value="${html(row.time)}" /></label>
+        <label>Valve${valveCell}</label>
+      </div>`;
+    }).join("");
+    const hint = $("inputPourHint");
+    if (hint) hint.textContent = values.isImmersion
+      ? "Mode Full Immersion menampilkan Full Pour, Steep, dan Release."
+      : `Pattern ini menampilkan Bloom + ${values.pourCount} kolom pour.`;
+  }
+
+  function inputPourRowsAsSteps() {
+    return Array.from(document.querySelectorAll("#inputPourRows [data-input-pour-stage]")).map(row => ({
+      stage: row.dataset.inputPourStage || "",
+      water: Number(row.querySelector("[data-input-pour-water]")?.value || 0),
+      time: row.querySelector("[data-input-pour-time]")?.value || "",
+      valve: isSwitch($("inputDripper")?.value) ? (row.querySelector("[data-input-pour-valve]")?.value || "Open") : "N/A",
+      instruction: "Resep pribadi dari Input Seduhan"
+    }));
+  }
+
+  function computeInputQAFromForm() {
+    const ids = ["inputQaAroma", "inputQaFlavor", "inputQaAftertaste", "inputQaAcidityQuality", "inputQaSweetness", "inputQaBody", "inputQaBalance", "inputQaClarity", "inputQaFinish", "inputQaConsistency"];
+    const avg = ids.reduce((sum, id) => sum + (Number($(id)?.value) || 0), 0) / ids.length;
+    const final = clamp(avg - (Number($("inputQaDefect")?.value) || 0), 0, 10);
+    return round(final, 2);
+  }
+
+  function renderInputQAPreview() {
+    const final = computeInputQAFromForm();
+    const pass = final >= APPROVAL_THRESHOLD;
+    if ($("inputQaFinalPreview")) $("inputQaFinalPreview").textContent = fmt(final, 2);
+    if ($("inputQaStatusPreview")) {
+      $("inputQaStatusPreview").textContent = pass ? "QA PASS" : "RETEST";
+      $("inputQaStatusPreview").className = pass ? "qa-pass" : "qa-retest";
+    }
+  }
+
+  function formatInputPourPlan(steps = inputPourRowsAsSteps()) {
+    return (steps || []).map(st => `${st.stage}: ${st.water || 0}ml @ ${st.time} · ${st.valve}`).join(" | ");
+  }
+
+  function inputBrewLogBase(extra = {}) {
+    const values = inputRecipeValues();
+    const steps = inputPourRowsAsSteps();
+    const id = extra.BrewID || nextId("BL", uniqueByCloudId([...(state.cloudBrewLogs || []), ...(state.userBrewLogs || []), ...allBrewLogs()]), "BrewID");
+    const qaId = extra.QA_ID || "";
+    const beanName = extra.BeanName || $("inputBeanName")?.value.trim() || $("inputVariety")?.value || "Kopi tanpa nama";
+    return {
+      BrewID: id,
+      Date: todayISO(),
+      BrewerName: extra.BrewerName || currentBrewerName(),
+      BeanName: beanName,
+      Origin: extra.Origin || $("inputOrigin")?.value.trim() || "",
+      StockBeanID: "",
+      StockBeanCode: "",
+      StockUsage_g: "",
+      Variety: $("inputVariety")?.value || "",
+      Process: $("inputProcess")?.value || "",
+      RoastProfile: $("inputRoast")?.value || "",
+      Dripper: $("inputDripper")?.value || "",
+      Method: values.mode,
+      Grinder: getSelectedInputGrinderName(),
+      GrindSetting: isCustomInputGrinderSelected() ? ($("inputCustomGrinderSetting")?.value.trim() || "klik/dial") : getGrinderSetting($("inputGrinder")?.value, 700, values.mode, values.isImmersion),
+      Temp_C: values.temp,
+      Ratio: values.ratio,
+      Dose_g: values.dose,
+      TotalWater_ml: values.totalWater,
+      HotWater_ml: values.hotWater,
+      Ice_g: values.ice,
+      BrewTime_sec: values.brewTime,
+      Bloom_ml: steps.find(s => s.stage === "Bloom")?.water || 0,
+      PourCount: steps.filter(s => /^Pour/.test(s.stage)).length,
+      PourPlan: formatInputPourPlan(steps),
+      Water: $("inputWater")?.value || "",
+      TDS_ppm: getBy(DATA.waters, "Water", $("inputWater")?.value).TDS_ppm || "",
+      Agitation: "Manual / personal recipe",
+      Filter: "Paper",
+      ParentBrewID: extra.ParentBrewID || "",
+      PrimaryVariableChanged: extra.PrimaryVariableChanged || "Resep pribadi dari Input Seduhan",
+      Hypothesis: extra.Hypothesis || "",
+      ResultNotes: extra.ResultNotes || "",
+      QA_ID: qaId,
+      QA_Final: extra.QA_Final ?? "",
+      QA_Status: extra.QA_Status || (qaId ? "QA PASS" : "Belum diverifikasi"),
+      ManualApproval: extra.ManualApproval || "No",
+      ApprovedForRecipe: extra.ApprovedForRecipe || (qaId ? "Yes" : "Belum diverifikasi"),
+      RecipeKey: recipeKey($("inputVariety")?.value, $("inputProcess")?.value, $("inputRoast")?.value),
+      CurrentMatchScore: "",
+      Water_Formula_Note: "Input Seduhan: TotalWater_ml = Ratio × Dose. Japanese: air panas = 60%, es = 40%.",
+      SwitchValveMode: values.switchMode,
+      ValvePlan: steps.map(st => `${st.stage}: ${st.valve}`).join(" | "),
+      WorkspaceID: extra.WorkspaceID || activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID,
+      CreatedBy: extra.CreatedBy ?? currentUser?.id ?? null,
+      CreatedAt: extra.CreatedAt || new Date().toISOString(),
+      UpdatedAt: extra.UpdatedAt || new Date().toISOString()
+    };
+  }
+
+  function renderInputRecipe(event) {
+    if (!$("inputRecipePreview")) return;
+    const preservePourValues = Boolean(event?.target?.closest?.("#inputPourRows"));
+    renderInputPourPlan(preservePourValues);
+    const values = inputRecipeValues();
+    const steps = inputPourRowsAsSteps();
+    const grinderName = getSelectedInputGrinderName();
+    const grindSetting = isCustomInputGrinderSelected() ? ($("inputCustomGrinderSetting")?.value.trim() || "klik/dial") : getGrinderSetting($("inputGrinder")?.value, 700, values.mode, values.isImmersion);
+    const cards = [
+      ["Kopi", $("inputBeanName")?.value.trim() || $("inputVariety")?.value || "-", "Nama resep"],
+      ["Dripper", $("inputDripper")?.value || "-", values.switchMode],
+      ["Air", `${values.totalWater} ml`, values.ice ? `Hot ${values.hotWater} + es ${values.ice}` : "Total air seduh"],
+      ["Dose / Ratio", `${fmt(values.dose, 1)}g · 1:${fmt(values.ratio, 1)}`, "Parameter utama"],
+      ["Suhu", `${fmt(values.temp, 1)}°C`, "Input manual"],
+      ["Brew Time", fmtTime(values.brewTime), "Target selesai"],
+      ["Grinder", grinderName || "-", grindSetting],
+      ["Pour", `${steps.length} tahap`, formatInputPourPlan(steps)]
+    ];
+    $("inputRecipePreview").innerHTML = cards.map(([label, value, desc]) => `<div class="output-card"><span>${html(label)}</span><strong>${html(value)}</strong><small>${html(desc)}</small></div>`).join("");
+    if ($("inputRecipeNote")) $("inputRecipeNote").textContent = currentUser
+      ? "Saat disimpan, resep pribadi akan menjadi draft dan muncul di pilihan BrewID Asal pada menu Brew Log & QA."
+      : "Guest perlu mengisi evaluasi. Hasil hanya dipublikasi jika QA minimal 6.5.";
+    setElementHidden($("inputSwitchModeWrap"), !isSwitch($("inputDripper")?.value));
+    setElementHidden($("inputCustomGrinderNameWrap"), !isCustomInputGrinderSelected());
+    setElementHidden($("inputCustomGrinderSettingWrap"), !isCustomInputGrinderSelected());
+    renderInputQAPreview();
+  }
+
+  function renderInputAccessUI() {
+    setElementHidden($("inputLoginSubtitle"), !currentUser);
+    setElementHidden($("inputGuestQASection"), Boolean(currentUser));
+    if ($("inputSaveBtn")) {
+      $("inputSaveBtn").textContent = currentUser ? "Simpan Resep Pribadi ke Brew Log & QA" : "Kirim ke Hasil Seduhan Publik";
+    }
+  }
+
+  async function saveInputSeduhan(e) {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+    if (inputRecipeSaving) return;
+    const btn = $("inputSaveBtn");
+    const originalText = btn?.textContent || "Simpan Seduhan";
+    const isGuest = !currentUser;
+
+    if (!cloudReady || !supabaseClient) {
+      showMessage("Supabase belum tersambung. Input seduhan perlu database online agar bisa tersimpan.", "error");
+      return;
+    }
+
+    if (!isGuest && !canUseWorkspaceModules()) {
+      showMessage(privateModuleMessage("Input Seduhan"), "error");
+      return;
+    }
+
+    if (!($("inputBeanName")?.value.trim())) {
+      showMessage("Isi nama kopi terlebih dahulu.", "error");
+      return;
+    }
+
+    let watchdog;
+    try {
+      inputRecipeSaving = true;
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = isGuest ? "Mengirim seduhan..." : "Menyimpan resep...";
+      }
+      watchdog = createButtonWatchdog({ key: "input", button: btn, originalText, label: "Input Seduhan" });
+
+      if (isGuest) {
+        const final = computeInputQAFromForm();
+        if (final < APPROVAL_THRESHOLD) {
+          showMessage("Nilai QA belum mencapai 6.5, jadi hasil tidak dikirim ke Seduhan Publik.", "info");
+          return;
+        }
+        const qaId = nextId("QA", uniqueByCloudId([...(state.cloudQA || []), ...(state.userQA || [])]), "QA_ID");
+        const brewerName = $("inputGuestBrewer")?.value.trim() || "Guest Brewer";
+        const log = inputBrewLogBase({
+          BrewID: nextId("BL", uniqueByCloudId([...(state.cloudBrewLogs || []), ...(state.userBrewLogs || [])]), "BrewID"),
+          BrewerName: brewerName,
+          ParentBrewID: "",
+          PrimaryVariableChanged: "Input seduhan publik dari Guest",
+          Hypothesis: $("inputQaHypothesis")?.value || "",
+          ResultNotes: $("inputQaNotes")?.value || "",
+          QA_ID: qaId,
+          QA_Final: final,
+          QA_Status: "QA PASS",
+          ManualApproval: "Yes",
+          ApprovedForRecipe: "Yes",
+          WorkspaceID: DEFAULT_PUBLIC_WORKSPACE_ID,
+          CreatedBy: null
+        });
+        const qa = {
+          QA_ID: qaId,
+          BrewID: log.BrewID,
+          Date: todayISO(),
+          Evaluator: $("inputQaEvaluator")?.value || brewerName,
+          Aroma: Number($("inputQaAroma")?.value),
+          Flavor: Number($("inputQaFlavor")?.value),
+          Aftertaste: Number($("inputQaAftertaste")?.value),
+          AcidityQuality: Number($("inputQaAcidityQuality")?.value),
+          Sweetness: Number($("inputQaSweetness")?.value),
+          Body: Number($("inputQaBody")?.value),
+          Balance: Number($("inputQaBalance")?.value),
+          Clarity: Number($("inputQaClarity")?.value),
+          Finish: Number($("inputQaFinish")?.value),
+          DefectPenalty: Number($("inputQaDefect")?.value),
+          Consistency: Number($("inputQaConsistency")?.value),
+          Final_QA: final,
+          Status: "QA PASS",
+          Approver: $("inputQaEvaluator")?.value || brewerName,
+          QA_Notes: $("inputQaNotes")?.value || "",
+          PrimaryVariableChanged: log.PrimaryVariableChanged,
+          Hypothesis: log.Hypothesis,
+          ResultNotes: log.ResultNotes,
+          WorkspaceID: DEFAULT_PUBLIC_WORKSPACE_ID,
+          CreatedBy: null
+        };
+        const savedLog = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
+        state.cloudBrewLogs = uniqueByCloudId([savedLog, ...(state.cloudBrewLogs || [])]);
+        const savedQA = await insertCloud("qa_scores", toSnakeQA(qa), fromSnakeQA);
+        state.cloudQA = uniqueByCloudId([savedQA, ...(state.cloudQA || [])]);
+        renderPublicBrewTable();
+        renderBrew();
+        showMessage("Seduhan Guest berhasil masuk ke Hasil Seduhan Publik.", "success");
+        return;
+      }
+
+      const log = inputBrewLogBase({
+        BrewID: nextId("BL", uniqueByCloudId([...(state.cloudBrewLogs || []), ...allBrewLogs()]), "BrewID"),
+        BrewerName: currentBrewerName(),
+        WorkspaceID: activeWorkspaceId(),
+        CreatedBy: currentUser?.id || null,
+        PrimaryVariableChanged: "Resep pribadi dari Input Seduhan",
+        QA_Status: "Belum diverifikasi",
+        ApprovedForRecipe: "Belum diverifikasi"
+      });
+      const saved = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
+      state.cloudBrewLogs = uniqueByCloudId([saved, ...(state.cloudBrewLogs || [])]);
+      renderBrewLogTable();
+      renderQABrewOptions();
+      renderRecipeOptions(computeBrew());
+      showMessage(`Resep pribadi ${saved.BrewID} tersimpan dan tersedia di pilihan BrewID Asal pada Brew Log & QA.`, "success");
+    } catch (err) {
+      console.error("save input seduhan failed", err);
+      const detail = err?.message || err?.details || err?.hint || String(err);
+      showMessage(`Gagal menyimpan Input Seduhan: ${detail}`, "error");
+      alert(`Gagal menyimpan Input Seduhan. Detail: ${detail}`);
+    } finally {
+      if (watchdog) clearTimeout(watchdog);
+      inputRecipeSaving = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
   }
 
   function formatOneZpressoSetting(totalClicks, clicksPerRotation = 30, clicksPerNumber = 3) {
@@ -2955,16 +3311,23 @@
     setElementHidden($("saveCurrentBrew"), !privateReady);
     setElementHidden($("applyBeanToBrew"), !privateReady);
     setElementHidden(document.querySelector('[data-tab="beans"]'), !privateReady);
+    setElementHidden(document.querySelector('[data-tab="stock"]'), !currentUser);
+    setElementHidden(document.querySelector('[data-tab="qa"]'), !currentUser);
     setElementHidden($("brewLogHistoryPanel"), !privateReady);
     setElementHidden($("qaParentWrap"), !currentUser);
     setElementHidden($("qaVariableWrap"), !currentUser);
+    renderInputAccessUI();
     renderWorkspacePanelAccess();
     setElementHidden($("memberApprovalPanel"), !canAdmin());
     setElementHidden($("workspaceUserPanel"), !canAdmin());
     setElementHidden($("adminPanel"), !canModerate());
 
-    if (!privateReady && document.querySelector(".tab-btn.active")?.dataset.tab === "beans") {
+    const activeTab = document.querySelector(".tab-btn.active")?.dataset.tab;
+    if (!privateReady && activeTab === "beans") {
       showTab("brew");
+    }
+    if (!currentUser && ["stock", "qa"].includes(activeTab)) {
+      showTab("input");
     }
     if (currentUser && currentRole !== "admin" && document.querySelector(".tab-btn.active")?.dataset.tab === "admin" && $("workspacePanel")?.hidden) {
       return;
@@ -3021,11 +3384,23 @@
       const qaBtn = e.target.closest?.("#qaSubmitBtn");
       if (qaBtn) {
         saveQA(e);
+        return;
+      }
+      const inputBtn = e.target.closest?.("#inputSaveBtn");
+      if (inputBtn) {
+        saveInputSeduhan(e);
       }
     });
     const brewFieldIds = ["brewVariety", "brewProcess", "brewRoast", "brewDripper", "brewMode", "switchValveMode", "brewGrinder", "brewWater", "brewDose", "pourPattern"];
     brewFieldIds.forEach(id => $(id)?.addEventListener("change", renderBrew));
     $("brewDose")?.addEventListener("input", renderBrew);
+    const inputFieldIds = ["inputBeanName", "inputOrigin", "inputVariety", "inputProcess", "inputRoast", "inputDripper", "inputBrewMode", "inputSwitchValveMode", "inputGrinder", "inputWater", "inputDose", "inputRatio", "inputTemp", "inputBrewTime", "inputPourPattern", "inputCustomGrinderName", "inputCustomGrinderSetting"];
+    inputFieldIds.forEach(id => {
+      $(id)?.addEventListener("input", renderInputRecipe);
+      $(id)?.addEventListener("change", renderInputRecipe);
+    });
+    $("inputPourRows")?.addEventListener("input", renderInputRecipe);
+    $("inputPourRows")?.addEventListener("change", renderInputRecipe);
     document.addEventListener("change", e => {
       if (brewFieldIds.includes(e.target?.id)) renderBrew();
       if (e.target?.id === "brewStockSelect") { syncBrewStockUI({ apply: true }); renderBrew(); }
@@ -3057,6 +3432,7 @@
     });
     $("qaForm")?.addEventListener("submit", saveQA);
     $("qaSubmitBtn")?.addEventListener("click", saveQA);
+    $("inputSaveBtn")?.addEventListener("click", saveInputSeduhan);
     $("brewLogTable")?.addEventListener("click", e => {
       const editBtn = e.target.closest("button[data-brew-edit]");
       if (editBtn) return openBrewLogEdit(editBtn.dataset.brewEdit);
@@ -3067,6 +3443,8 @@
     $("cancelBrewEdit")?.addEventListener("click", closeBrewLogEdit);
     document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("input", renderQAPreview));
     document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("change", renderQAPreview));
+    document.querySelectorAll(".input-qa-score, #inputQaDefect").forEach(el => el.addEventListener("input", renderInputQAPreview));
+    document.querySelectorAll(".input-qa-score, #inputQaDefect").forEach(el => el.addEventListener("change", renderInputQAPreview));
     $("qaParent")?.addEventListener("change", applySelectedDraftToQA);
     $("qaHasVariable")?.addEventListener("change", e => {
       const input = $("qaVariable");
@@ -3163,10 +3541,12 @@
   function renderAll() {
     renderMetrics();
     renderAccessUI();
+    renderInputRecipe();
     renderBrew();
     renderBeansTable();
     renderStockTable();
     renderQAPreview();
+    renderInputQAPreview();
     renderBrewLogTable();
     renderQABrewOptions();
     renderPublicBrewTable();
