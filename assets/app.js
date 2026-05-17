@@ -1334,6 +1334,27 @@
     return $("inputGrinder")?.value || "";
   }
 
+  function getInputGrindSetting(values = inputRecipeValues()) {
+    const manual = $("inputGrindSize")?.value.trim();
+    if (manual) return manual;
+    if (isCustomInputGrinderSelected()) return $("inputCustomGrinderSetting")?.value.trim() || "klik/dial";
+    return getGrinderSetting($("inputGrinder")?.value, 700, values.mode, values.isImmersion);
+  }
+
+  function syncInputIceField(event) {
+    const iceEl = $("inputIce");
+    if (!iceEl) return;
+    if (event?.target?.id === "inputIce") iceEl.dataset.manual = "1";
+    const mode = $("inputBrewMode")?.value || "Hot V60";
+    const dose = clamp($("inputDose")?.value, 1, 100);
+    const ratio = round(clamp($("inputRatio")?.value, 10, 25), 1);
+    const totalWater = Math.round(dose * ratio);
+    const defaultIce = Math.max(0, totalWater - Math.round(totalWater * 0.6));
+    if (mode === "Japanese Iced" && iceEl.dataset.manual !== "1") {
+      iceEl.value = String(defaultIce);
+    }
+  }
+
   function resolveInputSwitchMode() {
     const dripper = $("inputDripper")?.value || "";
     const selected = $("inputSwitchValveMode")?.value || "Auto";
@@ -1364,8 +1385,11 @@
     const switchMode = resolveInputSwitchMode();
     const isImmersion = pattern === "Immersion Full" || switchMode === "Full Immersion";
     const totalWater = Math.round(dose * ratio);
-    const hotWater = mode === "Japanese Iced" ? Math.round(totalWater * 0.6) : totalWater;
-    const ice = mode === "Japanese Iced" ? totalWater - hotWater : 0;
+    const defaultHotWater = Math.round(totalWater * 0.6);
+    const defaultIce = totalWater - defaultHotWater;
+    const requestedIce = $("inputIce")?.value === "" ? defaultIce : Number($("inputIce")?.value);
+    const ice = mode === "Japanese Iced" ? Math.round(clamp(requestedIce, 0, totalWater)) : 0;
+    const hotWater = mode === "Japanese Iced" ? totalWater - ice : totalWater;
     const pourCount = resolveInputPourCount(pattern, isImmersion);
     const defaultBloom = isImmersion ? 0 : Math.round(dose * 2.5);
     return { dose, ratio, temp, brewTime, mode, pattern, switchMode, isImmersion, totalWater, hotWater, ice, pourCount, defaultBloom };
@@ -1480,7 +1504,7 @@
       Dripper: $("inputDripper")?.value || "",
       Method: values.mode,
       Grinder: getSelectedInputGrinderName(),
-      GrindSetting: isCustomInputGrinderSelected() ? ($("inputCustomGrinderSetting")?.value.trim() || "klik/dial") : getGrinderSetting($("inputGrinder")?.value, 700, values.mode, values.isImmersion),
+      GrindSetting: getInputGrindSetting(values),
       Temp_C: values.temp,
       Ratio: values.ratio,
       Dose_g: values.dose,
@@ -1506,7 +1530,7 @@
       ApprovedForRecipe: extra.ApprovedForRecipe || (qaId ? "Yes" : "Belum diverifikasi"),
       RecipeKey: recipeKey($("inputVariety")?.value, $("inputProcess")?.value, $("inputRoast")?.value),
       CurrentMatchScore: "",
-      Water_Formula_Note: "Input Seduhan: TotalWater_ml = Ratio × Dose. Japanese: air panas = 60%, es = 40%.",
+      Water_Formula_Note: "Input Seduhan: TotalWater_ml = Ratio × Dose. Japanese: es batu bisa diatur manual; air panas = total water - es.",
       SwitchValveMode: values.switchMode,
       ValvePlan: steps.map(st => `${st.stage}: ${st.valve}`).join(" | "),
       WorkspaceID: extra.WorkspaceID || activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID,
@@ -1518,12 +1542,13 @@
 
   function renderInputRecipe(event) {
     if (!$("inputRecipePreview")) return;
+    syncInputIceField(event);
     const preservePourValues = Boolean(event?.target?.closest?.("#inputPourRows"));
     renderInputPourPlan(preservePourValues);
     const values = inputRecipeValues();
     const steps = inputPourRowsAsSteps();
     const grinderName = getSelectedInputGrinderName();
-    const grindSetting = isCustomInputGrinderSelected() ? ($("inputCustomGrinderSetting")?.value.trim() || "klik/dial") : getGrinderSetting($("inputGrinder")?.value, 700, values.mode, values.isImmersion);
+    const grindSetting = getInputGrindSetting(values);
     const cards = [
       ["Kopi", $("inputBeanName")?.value.trim() || $("inputVariety")?.value || "-", "Nama resep"],
       ["Dripper", $("inputDripper")?.value || "-", values.switchMode],
@@ -1539,6 +1564,7 @@
       ? "Saat disimpan, resep pribadi akan menjadi draft dan muncul di pilihan BrewID Asal pada menu Brew Log & QA."
       : "Guest perlu mengisi evaluasi. Hasil hanya dipublikasi jika QA minimal 6.5.";
     setElementHidden($("inputSwitchModeWrap"), !isSwitch($("inputDripper")?.value));
+    setElementHidden($("inputIceWrap"), values.mode !== "Japanese Iced");
     setElementHidden($("inputCustomGrinderNameWrap"), !isCustomInputGrinderSelected());
     setElementHidden($("inputCustomGrinderSettingWrap"), !isCustomInputGrinderSelected());
     renderInputQAPreview();
@@ -3394,7 +3420,7 @@
     const brewFieldIds = ["brewVariety", "brewProcess", "brewRoast", "brewDripper", "brewMode", "switchValveMode", "brewGrinder", "brewWater", "brewDose", "pourPattern"];
     brewFieldIds.forEach(id => $(id)?.addEventListener("change", renderBrew));
     $("brewDose")?.addEventListener("input", renderBrew);
-    const inputFieldIds = ["inputBeanName", "inputOrigin", "inputVariety", "inputProcess", "inputRoast", "inputDripper", "inputBrewMode", "inputSwitchValveMode", "inputGrinder", "inputWater", "inputDose", "inputRatio", "inputTemp", "inputBrewTime", "inputPourPattern", "inputCustomGrinderName", "inputCustomGrinderSetting"];
+    const inputFieldIds = ["inputBeanName", "inputOrigin", "inputVariety", "inputProcess", "inputRoast", "inputDripper", "inputBrewMode", "inputSwitchValveMode", "inputGrinder", "inputGrindSize", "inputWater", "inputDose", "inputRatio", "inputIce", "inputTemp", "inputBrewTime", "inputPourPattern", "inputCustomGrinderName", "inputCustomGrinderSetting"];
     inputFieldIds.forEach(id => {
       $(id)?.addEventListener("input", renderInputRecipe);
       $(id)?.addEventListener("change", renderInputRecipe);
