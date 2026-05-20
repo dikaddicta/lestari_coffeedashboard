@@ -16,6 +16,17 @@ Dashboard web statis untuk rekomendasi seduh kopi, manajemen stok, brew log, QA,
 - Kotak Saran.
 - Pustaka data varietas, dripper, proses, roast profile, air mineral, dan grinder.
 
+
+## v19 Premium Experience
+
+Versi ini menambahkan lapisan visual dan recipe engine yang lebih premium:
+
+- Hero dan navigasi baru dengan gaya clean, elegan, dan tetap bernuansa kopi.
+- Brew output card dengan ikon kontekstual.
+- Panel **Brew Intelligence** berisi focus profile, confidence score, agitation guidance, water band, dan dial-in tips.
+- Rekomendasi seduh lebih presisi karena memperhitungkan varietas, proses, roast tone, flow dripper, heat retention, TDS air, dosis, ferment risk, dan mode seduh.
+- Tahapan pour lebih adaptif berdasarkan brew time, bloom, ferment risk, body, acidity, floral cue, dan Switch valve behavior.
+
 ## Struktur project
 
 ```text

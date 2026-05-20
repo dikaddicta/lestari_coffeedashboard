@@ -1258,6 +1258,95 @@
     return selected;
   }
 
+  function numberField(row, field, fallback = 0) {
+    const value = Number(row?.[field]);
+    return Number.isFinite(value) ? value : fallback;
+  }
+
+  function roastWeight(roast = {}) {
+    const text = `${roast.RoastProfile || ""} ${roast.Level || ""}`.toLowerCase();
+    if (/very light|cinnamon|nordic/.test(text)) return -2;
+    if (/light/.test(text)) return -1;
+    if (/medium light|medium-light/.test(text)) return -0.5;
+    if (/medium dark|medium-dark/.test(text)) return 1;
+    if (/dark|italian|french/.test(text)) return 2;
+    if (/medium/.test(text)) return 0;
+    return 0;
+  }
+
+  function waterMineralBand(tds) {
+    if (tds < 35) return "soft";
+    if (tds > 220) return "hard";
+    if (tds >= 70 && tds <= 160) return "balanced";
+    return "moderate";
+  }
+
+  function brewIntent({ acidity, sweetness, body, fruity, floral, risk, roastTone, mode }) {
+    const cues = [];
+    if (floral >= 4 || acidity >= 4) cues.push("clarity");
+    if (sweetness >= 4) cues.push("sweetness");
+    if (body >= 4 || roastTone > 0.8) cues.push("body");
+    if (fruity >= 4 || risk >= 4) cues.push("fruit");
+    const primary = cues[0] || (mode === "Japanese Iced" ? "refreshing clarity" : "balanced sweetness");
+    const labelMap = {
+      clarity: "Clarity-forward",
+      sweetness: "Sweetness-first",
+      body: "Body & comfort",
+      fruit: "Fruit expression",
+      "refreshing clarity": "Refreshing clarity",
+      "balanced sweetness": "Balanced sweetness"
+    };
+    return { primary, label: labelMap[primary] || "Balanced sweetness", cues };
+  }
+
+  function extractBrewSignals({ variety, process, roast, dripper, water, mode }) {
+    const acidity = clamp(numberField(variety, "Acidity_Base", 3) + numberField(process, "AcidityMod", 0) + numberField(roast, "AcidityMod", 0), 1, 5);
+    const sweetness = clamp(numberField(variety, "Sweetness_Base", 3) + numberField(process, "SweetnessMod", 0), 1, 5);
+    const body = clamp(numberField(variety, "Body_Base", 3) + numberField(process, "BodyMod", 0) + numberField(roast, "BodyMod", 0), 1, 5);
+    const fruity = clamp(numberField(variety, "Fruity_Base", 3) + numberField(process, "FruityMod", 0), 1, 5);
+    const floral = clamp(numberField(variety, "Floral_Base", 2) + numberField(process, "FloralMod", 0), 1, 5);
+    const risk = clamp(numberField(process, "FermentRisk_1low_5high", 2), 1, 5);
+    const flow = clamp(numberField(dripper, "FlowSpeed_1slow_5fast", 3), 1, 5);
+    const heat = clamp(numberField(dripper, "HeatRetention_1low_5high", 3), 1, 5);
+    const tds = numberField(water, "TDS_ppm", 150);
+    const roastTone = roastWeight(roast);
+    const intent = brewIntent({ acidity, sweetness, body, fruity, floral, risk, roastTone, mode });
+    return { acidity, sweetness, body, fruity, floral, risk, flow, heat, tds, roastTone, intent, mineralBand: waterMineralBand(tds) };
+  }
+
+  function confidenceScore({ variety, process, roast, dripper, water, grinderName, isCustom }) {
+    let score = 86;
+    if (!variety?.Variety) score -= 12;
+    if (!process?.Process) score -= 12;
+    if (!roast?.RoastProfile) score -= 10;
+    if (!dripper?.DripperName) score -= 8;
+    if (!water?.Water) score -= 6;
+    if (isCustom) score -= 5;
+    if (/custom/i.test(grinderName || "")) score -= 4;
+    return clamp(score, 54, 96);
+  }
+
+  function dialInTips(brew) {
+    const tips = [];
+    const modeIce = brew.mode === "Japanese Iced";
+    if (brew.risk >= 4) tips.push("Fermentasi tinggi: kurangi agitasi, hindari swirl agresif, mulai dari grind sedikit lebih kasar bila aroma ferment terlalu dominan.");
+    if (brew.acidity >= 4 && brew.body <= 3) tips.push("Target clarity: jika cup terlalu tajam, naikkan rasio +0.3 atau perpanjang kontak 10–15 detik sebelum mengubah suhu.");
+    if (brew.body >= 4) tips.push("Body tinggi: jaga flow tetap bersih. Jika finish terasa berat, kasar 1–2 step atau turunkan suhu 1°C.");
+    if (brew.mineralBand === "soft") tips.push("Air sangat soft: gunakan mineral/blend atau naikkan suhu 1°C agar sweetness tidak terasa tipis.");
+    if (brew.mineralBand === "hard") tips.push("Air mineral tinggi: turunkan suhu 1°C dan hindari ekstraksi terlalu panjang agar aftertaste tidak chalky.");
+    if (modeIce) tips.push("Japanese iced: swirl server setelah drawdown supaya meltwater dan konsentrasi kopi homogen.");
+    if (!tips.length) tips.push("Mulai dari resep ini sebagai control. Setelah tasting, ubah satu variabel saja: grind → suhu → rasio.");
+    return tips.slice(0, 3);
+  }
+
+  function extractionMood(brew) {
+    if (brew.risk >= 4) return "Low agitation / aromatic control";
+    if (brew.intent?.primary === "clarity") return "Clean clarity / high definition";
+    if (brew.intent?.primary === "body") return "Round body / soft finish";
+    if (brew.intent?.primary === "sweetness") return "Sweet balance / syrupy cup";
+    return "Balanced extraction";
+  }
+
   function computeBrew() {
     const variety = getBy(DATA.varieties, "Variety", $("brewVariety").value);
     const process = getBy(DATA.processes, "Process", $("brewProcess").value);
@@ -1267,38 +1356,69 @@
     const dose = clamp($("brewDose").value, 1, 100);
     const mode = $("brewMode").value;
     const switchMode = resolveSwitchMode();
-
-    const acidity = clamp((Number(variety.Acidity_Base) || 3) + (Number(process.AcidityMod) || 0) + (Number(roast.AcidityMod) || 0), 1, 5);
-    const sweetness = clamp((Number(variety.Sweetness_Base) || 3) + (Number(process.SweetnessMod) || 0), 1, 5);
-    const body = clamp((Number(variety.Body_Base) || 3) + (Number(process.BodyMod) || 0) + (Number(roast.BodyMod) || 0), 1, 5);
-    const risk = Number(process.FermentRisk_1low_5high) || 2;
-    const flow = Number(dripper.FlowSpeed_1slow_5fast) || 3;
-    const tds = Number(water.TDS_ppm) || 150;
+    const signals = extractBrewSignals({ variety, process, roast, dripper, water, mode });
+    const { acidity, sweetness, body, fruity, floral, risk, flow, heat, tds, roastTone, intent, mineralBand } = signals;
 
     const isImmersion = switchMode === "Full Immersion" || $("pourPattern").value === "Immersion Full";
-    const tempBase = mode === "Japanese Iced" ? 94 : isImmersion ? 91 : switchMode === "Hybrid" ? 92 : 93;
-    const temp = round(clamp(tempBase + (Number(process.TempMod_C) || 0) + (Number(roast.TempMod_C) || 0) + (Number(water.TempMod_C) || 0), 86, 98));
+    const switchHybrid = switchMode === "Hybrid" || switchMode === "Auto";
 
-    const ratioBase = mode === "Japanese Iced" ? 15 : isImmersion ? 15.5 : switchMode === "Hybrid" ? 16 : 16;
-    const ratio = round(clamp(ratioBase + (Number(process.RatioMod_ml_per_g) || 0) + (Number(roast.RatioMod_ml_per_g) || 0), 14, 18), 1);
+    const tempBase = mode === "Japanese Iced" ? 93.5 : isImmersion ? 90.5 : switchHybrid ? 92 : 93;
+    const fermentTempGuard = risk >= 4 ? -1.2 : risk === 3 ? -0.4 : 0;
+    const heatGuard = heat >= 4 ? -0.5 : heat <= 2 ? 0.4 : 0;
+    const mineralTempGuard = mineralBand === "soft" ? 0.8 : mineralBand === "hard" ? -0.8 : 0;
+    const aromaticLift = (floral >= 4 || acidity >= 4) ? 0.5 : 0;
+    const temp = round(clamp(
+      tempBase + numberField(process, "TempMod_C", 0) + numberField(roast, "TempMod_C", 0) + numberField(water, "TempMod_C", 0) + fermentTempGuard + heatGuard + mineralTempGuard + aromaticLift,
+      mode === "Japanese Iced" ? 88 : 86,
+      roastTone >= 1.5 ? 94 : 98
+    ));
+
+    const ratioBase = mode === "Japanese Iced" ? 15 : isImmersion ? 15.4 : switchHybrid ? 15.8 : 16;
+    const sensoryRatio = (acidity >= 4 && body <= 3 ? 0.25 : 0) + (sweetness >= 4 ? 0.15 : 0) + (body >= 4 ? -0.35 : 0) + (risk >= 4 ? -0.25 : 0) + (roastTone <= -1 ? 0.2 : 0);
+    const ratio = round(clamp(ratioBase + numberField(process, "RatioMod_ml_per_g", 0) + numberField(roast, "RatioMod_ml_per_g", 0) + sensoryRatio, 14, 18), 1);
     const totalWater = Math.round(dose * ratio);
-    const hotWater = mode === "Japanese Iced" ? Math.round(totalWater * 0.6) : totalWater;
+    const hotWaterRatio = mode === "Japanese Iced" ? (risk >= 4 ? 0.58 : 0.6) : 1;
+    const hotWater = mode === "Japanese Iced" ? Math.round(totalWater * hotWaterRatio) : totalWater;
     const ice = mode === "Japanese Iced" ? totalWater - hotWater : 0;
 
-    const grindBase = mode === "Japanese Iced" ? 760 : isImmersion ? 850 : switchMode === "Hybrid" ? 720 : 690;
+    const grindBase = mode === "Japanese Iced" ? 748 : isImmersion ? 850 : switchHybrid ? 720 : 690;
+    const processGrind = numberField(process, "GrindMod_coarser", 0) * 32;
+    const roastGrind = numberField(roast, "GrindMod_coarser", 0) * 42;
+    const flowComp = (3 - flow) * 24;
+    const heatComp = (heat - 3) * 8;
+    const mineralComp = mineralBand === "soft" ? -18 : mineralBand === "hard" ? 22 : 0;
+    const doseComp = (dose - 15) * 4;
+    const fermentComp = risk >= 4 ? 36 : risk <= 1 ? -8 : 0;
+    const clarityComp = (floral >= 4 || acidity >= 4) && risk < 4 ? -10 : 0;
     const grindTarget = round(clamp(
-      grindBase + (Number(process.GrindMod_coarser) || 0) * 30 + (Number(roast.GrindMod_coarser) || 0) * 40 + (3 - flow) * 20 + (tds < 30 ? -20 : tds > 250 ? 20 : 0),
-      450, 1000
+      grindBase + processGrind + roastGrind + flowComp + heatComp + mineralComp + doseComp + fermentComp + clarityComp,
+      450,
+      1020
     ));
     const grinderSetting = getGrinderSetting($("brewGrinder").value, grindTarget, mode, isImmersion);
-    const brewTime = round(clamp((mode === "Japanese Iced" ? 150 : isImmersion ? 220 : switchMode === "Hybrid" ? 190 : 180) + (Number(process.BrewTimeMod_sec) || 0) + (Number(roast.BrewTimeMod_sec) || 0) + (3 - acidity) * 15, 120, 330));
 
-    const pourCount = resolvePourCount($("pourPattern").value, isImmersion, risk, body);
-    const bloom = isImmersion ? 0 : Math.round(dose * 2.5);
-    const steps = buildSteps({ dose, mode, switchMode, isImmersion, hotWater, ice, bloom, pourCount, brewTime, process, dripper });
+    const timeBase = mode === "Japanese Iced" ? 150 : isImmersion ? 220 : switchHybrid ? 190 : 178;
+    const flowTime = (3 - flow) * 18;
+    const bodyTime = body >= 4 ? -8 : acidity >= 4 ? 8 : 0;
+    const fermentTime = risk >= 4 ? -10 : risk <= 1 ? 8 : 0;
+    const doseTime = (dose - 15) * 3;
+    const brewTime = round(clamp(
+      timeBase + numberField(process, "BrewTimeMod_sec", 0) + numberField(roast, "BrewTimeMod_sec", 0) + flowTime + bodyTime + fermentTime + doseTime,
+      mode === "Japanese Iced" ? 120 : 135,
+      isImmersion ? 360 : 330
+    ));
+
+    const pourCount = resolvePourCount($("pourPattern").value, isImmersion, risk, body, acidity, floral);
+    const bloomMultiplier = risk >= 4 ? 2.1 : acidity >= 4 || roastTone <= -1 ? 2.8 : body >= 4 ? 2.3 : 2.5;
+    const bloom = isImmersion ? 0 : Math.min(Math.round(hotWater * 0.34), Math.round(dose * bloomMultiplier));
+    const steps = buildSteps({ dose, mode, switchMode, isImmersion, hotWater, ice, bloom, pourCount, brewTime, process, roast, dripper, risk, body, acidity, floral, intent });
     const pourSum = steps.reduce((sum, st) => sum + (Number(st.water) || 0), 0);
+    const confidence = confidenceScore({ variety, process, roast, dripper, water, grinderName: $("brewGrinder").value, isCustom: isCustomGrinderSelected() });
 
-    return { variety, process, roast, dripper, water, dose, mode, switchMode, acidity, sweetness, body, risk, flow, tds, temp, ratio, totalWater, hotWater, ice, grindTarget, grinderSetting, brewTime, pourCount, bloom, steps, pourSum };
+    const brew = { variety, process, roast, dripper, water, dose, mode, switchMode, acidity, sweetness, body, fruity, floral, risk, flow, heat, tds, mineralBand, roastTone, intent, temp, ratio, totalWater, hotWater, ice, grindTarget, grinderSetting, brewTime, pourCount, bloom, steps, pourSum, confidence };
+    brew.extractionMood = extractionMood(brew);
+    brew.dialInTips = dialInTips(brew);
+    return brew;
   }
 
   function isCustomGrinderSelected() {
@@ -1354,13 +1474,14 @@
     return formatGrinderDisplay(grinder, setting);
   }
 
-  function resolvePourCount(pattern, isImmersion, risk, body) {
+  function resolvePourCount(pattern, isImmersion, risk, body, acidity = 3, floral = 2) {
     if (isImmersion) return 1;
     if (/2x/.test(pattern)) return 2;
     if (/3x/.test(pattern)) return 3;
     if (/4x/.test(pattern)) return 4;
-    if (risk >= 4) return 3;
+    if (risk >= 4) return 2;
     if (body >= 4) return 4;
+    if (acidity >= 4 || floral >= 4) return 3;
     return 3;
   }
 
@@ -1379,62 +1500,104 @@
   }
 
   function buildSteps(ctx) {
-    const { mode, switchMode, isImmersion, hotWater, ice, bloom, pourCount, brewTime, process, dripper } = ctx;
+    const { mode, switchMode, isImmersion, hotWater, ice, bloom, pourCount, brewTime, process, roast, dripper, risk = 2, body = 3, acidity = 3, floral = 2, intent } = ctx;
+    const switchActive = isSwitch(dripper.DripperName);
+    const basePouring = dripper.BasePouring || "center-to-spiral pulse; jaga bed rata";
+    const roastTone = roastWeight(roast);
+    const flavorCue = intent?.label || "Balanced extraction";
+
     if (isImmersion) {
-      const valveStart = isSwitch(dripper.DripperName) ? "CLOSED" : "N/A";
+      const valveStart = switchActive ? "CLOSED" : "N/A";
+      const steepEnd = fmtTime(Math.max(120, brewTime - 25));
       return [
-        { stage: "Full Pour", water: hotWater, time: "0:00 - 0:30", valve: valveStart, instruction: `${mode === "Japanese Iced" ? "Tuang hot water ke bed kopi di atas ice server." : "Tuang semua air panas."} Saturate semua grounds.` },
-        { stage: "Steep", water: 0, time: `0:30 - ${fmtTime(brewTime)}`, valve: valveStart, instruction: "Steep; stir 1x ringan pada awal, jangan over-agitate." },
-        { stage: "Release", water: 0, time: fmtTime(brewTime), valve: isSwitch(dripper.DripperName) ? "OPEN" : "N/A", instruction: "Open valve dan biarkan drawdown selesai." },
-        ...(ice ? [{ stage: "Ice", water: ice, time: "Server", valve: "N/A", instruction: "Ice berada di server; swirl setelah drawdown selesai." }] : [])
+        { stage: "Full Pour", water: hotWater, time: "0:00 - 0:30", valve: valveStart, instruction: `${mode === "Japanese Iced" ? "Tuang hot water ke bed kopi di atas ice server." : "Tuang semua air panas."} Saturate semua grounds, lalu stir 1x lembut.` },
+        { stage: "Steep", water: 0, time: `0:30 - ${steepEnd}`, valve: valveStart, instruction: risk >= 4 ? "Steep tenang; minim agitasi agar karakter ferment tetap bersih." : "Steep stabil; swirl ringan jika crust terlalu tebal." },
+        { stage: "Release", water: 0, time: `${steepEnd} - ${fmtTime(brewTime)}`, valve: switchActive ? "OPEN" : "N/A", instruction: "Open valve dan biarkan drawdown selesai tanpa menekan bed kopi." },
+        ...(ice ? [{ stage: "Ice", water: ice, time: "Server", valve: "N/A", instruction: "Ice berada di server; swirl 8–10 detik setelah drawdown agar homogen." }] : [])
       ];
     }
 
     const mainWater = Math.max(0, hotWater - bloom);
     const pours = splitWater(mainWater, pourCount);
     const steps = [];
-    const switchActive = isSwitch(dripper.DripperName);
     const fullOpen = switchMode === "Full Open" || !switchActive;
     const hybrid = switchMode === "Hybrid" || switchMode === "Auto";
+    const bloomEnd = risk >= 4 ? 30 : roastTone <= -1 || acidity >= 4 ? 42 : 35;
+    const pourWindow = Math.max(24, Math.min(42, Math.round((brewTime - bloomEnd - 30) / Math.max(1, pourCount))));
+    const releaseAt = Math.min(Math.max(55, bloomEnd + pourWindow), Math.max(65, brewTime - 70));
 
     steps.push({
       stage: "Bloom",
       water: bloom,
-      time: "0:00 - 0:35",
+      time: `0:00 - ${fmtTime(bloomEnd)}`,
       valve: switchActive ? (fullOpen ? "OPEN" : "CLOSED") : "N/A",
-      instruction: `Bloom: tuang ${bloom}g, swirl ringan. ${process.BrewingCue || ""}`.trim()
+      instruction: `Bloom ${Math.round(bloom)}g (${flavorCue}). ${risk >= 4 ? "Swirl sangat ringan; hindari blooming terlalu agresif." : "Swirl ringan sampai semua grounds basah."} ${process.BrewingCue || ""}`.trim()
     });
+
     pours.forEach((water, idx) => {
       const n = idx + 1;
-      const start = 35 + idx * 30;
-      const end = start + 30;
+      const start = bloomEnd + idx * pourWindow;
+      const end = Math.min(start + pourWindow, brewTime - 20);
       let valve = "N/A";
-      let instruction = "Center-to-spiral pulse; jaga bed rata.";
+      let instruction = basePouring;
+
       if (switchActive) {
         if (fullOpen) {
           valve = "OPEN";
-          instruction = "Valve OPEN dari awal; treat seperti cone V60.";
+          instruction = `${basePouring}; treat seperti cone V60 dengan flow terbuka.`;
         } else if (hybrid) {
-          valve = n === 1 ? "CLOSED → OPEN ±1:00" : "OPEN";
-          instruction = n === 1 ? "Valve CLOSED saat Pour 1; OPEN setelah fase ini / ±1:00." : "Valve OPEN; pulse rendah agitasi, jaga flow stabil.";
+          valve = n === 1 ? `CLOSED → OPEN ${fmtTime(releaseAt)}` : "OPEN";
+          instruction = n === 1
+            ? `Valve closed untuk fase ekstraksi awal, open sekitar ${fmtTime(releaseAt)} agar sweetness naik tanpa over-immersion.`
+            : risk >= 4
+              ? "Valve open; pour rendah, minim agitasi, jaga aroma ferment tetap clean."
+              : "Valve open; pulse stabil, jaga bed rata dan flow konsisten.";
+        } else {
+          valve = "CLOSED";
+          instruction = "Valve closed; gunakan pour lembut, lalu release sesuai target waktu akhir.";
         }
-      } else if (n === 1) {
-        instruction = "Center-to-spiral pulse; hindari wall-only pouring.";
-      } else if (n === pours.length) {
-        instruction = "Finishing pulse; swirl ringan jika bed tidak rata.";
-      } else {
-        instruction = "Pulse rendah agitasi; jaga flow stabil dan bed rata.";
+      } else if (risk >= 4) {
+        instruction = "Low agitation pulse; tuang dekat bed, hindari wall-only pouring dan swirl akhir.";
+      } else if (body >= 4 && n === pours.length) {
+        instruction = "Finishing pulse lebih lembut; stop agitasi bila bed sudah rata agar finish tidak berat.";
+      } else if (floral >= 4 || acidity >= 4) {
+        instruction = `${basePouring}; pertahankan flow bersih untuk clarity.`;
       }
+
       steps.push({ stage: `Pour ${n}`, water, time: `${fmtTime(start)} - ${fmtTime(end)}`, valve, instruction });
     });
+
+    if (switchActive && switchMode === "Full Immersion") {
+      steps.push({ stage: "Release", water: 0, time: fmtTime(brewTime), valve: "OPEN", instruction: "Open valve dan biarkan drawdown selesai." });
+    }
     if (ice) steps.push({ stage: "Ice", water: ice, time: "Server", valve: "N/A", instruction: "Ice berada di server; swirl setelah brew selesai agar homogen." });
     return steps;
   }
 
   function waterNote(brew) {
-    if (brew.tds < 30) return "TDS rendah: cup bisa terasa tipis/acidic. Pertimbangkan blend mineral atau naikkan suhu ±1°C.";
-    if (brew.tds > 250) return "TDS tinggi: body naik, acidity bisa mute/chalky. Pertimbangkan blend dengan air rendah mineral.";
-    return "TDS mendekati target filter; lanjutkan dial-in berdasarkan drawdown dan QA taste.";
+    if (brew.mineralBand === "soft") return "Water intelligence: TDS sangat rendah. Gunakan sebagai base remineralisasi/blending, atau naikkan suhu ±1°C jika cup terasa tipis dan acidity terlalu tajam.";
+    if (brew.mineralBand === "hard") return "Water intelligence: mineral tinggi. Body bisa naik, tetapi clarity dan aftertaste berisiko mute/chalky. Pertimbangkan blend dengan air rendah mineral.";
+    if (brew.mineralBand === "balanced") return "Water intelligence: rentang mineral ideal untuk filter. Prioritaskan dial-in lewat grind dan agitation sebelum mengubah rasio.";
+    return "Water intelligence: mineral masih usable. Validasi dengan drawdown dan QA taste, lalu ubah satu variabel saja per iterasi.";
+  }
+
+  function renderBrewInsight(brew) {
+    const panel = $("brewInsightPanel");
+    if (!panel) return;
+    const tips = (brew.dialInTips || []).map(tip => `<li>${html(tip)}</li>`).join("");
+    const qaSignal = brew.confidence >= 88 ? "High confidence" : brew.confidence >= 74 ? "Ready to test" : "Needs validation";
+    panel.innerHTML = `
+      <div class="insight-header">
+        <span class="insight-kicker">Brew Intelligence</span>
+        <strong>${html(brew.extractionMood)}</strong>
+        <em>${html(qaSignal)} · ${html(brew.confidence)}%</em>
+      </div>
+      <div class="insight-grid">
+        <article><span>Focus</span><strong>${html(brew.intent?.label || "Balanced")}</strong><small>Acuan profil seduh utama.</small></article>
+        <article><span>Agitation</span><strong>${html(brew.risk >= 4 ? "Low" : brew.body >= 4 ? "Medium-soft" : "Medium")}</strong><small>Disesuaikan dengan proses dan body.</small></article>
+        <article><span>Water Band</span><strong>${html(brew.mineralBand)}</strong><small>TDS ${html(brew.tds)} ppm.</small></article>
+      </div>
+      <ul class="dial-tips">${tips}</ul>`;
   }
 
   function renderBrew() {
@@ -1442,18 +1605,19 @@
     syncBrewStockUI({ apply: true });
     const brew = computeBrew();
     const cards = [
-      ["Suhu", `${brew.temp} °C`, "Target suhu air seduh"],
-      ["Rasio", `1:${fmt(brew.ratio, 1)}`, "Dosis : total air"],
-      ["Total Air", `${brew.totalWater} ml`, "Dosis × rasio"],
-      ["Air Panas", `${brew.hotWater} ml`, brew.mode === "Japanese Iced" ? "60% dari total" : "Sama dengan total"],
-      ["Es", brew.ice ? `${brew.ice} g` : "-", "Khusus Japanese iced"],
-      ["Target Gilingan", `${brew.grindTarget} µm`, "Target relatif"],
-      ["Setting Grinder", brew.grinderSetting, "Kalibrasi by drawdown/taste"],
-      ["Brew Time", fmtTime(brew.brewTime), "Target selesai"],
-      ["Profil Rasa", `Acidity ${brew.acidity}/5 | Sweetness ${brew.sweetness}/5 | Body ${brew.body}/5`, "Prediksi dari data"],
+      ["Suhu", `${brew.temp} °C`, "Target suhu air seduh", "thermo"],
+      ["Rasio", `1:${fmt(brew.ratio, 1)}`, "Dosis : total air", "ratio"],
+      ["Total Air", `${brew.totalWater} ml`, "Dosis × rasio", "water"],
+      ["Air Panas", `${brew.hotWater} ml`, brew.mode === "Japanese Iced" ? "Konsentrasi untuk iced brew" : "Sama dengan total", "kettle"],
+      ["Es", brew.ice ? `${brew.ice} g` : "-", "Khusus Japanese iced", "ice"],
+      ["Target Gilingan", `${brew.grindTarget} µm`, "Target relatif dari flow & solubility", "grind"],
+      ["Setting Grinder", brew.grinderSetting, "Kalibrasi by drawdown/taste", "grinder"],
+      ["Brew Time", fmtTime(brew.brewTime), "Target selesai", "timer"],
+      ["Profil Rasa", `A ${brew.acidity}/5 · S ${brew.sweetness}/5 · B ${brew.body}/5`, "Prediksi dari varietas, proses, roast", "profile"],
     ];
-    $("brewOutputs").innerHTML = cards.map(([label, value, desc]) => `<div class="output-card"><span>${html(label)}</span><strong>${html(value)}</strong><small>${html(desc)}</small></div>`).join("");
+    $("brewOutputs").innerHTML = cards.map(([label, value, desc, icon]) => `<div class="output-card" data-output="${html(icon)}"><span>${html(label)}</span><strong>${html(value)}</strong><small>${html(desc)}</small></div>`).join("");
     $("waterNote").textContent = waterNote(brew);
+    renderBrewInsight(brew);
     renderSteps(brew);
     renderRecipeOptions(brew);
     toggleSwitchVisibility();
@@ -1503,7 +1667,7 @@
       .slice(0, 3);
 
     const baseGrinder = [getSelectedGrinderName(), brew.grinderSetting].filter(Boolean).join(" · ");
-    const baseCard = `<article class="recipe-card base"><span class="badge">Opsi 1 · Rekomendasi Dasar</span><h3>Rekomendasi Dasar</h3><p><strong>${html($("brewDripper").value)}</strong> · ${html(brew.mode)} · ${html(brew.switchMode)}</p><p>${html(baseGrinder)} · ${brew.temp}°C · 1:${fmt(brew.ratio, 1)}</p><p>Dosis ${fmt(brew.dose, 1)}g · Total ${brew.totalWater}ml · ${brew.pourCount} tuangan utama</p><p>Dasar: varietas × proses × profil sangrai × dripper × air.</p></article>`;
+    const baseCard = `<article class="recipe-card base"><span class="badge">Opsi 1 · Precision Engine</span><h3>${html(brew.intent?.label || "Rekomendasi Dasar")}</h3><p><strong>${html($("brewDripper").value)}</strong> · ${html(brew.mode)} · ${html(brew.switchMode)}</p><p>${html(baseGrinder)} · ${brew.temp}°C · 1:${fmt(brew.ratio, 1)}</p><p>Dosis ${fmt(brew.dose, 1)}g · Total ${brew.totalWater}ml · ${brew.pourCount} tuangan utama · Confidence ${brew.confidence}%</p><p>${html(brew.extractionMood)}. Dasar: varietas × proses × roast × dripper × air × grinder.</p></article>`;
     const approvedCards = approved.map((log, idx) => {
       const grinderText = [log.Grinder, log.GrindSetting].filter(Boolean).join(" · ") || "-";
       return `<article class="recipe-card"><span class="badge">Opsi ${idx + 2} · QA ${fmt(log.QA_Final, 2)}</span><h3>${html(log.BrewID)}</h3><p><strong>${html(log.Dripper)}</strong> · ${html(log.Method)} · ${html(log.SwitchValveMode || "N/A")}</p><p>${html(grinderText)} · ${html(log.Temp_C)}°C · 1:${html(log.Ratio)}</p><p>Dosis ${html(log.Dose_g)}g · Total ${html(log.TotalWater_ml)}ml · Air panas ${html(log.HotWater_ml)}ml${Number(log.Ice_g) ? ` · Es ${html(log.Ice_g)}g` : ""}</p><p>${html(log.PrimaryVariableChanged || "Resep terverifikasi dari brew log")}</p></article>`;

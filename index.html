@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Coffee Dashboard by Lestari</title>
+  <title>Lestari Coffee Dashboard — Precision Brew OS</title>
+  <meta name="description" content="Premium coffee brew dashboard untuk rekomendasi seduh, stok, brew log, QA, dan public recipe intelligence." />
+  <meta name="theme-color" content="#2a160e" />
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -11,15 +13,20 @@
     <div id="appToast" class="app-toast hidden" role="status" aria-live="polite"></div>
     <header class="hero">
       <div class="hero-main">
-        <p class="eyebrow">Coffee Dashboard by Lestari</p>
+        <p class="eyebrow">Lestari Coffee Intelligence</p>
         <div class="hero-title-row">
           <span class="hero-icon" aria-hidden="true">☕</span>
-          <h1>Coffee Dashboard</h1>
+          <h1>Precision Brew OS</h1>
         </div>
         <div class="hero-text">
-          <p class="hero-lead">Dashboard yang dibuat untuk kebutuhan pribadi sebagai homebrewer yang ingin mencatat, membandingkan, dan membagikan pengalaman seduh kopi dengan lebih rapi.</p>
-          <p class="hero-copy">Semoga dashboard ini bermanfaat bagi teman-teman yang sedang belajar tentang kopi maupun yang ingin berbagi pengalaman seduh. Dashboard ini masih jauh dari sempurna, jadi setiap masukan akan sangat membantu untuk menyempurnakannya. Terima kasih dan selamat menggunakan.</p>
-          <p class="hero-footnote">Silakan digunakan secara gratis. Jika ada kesalahan, ketidaksesuaian, atau kekurangan data seperti dripper, varietas, pasca panen, roast profile, maupun setting grinder, bantu lengkapi melalui <button class="hero-inline-link" type="button" data-jump-tab="suggestion">kotak saran</button>.</p>
+          <p class="hero-lead">Dashboard premium untuk merancang resep, memilih biji kopi, membaca karakter ekstraksi, dan mengubah brew log menjadi rekomendasi seduh yang lebih presisi.</p>
+          <p class="hero-copy">Dirancang dengan workflow clean untuk homebrewer serius, coffee shop, roastery kecil, dan tim QA: mulai dari stok, recipe engine, brew log, quality gate, hingga pustaka data yang terus bisa dikurasi.</p>
+          <p class="hero-footnote">Gunakan sebagai ruang kalibrasi kopi yang hidup. Jika ada data dripper, varietas, pasca panen, roast profile, air, atau grinder yang perlu dilengkapi, kirim melalui <button class="hero-inline-link" type="button" data-jump-tab="suggestion">kotak saran</button>.</p>
+          <div class="premium-badge-row" aria-label="Fitur utama">
+            <span>Precision Recipe</span>
+            <span>Stock Intelligence</span>
+            <span>QA Gate</span>
+          </div>
         </div>
       </div>
       <div class="hero-side">
@@ -194,6 +201,7 @@
             </div>
             <div class="output-grid" id="brewOutputs"></div>
             <div class="callout" id="waterNote"></div>
+            <div class="brew-insight-panel" id="brewInsightPanel" aria-live="polite"></div>
           </section>
         </div>
 
