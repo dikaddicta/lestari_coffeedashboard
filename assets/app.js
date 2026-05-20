@@ -39,6 +39,8 @@
   const html = (s) => String(s ?? "").replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;","\"":"&quot;"}[ch]));
   const statusLabel = (status) => ({ pending: "Menunggu review", approved: "Disetujui", rejected: "Ditolak" }[String(status || "").toLowerCase()] || status || "-");
   const memberStatusLabel = (status) => ({ pending: "Menunggu approval", active: "Aktif", rejected: "Ditolak", disabled: "Suspend" }[String(status || "").toLowerCase()] || status || "-");
+  const emptyRow = (colspan, title, detail = "", icon = "✦") => `<tr class="empty-state-row"><td colspan="${colspan}"><div class="empty-state"><span class="empty-icon">${html(icon)}</span><strong>${html(title)}</strong>${detail ? `<small>${html(detail)}</small>` : ""}</div></td></tr>`;
+
 
 
   window.addEventListener("unhandledrejection", event => {
@@ -1748,13 +1750,13 @@
   function renderBeansTable() {
     const tbody = $("beansTable").querySelector("tbody");
     if (!canUseWorkspaceModules()) {
-      tbody.innerHTML = `<tr><td colspan="10">Masuk dan pilih workspace untuk melihat rekomendasi biji kopi dari stok pribadimu.</td></tr>`;
+      tbody.innerHTML = emptyRow(10, "Masuk untuk membuka rekomendasi biji kopi", "Pilih workspace agar dashboard bisa membaca stok privatmu.", "◆");
       renderStockTable();
       return [];
     }
     const ranked = rankBeans();
     if (!ranked.length) {
-      tbody.innerHTML = `<tr><td colspan="10">Belum ada stok kopi yang cocok dengan filter. Tambahkan stok di menu Stok Kopi.</td></tr>`;
+      tbody.innerHTML = emptyRow(10, "Belum ada biji kopi yang cocok", "Ubah filter atau tambahkan stok baru di menu Stok Kopi.", "◈");
       renderStockTable();
       return [];
     }
@@ -1787,12 +1789,12 @@
     const locked = !canUseWorkspaceModules();
     setModuleLocked("tab-stock", "stockAccessNotice", locked, privateModuleMessage("Stok Kopi"));
     if (locked) {
-      tbody.innerHTML = `<tr><td colspan="12">Masuk dan pilih workspace untuk melihat atau mengelola stok kopi.</td></tr>`;
+      tbody.innerHTML = emptyRow(12, "Stok privat belum terbuka", "Masuk dan pilih workspace untuk melihat atau mengelola stok kopi.", "◐");
       return;
     }
     const rows = allStock();
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="12">Belum ada stok kopi di workspace ini.</td></tr>`;
+      tbody.innerHTML = emptyRow(12, "Stok kopi masih kosong", "Tambahkan bean pertama untuk mulai membangun pustaka seduh personal.", "☕");
       return;
     }
     tbody.innerHTML = rows.map(bean => {
@@ -2223,7 +2225,7 @@
     const rows = sortBrewNewest(allBrewLogs());
     const colSpan = baseHeaders.length + (adminView ? 1 : 0);
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="${colSpan}">Belum ada brew log di workspace ini. Buat draft dari menu Rekomendasi Seduh terlebih dahulu.</td></tr>`;
+      tbody.innerHTML = emptyRow(colSpan, "Brew log masih kosong", "Buat draft dari menu Rekomendasi Seduh, lalu simpan dan evaluasi hasilnya.", "✍");
       return;
     }
 
@@ -2543,11 +2545,11 @@
     table.querySelector("thead").innerHTML = `<tr><th>Status</th><th>Data</th><th>Pembuat</th><th>Dibuat</th><th>QA</th><th>Catatan</th><th>Aksi</th></tr>`;
     const tbody = table.querySelector("tbody");
     if (message) {
-      tbody.innerHTML = `<tr><td colspan="7">${html(message)}</td></tr>`;
+      tbody.innerHTML = emptyRow(7, "Informasi moderasi", message, "ⓘ");
       return;
     }
     if (!moderationRows.length) {
-      tbody.innerHTML = `<tr><td colspan="7">Tidak ada data untuk filter ini.</td></tr>`;
+      tbody.innerHTML = emptyRow(7, "Tidak ada data untuk filter ini", "Coba ubah status, dataset, atau refresh data workspace.", "◇");
       return;
     }
     tbody.innerHTML = moderationRows.map(row => {
@@ -2698,15 +2700,15 @@
     if (!table) return;
     const tbody = table.querySelector("tbody");
     if (!canAdmin()) {
-      tbody.innerHTML = `<tr><td colspan="5">Panel ini hanya untuk Admin Workspace.</td></tr>`;
+      tbody.innerHTML = emptyRow(5, "Panel khusus Admin Workspace", "Masuk dengan role admin untuk melihat request akses.", "🔒");
       return;
     }
     if (message) {
-      tbody.innerHTML = `<tr><td colspan="5">${html(message)}</td></tr>`;
+      tbody.innerHTML = emptyRow(5, "Informasi request akses", message, "ⓘ");
       return;
     }
     if (!pendingMemberRows.length) {
-      tbody.innerHTML = `<tr><td colspan="5">Tidak ada request akses pending.</td></tr>`;
+      tbody.innerHTML = emptyRow(5, "Tidak ada request pending", "Semua permintaan akses workspace sudah diproses.", "✓");
       return;
     }
     tbody.innerHTML = pendingMemberRows.map(row => {
@@ -2771,15 +2773,15 @@
     if (!table) return;
     const tbody = table.querySelector("tbody");
     if (!canAdmin()) {
-      tbody.innerHTML = `<tr><td colspan="6">Panel ini hanya untuk Admin Workspace.</td></tr>`;
+      tbody.innerHTML = emptyRow(6, "Panel khusus Admin Workspace", "Masuk dengan role admin untuk mengelola pengguna workspace.", "🔒");
       return;
     }
     if (message) {
-      tbody.innerHTML = `<tr><td colspan="6">${html(message)}</td></tr>`;
+      tbody.innerHTML = emptyRow(6, "Informasi pengguna workspace", message, "ⓘ");
       return;
     }
     if (!workspaceMemberRows.length) {
-      tbody.innerHTML = `<tr><td colspan="6">Belum ada pengguna aktif di workspace ini.</td></tr>`;
+      tbody.innerHTML = emptyRow(6, "Belum ada pengguna aktif", "Setujui request akses atau undang tim untuk mulai berkolaborasi.", "👥");
       return;
     }
     const activeAdminCount = workspaceMemberRows.filter(row => row.role === "admin" && row.status === "active").length;
@@ -2996,7 +2998,7 @@
     const rows = publicBrewRows();
     const tbody = table.querySelector("tbody");
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="5">Belum ada hasil seduhan publik yang sesuai filter. Brew log akan tampil di sini setelah QA ≥ 6.5 dan disetujui.</td></tr>`;
+      tbody.innerHTML = emptyRow(5, "Belum ada hasil seduhan publik", "Brew log akan tampil di sini setelah QA ≥ 6.5 dan disetujui.", "◎");
       return;
     }
     tbody.innerHTML = rows.map(log => {
@@ -3047,7 +3049,9 @@
     const cols = columnsByDataset[dataset] || Object.keys(rows[0] || {}).slice(0, 8);
     const table = $("libraryTable");
     table.querySelector("thead").innerHTML = `<tr>${cols.map(c => `<th>${html(labelMap[c] || c)}</th>`).join("")}</tr>`;
-    table.querySelector("tbody").innerHTML = rows.slice(0, 200).map(row => `<tr>${cols.map(c => `<td>${c === "RoastVisual" ? roastVisual(row) : html(row[c])}</td>`).join("")}</tr>`).join("");
+    table.querySelector("tbody").innerHTML = rows.length
+      ? rows.slice(0, 200).map(row => `<tr>${cols.map(c => `<td>${c === "RoastVisual" ? roastVisual(row) : html(row[c])}</td>`).join("")}</tr>`).join("")
+      : emptyRow(cols.length || 1, "Data tidak ditemukan", "Coba kata kunci lain atau pilih dataset berbeda.", "⌕");
   }
 
 
