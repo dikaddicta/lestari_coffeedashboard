@@ -112,3 +112,15 @@ Admin Workspace membuat workspace/company dan menyetujui request akses. Brewer d
 ## Catatan dial-in
 
 Rekomendasi grinder adalah titik awal. Final setting tetap perlu disesuaikan dari drawdown, rasa, roast freshness, filter, dripper, dan kalibrasi tiap unit grinder.
+
+## v21 Creative UI Refinement
+
+Patch ini memperhalus tampilan menjadi **Coffee Brew OS** dengan nuansa lebih kreatif, interaktif, dan responsive:
+
+- Hero title diganti menjadi **Coffee Brew OS**.
+- Tombol quick action di hero dihapus agar tampilan lebih clean.
+- Navigasi tetap tanpa scrollbar horizontal dan lebih rapi pada desktop maupun mobile.
+- Header tabel memakai gradasi espresso–cocoa–caramel yang lebih premium.
+- Scrollbar tabel dibuat custom sesuai palet warna kopi.
+- Panel, kartu, tabel, dan hero diberi micro-interaction ringan.
+- Layout responsive diperbaiki agar lebih nyaman di layar kecil.

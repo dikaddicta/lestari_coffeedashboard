@@ -3341,6 +3341,64 @@
   }
 
 
+  function initPremiumUIInteractions() {
+    if (document.body?.dataset.premiumUiReady === "true") return;
+    if (document.body) document.body.dataset.premiumUiReady = "true";
+
+    const hero = document.querySelector(".hero");
+    if (hero) {
+      hero.addEventListener("pointermove", event => {
+        const rect = hero.getBoundingClientRect();
+        const x = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 100;
+        const y = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 100;
+        hero.style.setProperty("--hero-mx", `${x.toFixed(1)}%`);
+        hero.style.setProperty("--hero-my", `${y.toFixed(1)}%`);
+        document.body.style.setProperty("--cursor-x", `${x.toFixed(1)}%`);
+        document.body.style.setProperty("--cursor-y", `${Math.min(26, y).toFixed(1)}%`);
+      });
+    }
+
+    const tableWraps = [...document.querySelectorAll(".table-wrap")];
+    const updateTableScrollState = wrap => {
+      const canScrollX = wrap.scrollWidth > wrap.clientWidth + 8;
+      const isScrolled = wrap.scrollLeft > 8;
+      wrap.classList.toggle("can-scroll-x", canScrollX);
+      wrap.classList.toggle("is-scrolled", isScrolled);
+    };
+
+    tableWraps.forEach(wrap => {
+      updateTableScrollState(wrap);
+      wrap.addEventListener("scroll", () => updateTableScrollState(wrap), { passive: true });
+    });
+
+    if ("ResizeObserver" in window) {
+      const ro = new ResizeObserver(entries => entries.forEach(entry => updateTableScrollState(entry.target)));
+      tableWraps.forEach(wrap => ro.observe(wrap));
+    } else {
+      window.addEventListener("resize", () => tableWraps.forEach(updateTableScrollState), { passive: true });
+    }
+
+    const revealTargets = [...document.querySelectorAll(".panel, .output-card, .recipe-card, .table-wrap, .hero-card, .auth-card")];
+    revealTargets.forEach((el, index) => {
+      el.classList.add("reveal-up");
+      el.style.transitionDelay = `${Math.min(index * 22, 180)}ms`;
+    });
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.08, rootMargin: "0px 0px -6% 0px" });
+      revealTargets.forEach(el => observer.observe(el));
+    } else {
+      revealTargets.forEach(el => el.classList.add("is-visible"));
+    }
+  }
+
+
   window.COFFEE_APP_DEBUG = {
     getState: () => ({
       cloudReady,
@@ -3359,6 +3417,7 @@
     hydrateSelects();
     bindEvents();
     renderAll();
+    initPremiumUIInteractions();
     await initCloud();
     renderAll();
   });
