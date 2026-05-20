@@ -40,6 +40,13 @@
   const statusLabel = (status) => ({ pending: "Menunggu review", approved: "Disetujui", rejected: "Ditolak" }[String(status || "").toLowerCase()] || status || "-");
   const memberStatusLabel = (status) => ({ pending: "Menunggu approval", active: "Aktif", rejected: "Ditolak", disabled: "Suspend" }[String(status || "").toLowerCase()] || status || "-");
 
+  function withTimeout(promise, label = "request", ms = 60000) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`${label} belum memberi respons dari Supabase. Coba lagi beberapa saat atau refresh halaman.`)), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+  }
 
   window.addEventListener("unhandledrejection", event => {
     console.error("Unhandled promise rejection", event.reason);

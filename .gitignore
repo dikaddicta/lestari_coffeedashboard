@@ -1,0 +1,19 @@
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local/temp artifacts
+*.log
+*.tmp
+*.zip
+coffee_dashboard_clean/
+dist/
+build/
+
+# Dependency/build folders if tooling is added later
+node_modules/
+.env
+.env.*
+!.env.example

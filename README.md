@@ -1,52 +1,102 @@
 # Coffee Dashboard by Lestari
 
-Dashboard web untuk rekomendasi seduh kopi, manajemen stok, brew log, QA, dan pustaka data.
+Dashboard web statis untuk rekomendasi seduh kopi, manajemen stok, brew log, QA, feed hasil seduhan publik, kotak saran, dan pustaka data.
 
 ## Fitur
 
 - Rekomendasi seduh berdasarkan varietas, pascapanen, roast profile, dripper, grinder, air, dosis, dan metode seduh.
 - Custom grinder untuk pengguna yang memakai grinder di luar daftar pustaka.
-- Stok kopi privat per workspace.
-- Brew Log & QA dengan status review.
-- Feed hasil seduhan publik untuk data yang sudah lolos QA dan approval.
+- Rekomendasi biji kopi dari stok workspace.
+- Stok kopi privat per workspace, termasuk pengurangan otomatis ketika brew log memakai stok.
+- Brew Log & QA dengan status review dan detail eksperimen.
+- Penghapusan brew log oleh Admin dengan pemulihan stok otomatis jika brew memakai stok.
+- Feed hasil seduhan publik untuk data yang lolos QA dan approval.
 - Role Admin Workspace, Brewer, dan QA.
 - Approval akses workspace untuk Brewer/QA.
 - Kotak Saran.
 - Pustaka data varietas, dripper, proses, roast profile, air mineral, dan grinder.
 
+## Struktur project
+
+```text
+.
+├─ index.html
+├─ README.md
+├─ assets/
+│  ├─ app.js
+│  ├─ data.js
+│  ├─ styles.css
+│  └─ supabase-config.js
+├─ supabase/
+│  ├─ schema.sql
+│  └─ migration_*.sql
+└─ docs/
+   └─ PUSH_TO_GITHUB.md
+```
+
+Project ini sengaja dibuat sebagai static single-page app. Tidak ada `package.json`, bundler, atau build step.
+
 ## Menjalankan lokal
 
-Buka `index.html` di browser atau gunakan Live Server di VS Code.
+Cara paling sederhana:
 
-## Supabase
+1. Buka folder project di VS Code.
+2. Jalankan dengan ekstensi Live Server, atau buka `index.html` langsung di browser.
+3. Pastikan internet aktif karena Supabase client dimuat dari CDN jsDelivr.
 
-Untuk project baru, jalankan:
+## Konfigurasi Supabase
 
-```sql
+Konfigurasi publik berada di:
+
+```text
+assets/supabase-config.js
+```
+
+Gunakan Project URL utama dan anon/public key dari Supabase. Jangan pernah memasukkan service role key ke frontend.
+
+## Setup database Supabase
+
+### Project Supabase baru
+
+Jalankan isi file berikut di Supabase SQL Editor:
+
+```text
 supabase/schema.sql
 ```
 
-Untuk project yang sudah memakai versi sebelumnya, jalankan migration sesuai urutan yang belum diterapkan:
+`schema.sql` sudah dikonsolidasikan sampai patch terbaru yang dibutuhkan frontend, termasuk kolom integrasi stok-brew, RPC konsumsi stok, RPC hapus brew log + restore stok, index performa, dan detail QA.
+
+### Project Supabase lama
+
+Jika database sudah pernah dibuat dari versi lama, jalankan migration yang belum pernah diterapkan sesuai urutan berikut:
 
 ```text
 supabase/migration_v8_public_brews_private_stock.sql
 supabase/migration_v9_private_workspace_modules.sql
 supabase/migration_v15_guest_public_brew_threshold_65.sql
 supabase/migration_v17_roles_workspace_suggestions.sql
+supabase/migration_v18_3_workspace_user_admin.sql
 supabase/migration_v18_access_logout_metrics.sql
+supabase/migration_v18_10_stock_workspace_read.sql
+supabase/migration_v18_14_brew_stock_integration.sql
+supabase/migration_v18_15_role_stock_guide.sql
+supabase/migration_v18_20_stable_submit_delete_brew.sql
+supabase/migration_v18_23_safer_stock_restore_on_brew_delete.sql
+supabase/migration_v18_24_performance_indexes.sql
+supabase/migration_v18_25_qa_details_fast_save.sql
 ```
 
-Isi konfigurasi publik Supabase di:
-
-```text
-assets/supabase-config.js
-```
-
-Gunakan Project URL utama dan anon/public key. Jangan taruh service role key di frontend.
+Catatan: `migration_v18_23_safer_stock_restore_on_brew_delete.sql` menggantikan fungsi dari `migration_v18_20_stable_submit_delete_brew.sql` dengan versi restore stok yang lebih aman. Keduanya tetap aman dijalankan berurutan karena memakai `create or replace function`.
 
 ## Alur role
 
 Admin Workspace membuat workspace/company dan menyetujui request akses. Brewer dan QA memilih workspace saat pendaftaran. Selama belum disetujui, status akun tampil sebagai pending dan fitur workspace tetap terkunci.
+
+## Catatan keamanan
+
+- File `.git/`, folder duplikat hasil export, dan folder versi kosong tidak disertakan dalam struktur bersih.
+- Anon/public key Supabase boleh berada di frontend, tetapi keamanan data harus bergantung pada RLS policy di Supabase.
+- Service role key tidak boleh dipush ke GitHub atau ditaruh di frontend.
 
 ## Catatan dial-in
 
