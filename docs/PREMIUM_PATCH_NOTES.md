@@ -12,3 +12,12 @@ Patch ini melanjutkan v22 dengan fokus luxury polish dan interaksi:
 - Patch tetap ringan, static, dan tanpa dependency tambahan.
 
 File Supabase config tidak disertakan agar API URL dan anon key lokal tidak tertimpa.
+
+
+## v23.2 Input Seduhan Restoration
+
+- Added a dedicated `Input Seduhan` tab.
+- Manual input combines coffee identity, brew recipe fields, and QA scoring in one form.
+- Removed stock dependency from this workflow.
+- Save button is disabled until Final QA reaches 6.5.
+- Passing manual brews are inserted as public approved brew logs and displayed in `Hasil Seduhan Publik`.

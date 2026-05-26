@@ -46,6 +46,7 @@
     <nav class="tabs" aria-label="Main navigation">
       <button class="tab-btn active" data-tab="guide">Cara Pakai</button>
       <button class="tab-btn" data-tab="brew">Rekomendasi Seduh</button>
+      <button class="tab-btn" data-tab="input-seduhan">Input Seduhan</button>
       <button class="tab-btn" data-tab="beans">Rekomendasi Biji Kopi</button>
       <button class="tab-btn" data-tab="stock">Stok Kopi</button>
       <button class="tab-btn" data-tab="qa">Brew Log & QA</button>
@@ -71,6 +72,7 @@
             <h3>Guest</h3>
             <ol class="guide-list">
               <li><strong>Rekomendasi Seduh</strong><p>Gunakan menu ini untuk rekomendasi seduh.</p><div class="guide-sub"><strong>Data Seduhan</strong><p>Isi bagian ini untuk mendapatkan rekomendasi seduh. Sesuaikan dengan kebutuhan kamu.</p><strong>Rekomendasi Seduh Dasar</strong><p>Bagian ini akan menampilkan rekomendasi seduh berdasarkan data yang sudah kamu input pada <strong>Data Seduhan</strong>. Rekomendasi ini bersifat <strong>dasar</strong>, sehingga jika rasa yang dihasilkan kurang sesuai, adjust sesuai kebutuhan kamu.</p><strong>Tahapan Seduh + Rencana Valve</strong><p>Bagian ini akan menampilkan rekomendasi seduh beserta detail pour, interval, dan brew time berdasarkan data yang sudah kamu input.</p><strong>Rekomendasi Dasar + Brew Log Terverifikasi</strong><p>Bagian ini menampilkan Opsi 1 sebagai rangkuman data yang sudah kamu input dan opsi lain yang menampilkan rekomendasi seduh dari teman-teman yang pernah menyeduh dengan salah satu atau lebih variabel yang sama seperti varietas, proses pasca panen, dan/atau roast profile dengan QA ≥ 6.5.</p></div></li>
+              <li><strong>Input Seduhan</strong><p>Menu manual untuk mencatat seduhan dengan resep sendiri. Hasil hanya bisa disimpan ke publik jika Final QA ≥ 6.5.</p></li>
               <li><strong>Rekomendasi Biji Kopi</strong><p>Hanya muncul ketika kamu login.</p></li>
               <li><strong>Stok Kopi</strong><p>Hanya bisa diakses untuk pengguna yang login.</p></li>
               <li><strong>Brew Log &amp; QA</strong><p>Menu ini ditujukan untuk kamu menyimpan hasil seduhan kamu. Hasil seduhan kamu bisa membantu teman-teman lain untuk menyeduh jika ada kesamaan variabel beans atau alat yang digunakan. Hasil seduhan dengan QA ≥ 6.5 saja yang akan ditampilkan secara publik.</p></li>
@@ -227,6 +229,109 @@
             <h2>Rekomendasi Dasar + Brew Log Terverifikasi</h2>
           </div>
           <div class="recipe-grid" id="recipeOptions"></div>
+        </section>
+      </section>
+
+      <section id="tab-input-seduhan" class="tab-panel">
+        <section class="panel wide manual-input-panel">
+          <div class="section-title"><span>Manual Brew</span><h2>Input Seduhan</h2></div>
+          <p class="hint">Menu ini untuk guest atau brewer yang ingin mencatat seduhan dengan rumus sendiri dan biji kopi sendiri. Data akan masuk ke <strong>Hasil Seduhan Publik</strong> hanya jika Final QA minimal <strong>6.5</strong>.</p>
+          <form id="manualBrewForm" class="form-grid qa-form manual-brew-form">
+            <div class="form-subtitle span-2"><span>1. Data Seduhan</span><small>Tanpa stok. Isi biji kopi dan resep manual yang kamu gunakan.</small></div>
+            <label class="span-2">Nama Kopi
+              <input id="manualBeanName" placeholder="Contoh: Kintamani Natural Lot 02" required />
+            </label>
+            <label>Origin / Daerah
+              <input id="manualOrigin" placeholder="Contoh: Bali, Gayo, Kerinci" />
+            </label>
+            <label>Brewer / Penilai
+              <input id="manualEvaluator" placeholder="Nama brewer" />
+            </label>
+            <label>Varietas
+              <select id="manualVariety"></select>
+            </label>
+            <label>Pasca Panen
+              <select id="manualProcess"></select>
+            </label>
+            <label>Roast Profile
+              <select id="manualRoast"></select>
+            </label>
+            <label>Dripper
+              <select id="manualDripper"></select>
+            </label>
+            <label>Mode Seduh
+              <select id="manualMode">
+                <option>Hot V60</option>
+                <option>Japanese Iced</option>
+              </select>
+            </label>
+            <label>Switch Valve Mode
+              <select id="manualSwitchValveMode">
+                <option value="N/A">N/A</option>
+                <option>Full Immersion</option>
+                <option>Hybrid</option>
+                <option>Full Open</option>
+              </select>
+            </label>
+            <label>Grinder
+              <select id="manualGrinder"></select>
+            </label>
+            <label>Setting Grinder
+              <input id="manualGrindSetting" placeholder="Contoh: 72 klik / 6.5 dial" />
+            </label>
+            <label>Air
+              <select id="manualWater"></select>
+            </label>
+            <label>Dose (g)
+              <input id="manualDose" type="number" min="5" max="50" step="0.1" value="15" />
+            </label>
+            <label>Rasio 1:x
+              <input id="manualRatio" type="number" min="8" max="25" step="0.1" value="15" />
+            </label>
+            <label>Total Water (ml)
+              <input id="manualTotalWater" type="number" min="50" max="1000" step="1" value="225" />
+            </label>
+            <label>Suhu (°C)
+              <input id="manualTemp" type="number" min="70" max="100" step="1" value="92" />
+            </label>
+            <label>Brew Time (detik)
+              <input id="manualBrewTime" type="number" min="30" max="600" step="1" value="165" />
+            </label>
+            <label>Bloom (ml)
+              <input id="manualBloom" type="number" min="0" max="200" step="1" value="45" />
+            </label>
+            <label>Jumlah Pour
+              <input id="manualPourCount" type="number" min="1" max="8" step="1" value="3" />
+            </label>
+            <label class="span-2">Recipe / Tahapan Seduh
+              <textarea id="manualPourPlan" rows="3" placeholder="Contoh: 0:00 bloom 45ml, 0:45 pour sampai 120ml, 1:25 sampai 225ml, selesai 2:45"></textarea>
+            </label>
+
+            <div class="form-subtitle span-2"><span>2. Evaluasi Seduhan</span><small>Nilai sensorik menentukan apakah tombol simpan aktif. Minimal QA 6.5.</small></div>
+            <label class="span-2">Variabel / Fokus Seduhan
+              <input id="manualVariable" placeholder="Contoh: resep original / grind lebih halus / suhu 92°C" />
+            </label>
+            <label class="span-2">Hipotesis
+              <textarea id="manualHypothesis" rows="2" placeholder="Apa yang ingin dicapai dari resep ini?"></textarea>
+            </label>
+            <label>Aroma<input class="manual-qa-score" id="manualAroma" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Rasa<input class="manual-qa-score" id="manualFlavor" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Aftertaste<input class="manual-qa-score" id="manualAftertaste" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Kualitas Acidity<input class="manual-qa-score" id="manualAcidityQuality" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Sweetness<input class="manual-qa-score" id="manualSweetness" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Body<input class="manual-qa-score" id="manualBody" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Balance<input class="manual-qa-score" id="manualBalance" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Clarity<input class="manual-qa-score" id="manualClarity" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Finish<input class="manual-qa-score" id="manualFinish" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Konsistensi<input class="manual-qa-score" id="manualConsistency" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Pengurang Nilai<input id="manualDefect" type="number" min="0" max="10" step="0.1" value="0" /></label>
+            <label class="span-2">Catatan Hasil
+              <textarea id="manualNotes" rows="3" placeholder="Catat hasil rasa, clarity, aftertaste, kekurangan, dan keputusan dial-in berikutnya"></textarea>
+            </label>
+            <div class="qa-total manual-qa-total span-2">Final QA: <strong id="manualFinalPreview">8.50</strong> <span id="manualStatusPreview" class="qa-pass">QA PASS</span></div>
+            <p id="manualGateHint" class="manual-gate-hint span-2">Tombol simpan aktif karena Final QA memenuhi batas publik 6.5.</p>
+            <button id="manualSubmitBtn" class="primary span-2" type="submit">Simpan Hasil Seduhan Publik</button>
+          </form>
         </section>
       </section>
 

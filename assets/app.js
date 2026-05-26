@@ -7,6 +7,7 @@
   let stockSaving = false;
   let brewDraftSaving = false;
   let qaSaving = false;
+  let manualBrewSaving = false;
   let editingStockId = null;
   let brewStockOptionsSignature = "";
   const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
@@ -730,8 +731,8 @@
       switch_valve_mode: log.SwitchValveMode || null,
       valve_plan: log.ValvePlan || null,
       visibility: "public",
-      status: moderationStatusForBrew(log),
-      moderation_status: moderationStatusForBrew(log),
+      status: log.ModerationStatus || moderationStatusForBrew(log),
+      moderation_status: log.ModerationStatus || moderationStatusForBrew(log),
       workspace_id: log.WorkspaceID || activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID,
       created_by: log.CreatedBy || currentUser?.id || null,
       moderated_by: canModerate() ? currentUser?.id : null,
@@ -751,8 +752,8 @@
       qa_status: log.QA_Status || null,
       manual_approval: log.ManualApproval || "No",
       approved_for_recipe: log.ApprovedForRecipe || "No",
-      status: moderationStatusForBrew(log),
-      moderation_status: moderationStatusForBrew(log),
+      status: log.ModerationStatus || moderationStatusForBrew(log),
+      moderation_status: log.ModerationStatus || moderationStatusForBrew(log),
       moderated_by: canModerate() ? currentUser?.id : null,
       moderated_at: canModerate() ? new Date().toISOString() : null
     };
@@ -838,7 +839,7 @@
       hypothesis: qa.Hypothesis || null,
       result_notes: qa.ResultNotes || qa.QA_Notes || null,
       visibility: "public",
-      moderation_status: moderationStatusForQA(qa),
+      moderation_status: qa.ModerationStatus || moderationStatusForQA(qa),
       workspace_id: qa.WorkspaceID || activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID,
       created_by: qa.CreatedBy || currentUser?.id || null,
       moderated_by: canModerate() ? currentUser?.id : null,
@@ -1205,6 +1206,13 @@
     makeOptions($("brewDripper"), drippers, { selected: drippers.includes("Hario Switch 02 Glass") ? "Hario Switch 02 Glass" : drippers[0] });
     makeOptions($("brewGrinder"), grinders, { selected: grinders.includes("Hario EVCG-8B") ? "Hario EVCG-8B" : grinders[0] });
     makeOptions($("brewWater"), waters, { selected: waters.includes("Cleo 1:1 Le Minerale") ? "Cleo 1:1 Le Minerale" : waters[0] });
+
+    makeOptions($("manualVariety"), varieties, { selected: varieties.includes("Catimor 129") ? "Catimor 129" : varieties[0] });
+    makeOptions($("manualProcess"), processes, { selected: processes.includes("Natural") ? "Natural" : processes[0] });
+    makeOptions($("manualRoast"), roasts, { selected: roasts.includes("Medium") ? "Medium" : roasts[0] });
+    makeOptions($("manualDripper"), drippers, { selected: drippers.includes("Hario V60 02 Plastic") ? "Hario V60 02 Plastic" : drippers[0] });
+    makeOptions($("manualGrinder"), grinders, { selected: grinders.includes("Custom") ? "Custom" : grinders[0] });
+    makeOptions($("manualWater"), waters, { selected: waters.includes("Cleo 1:1 Le Minerale") ? "Cleo 1:1 Le Minerale" : waters[0] });
 
     ["filterVariety1", "filterVariety2", "stockVariety1", "stockVariety2"].forEach(id => makeOptions($(id), varieties, { blank: id.includes("2") || id.startsWith("filter"), blankLabel: id.includes("2") ? "Opsional" : "Semua" }));
     ["stockProcess"].forEach(id => makeOptions($(id), processes));
@@ -2209,6 +2217,226 @@
     }
   }
 
+
+  function manualScoreIds() {
+    return ["manualAroma", "manualFlavor", "manualAftertaste", "manualAcidityQuality", "manualSweetness", "manualBody", "manualBalance", "manualClarity", "manualFinish", "manualConsistency"];
+  }
+
+  function computeManualQAFromForm() {
+    const ids = manualScoreIds();
+    const avg = ids.reduce((sum, id) => sum + (Number($(id)?.value) || 0), 0) / ids.length;
+    const final = clamp(avg - (Number($("manualDefect")?.value) || 0), 0, 10);
+    return round(final, 2);
+  }
+
+  function syncManualTotalWater(force = false) {
+    const total = $("manualTotalWater");
+    if (!total) return;
+    if (!force && total.dataset.userEdited === "true") return;
+    const dose = Number($("manualDose")?.value || 0);
+    const ratio = Number($("manualRatio")?.value || 0);
+    if (dose && ratio) total.value = String(Math.round(dose * ratio));
+  }
+
+  function renderManualBrewPreview() {
+    syncManualTotalWater(false);
+    const final = computeManualQAFromForm();
+    const pass = final >= APPROVAL_THRESHOLD;
+    const finalEl = $("manualFinalPreview");
+    const statusEl = $("manualStatusPreview");
+    const btn = $("manualSubmitBtn");
+    const hint = $("manualGateHint");
+    if (finalEl) finalEl.textContent = fmt(final, 2);
+    if (statusEl) {
+      statusEl.textContent = pass ? "QA PASS" : "RETEST";
+      statusEl.className = pass ? "qa-pass" : "qa-retest";
+    }
+    if (btn) {
+      btn.disabled = !pass || manualBrewSaving;
+      btn.title = pass ? "Final QA memenuhi batas 6.5" : "Final QA harus minimal 6.5 untuk menyimpan hasil seduhan publik";
+    }
+    if (hint) {
+      hint.textContent = pass
+        ? "Tombol simpan aktif karena Final QA memenuhi batas publik 6.5."
+        : "Final QA belum mencapai 6.5. Tombol simpan dikunci agar hasil belum masuk feed publik.";
+      hint.classList.toggle("locked", !pass);
+    }
+  }
+
+  function selectedManualGrinderName() {
+    const grinder = $("manualGrinder")?.value || "";
+    if (norm(grinder) === "custom") return $("manualGrindSetting")?.value ? "Custom" : "Custom";
+    return grinder;
+  }
+
+  function manualPourPlanText() {
+    const text = $("manualPourPlan")?.value.trim() || "";
+    if (text) return text;
+    const bloom = Number($("manualBloom")?.value || 0);
+    const total = Number($("manualTotalWater")?.value || 0);
+    const pourCount = Number($("manualPourCount")?.value || 0);
+    const time = Number($("manualBrewTime")?.value || 0);
+    return `Bloom ${bloom}ml, ${pourCount || 1}x pour sampai ${total}ml, target selesai ${fmtTime(time || 0)}.`;
+  }
+
+  function manualBrewPayloadBase(extra = {}) {
+    const method = $("manualMode")?.value || "Hot V60";
+    const totalWater = Number($("manualTotalWater")?.value || 0);
+    const isIced = /japanese/i.test(method);
+    const hotWater = isIced ? Math.round(totalWater * 0.6) : totalWater;
+    const ice = isIced ? Math.max(0, totalWater - hotWater) : 0;
+    const waterName = $("manualWater")?.value || "";
+    const qaId = extra.QA_ID || nextId("QA", allQA(), "QA_ID");
+    const brewerName = $("manualEvaluator")?.value.trim() || currentBrewerName();
+    const final = extra.QA_Final ?? computeManualQAFromForm();
+    return {
+      BrewID: extra.BrewID || nextId("BL", allBrewLogs(), "BrewID"),
+      Date: todayISO(),
+      BrewerName: brewerName,
+      BeanName: $("manualBeanName")?.value.trim() || "Manual Brew",
+      Origin: $("manualOrigin")?.value.trim() || "",
+      StockBeanID: "",
+      StockBeanCode: "",
+      StockUsage_g: "",
+      Variety: $("manualVariety")?.value || "",
+      Process: $("manualProcess")?.value || "",
+      RoastProfile: $("manualRoast")?.value || "",
+      Dripper: $("manualDripper")?.value || "",
+      Method: method,
+      Grinder: selectedManualGrinderName(),
+      GrindSetting: $("manualGrindSetting")?.value.trim() || "Manual",
+      Temp_C: Number($("manualTemp")?.value || 0),
+      Ratio: Number($("manualRatio")?.value || 0),
+      Dose_g: Number($("manualDose")?.value || 0),
+      TotalWater_ml: totalWater,
+      HotWater_ml: hotWater,
+      Ice_g: ice,
+      BrewTime_sec: Number($("manualBrewTime")?.value || 0),
+      Bloom_ml: Number($("manualBloom")?.value || 0),
+      PourCount: Number($("manualPourCount")?.value || 0),
+      PourPlan: manualPourPlanText(),
+      Water: waterName,
+      TDS_ppm: getBy(DATA.waters, "Water", waterName).TDS_ppm || "",
+      Agitation: "Manual / brewer-defined",
+      Filter: "Paper",
+      ParentBrewID: "",
+      PrimaryVariableChanged: $("manualVariable")?.value.trim() || "Input seduhan manual",
+      Hypothesis: $("manualHypothesis")?.value.trim() || "",
+      ResultNotes: $("manualNotes")?.value.trim() || "",
+      QA_ID: qaId,
+      QA_Final: final,
+      QA_Status: "QA PASS",
+      ManualApproval: "Yes",
+      ApprovedForRecipe: "Yes",
+      RecipeKey: recipeKey($("manualVariety")?.value, $("manualProcess")?.value, $("manualRoast")?.value),
+      CurrentMatchScore: "",
+      Water_Formula_Note: "Input manual dari menu Input Seduhan.",
+      SwitchValveMode: $("manualSwitchValveMode")?.value || "N/A",
+      ValvePlan: $("manualSwitchValveMode")?.value && $("manualSwitchValveMode")?.value !== "N/A" ? `Manual: ${$("manualSwitchValveMode").value}` : "N/A",
+      WorkspaceID: activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID,
+      CreatedBy: currentUser?.id || null,
+      ModerationStatus: "approved",
+      Visibility: "public",
+      CreatedAt: new Date().toISOString(),
+      UpdatedAt: new Date().toISOString()
+    };
+  }
+
+  function manualQARecord(log) {
+    return {
+      QA_ID: log.QA_ID,
+      BrewID: log.BrewID,
+      Date: todayISO(),
+      Evaluator: $("manualEvaluator")?.value.trim() || currentBrewerName(),
+      Aroma: Number($("manualAroma")?.value),
+      Flavor: Number($("manualFlavor")?.value),
+      Aftertaste: Number($("manualAftertaste")?.value),
+      AcidityQuality: Number($("manualAcidityQuality")?.value),
+      Sweetness: Number($("manualSweetness")?.value),
+      Body: Number($("manualBody")?.value),
+      Balance: Number($("manualBalance")?.value),
+      Clarity: Number($("manualClarity")?.value),
+      Finish: Number($("manualFinish")?.value),
+      DefectPenalty: Number($("manualDefect")?.value),
+      Consistency: Number($("manualConsistency")?.value),
+      Final_QA: Number(log.QA_Final || 0),
+      Status: "QA PASS",
+      Approver: $("manualEvaluator")?.value.trim() || currentBrewerName(),
+      QA_Notes: $("manualNotes")?.value.trim() || "",
+      PrimaryVariableChanged: log.PrimaryVariableChanged,
+      Hypothesis: log.Hypothesis,
+      ResultNotes: log.ResultNotes,
+      WorkspaceID: log.WorkspaceID,
+      CreatedBy: currentUser?.id || null,
+      ModerationStatus: "approved"
+    };
+  }
+
+  async function saveManualBrew(e) {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+    if (manualBrewSaving) return;
+    renderManualBrewPreview();
+    const final = computeManualQAFromForm();
+    if (final < APPROVAL_THRESHOLD) {
+      showMessage("Final QA belum mencapai 6.5. Hasil seduhan belum bisa disimpan ke publik.", "error");
+      return;
+    }
+    if (!cloudReady || !supabaseClient) {
+      showMessage("Database belum tersambung. Hubungkan Supabase terlebih dahulu.", "error");
+      return;
+    }
+    if (currentUser && !canUseWorkspaceModules()) {
+      showMessage("Akun login perlu workspace aktif untuk menyimpan Input Seduhan. Guest tetap bisa mengirim tanpa login.", "error");
+      showTab("admin");
+      return;
+    }
+    if (!$("manualBeanName")?.value.trim()) {
+      showMessage("Nama kopi wajib diisi.", "error");
+      $("manualBeanName")?.focus();
+      return;
+    }
+
+    const btn = $("manualSubmitBtn");
+    const originalText = btn?.textContent || "Simpan Hasil Seduhan Publik";
+    let watchdog;
+    try {
+      manualBrewSaving = true;
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Menyimpan seduhan...";
+      }
+      watchdog = createButtonWatchdog({ key: "manual-brew", button: btn, originalText, label: "Simpan Input Seduhan" });
+      showMessage("Sedang menyimpan hasil seduhan publik...", "info");
+
+      const log = manualBrewPayloadBase({ QA_Final: final });
+      const qa = manualQARecord(log);
+      const savedLog = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
+      state.cloudBrewLogs.unshift(savedLog);
+      const savedQA = await insertCloud("qa_scores", toSnakeQA(qa), fromSnakeQA);
+      state.cloudQA = uniqueByCloudId([savedQA, ...(state.cloudQA || [])]);
+
+      renderBrewLogTable();
+      renderQABrewOptions();
+      renderPublicBrewTable();
+      renderRecipeOptions(computeBrew());
+      showMessage("Hasil seduhan berhasil disimpan dan masuk ke Hasil Seduhan Publik.", "success");
+      showTab("public-brews");
+    } catch (err) {
+      console.error("saveManualBrew error", err);
+      const detail = err?.message || err?.details || err?.hint || String(err);
+      showMessage(`Gagal menyimpan Input Seduhan: ${detail}`, "error");
+      alert(`Gagal menyimpan Input Seduhan. Detail: ${detail}`);
+    } finally {
+      if (watchdog) clearTimeout(watchdog);
+      manualBrewSaving = false;
+      if (btn) {
+        btn.textContent = originalText;
+      }
+      renderManualBrewPreview();
+    }
+  }
+
   function renderBrewLogTable() {
     const table = $("brewLogTable");
     const tbody = table?.querySelector("tbody");
@@ -3182,6 +3410,11 @@
       const qaBtn = e.target.closest?.("#qaSubmitBtn");
       if (qaBtn) {
         saveQA(e);
+        return;
+      }
+      const manualBtn = e.target.closest?.("#manualSubmitBtn");
+      if (manualBtn) {
+        saveManualBrew(e);
       }
     });
     const brewFieldIds = ["brewVariety", "brewProcess", "brewRoast", "brewDripper", "brewMode", "switchValveMode", "brewGrinder", "brewWater", "brewDose", "pourPattern"];
@@ -3218,6 +3451,12 @@
     });
     $("qaForm")?.addEventListener("submit", saveQA);
     $("qaSubmitBtn")?.addEventListener("click", saveQA);
+    $("manualBrewForm")?.addEventListener("submit", saveManualBrew);
+    $("manualSubmitBtn")?.addEventListener("click", saveManualBrew);
+    ["manualDose", "manualRatio"].forEach(id => $(id)?.addEventListener("input", () => { if ($("manualTotalWater")) $("manualTotalWater").dataset.userEdited = "false"; renderManualBrewPreview(); }));
+    $("manualTotalWater")?.addEventListener("input", e => { e.target.dataset.userEdited = "true"; renderManualBrewPreview(); });
+    document.querySelectorAll(".manual-qa-score, #manualDefect").forEach(el => el.addEventListener("input", renderManualBrewPreview));
+    document.querySelectorAll(".manual-qa-score, #manualDefect").forEach(el => el.addEventListener("change", renderManualBrewPreview));
     $("brewLogTable")?.addEventListener("click", e => {
       const editBtn = e.target.closest("button[data-brew-edit]");
       if (editBtn) return openBrewLogEdit(editBtn.dataset.brewEdit);
@@ -3328,6 +3567,7 @@
     renderBeansTable();
     renderStockTable();
     renderQAPreview();
+    renderManualBrewPreview();
     renderBrewLogTable();
     renderQABrewOptions();
     renderPublicBrewTable();
@@ -3414,6 +3654,7 @@
       qaCount: state.cloudQA?.length || 0
     }),
     saveDraft: saveCurrentBrewDraft,
+    saveManualBrew,
     sync: () => syncFromCloud(true)
   };
 
