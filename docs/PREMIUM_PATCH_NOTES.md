@@ -21,3 +21,14 @@ File Supabase config tidak disertakan agar API URL dan anon key lokal tidak tert
 - Removed stock dependency from this workflow.
 - Save button is disabled until Final QA reaches 6.5.
 - Passing manual brews are inserted as public approved brew logs and displayed in `Hasil Seduhan Publik`.
+
+
+## v23.3 — Adaptive Pour Fields
+
+- Menambahkan kolom Pour 1 sampai Pour 4 di menu Input Seduhan.
+- Dripper Switch sekarang adaptif berdasarkan Valve Mode.
+  - Full Open: Pour 1–4 seperti biasa.
+  - Hybrid: Pour 1–4 + pilihan valve open/closed + keterangan tiap pour.
+  - Full Immersion: hanya Pour 1 + waktu Valve Open.
+- Mode Seduh Japanese sekarang menampilkan kolom Es Batu.
+- Payload publik menyimpan detail pour ke `PourPlan`, valve ke `ValvePlan`, dan es batu ke `Ice_g`.

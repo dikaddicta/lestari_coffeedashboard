@@ -265,13 +265,18 @@
                 <option>Japanese Iced</option>
               </select>
             </label>
-            <label>Switch Valve Mode
+            <label id="manualSwitchValveModeWrap">Switch Valve Mode
               <select id="manualSwitchValveMode">
                 <option value="N/A">N/A</option>
-                <option>Full Immersion</option>
-                <option>Hybrid</option>
                 <option>Full Open</option>
+                <option>Hybrid</option>
+                <option>Full Immersion</option>
               </select>
+              <small>Aktif otomatis jika dripper yang dipilih adalah Switch.</small>
+            </label>
+            <label id="manualIceWrap" class="hidden">Es Batu (g)
+              <input id="manualIce" type="number" min="0" max="700" step="1" value="90" />
+              <small>Muncul khusus mode Japanese. Hot water dihitung dari Total Water - Es Batu.</small>
             </label>
             <label>Grinder
               <select id="manualGrinder"></select>
@@ -300,11 +305,63 @@
             <label>Bloom (ml)
               <input id="manualBloom" type="number" min="0" max="200" step="1" value="45" />
             </label>
-            <label>Jumlah Pour
-              <input id="manualPourCount" type="number" min="1" max="8" step="1" value="3" />
-            </label>
-            <label class="span-2">Recipe / Tahapan Seduh
-              <textarea id="manualPourPlan" rows="3" placeholder="Contoh: 0:00 bloom 45ml, 0:45 pour sampai 120ml, 1:25 sampai 225ml, selesai 2:45"></textarea>
+
+            <div id="manualPourSection" class="span-2 manual-pour-section">
+              <div class="form-subtitle manual-pour-title"><span>Detail Pour</span><small id="manualPourModeHint">Isi volume Pour 1 sampai Pour 4 sesuai resep manual.</small></div>
+              <div class="manual-pour-grid">
+                <article class="manual-pour-card" data-manual-pour-card="1">
+                  <label>Pour 1 (ml)
+                    <input id="manualPour1" class="manual-pour-input" type="number" min="0" max="1000" step="1" placeholder="Contoh: 45" />
+                  </label>
+                  <label class="manual-pour-valve" data-manual-valve-for="1">Valve
+                    <select id="manualPour1Valve" class="manual-pour-valve-select"><option>Open</option><option>Closed</option></select>
+                  </label>
+                  <label class="manual-pour-note" data-manual-note-for="1">Keterangan
+                    <input id="manualPour1Note" class="manual-pour-note-input" placeholder="Contoh: bloom / center pour" />
+                  </label>
+                </article>
+                <article class="manual-pour-card" data-manual-pour-card="2">
+                  <label>Pour 2 (ml)
+                    <input id="manualPour2" class="manual-pour-input" type="number" min="0" max="1000" step="1" placeholder="Contoh: 90" />
+                  </label>
+                  <label class="manual-pour-valve" data-manual-valve-for="2">Valve
+                    <select id="manualPour2Valve" class="manual-pour-valve-select"><option>Open</option><option>Closed</option></select>
+                  </label>
+                  <label class="manual-pour-note" data-manual-note-for="2">Keterangan
+                    <input id="manualPour2Note" class="manual-pour-note-input" placeholder="Contoh: spiral lembut" />
+                  </label>
+                </article>
+                <article class="manual-pour-card" data-manual-pour-card="3">
+                  <label>Pour 3 (ml)
+                    <input id="manualPour3" class="manual-pour-input" type="number" min="0" max="1000" step="1" placeholder="Contoh: 150" />
+                  </label>
+                  <label class="manual-pour-valve" data-manual-valve-for="3">Valve
+                    <select id="manualPour3Valve" class="manual-pour-valve-select"><option>Open</option><option>Closed</option></select>
+                  </label>
+                  <label class="manual-pour-note" data-manual-note-for="3">Keterangan
+                    <input id="manualPour3Note" class="manual-pour-note-input" placeholder="Contoh: maintain bed" />
+                  </label>
+                </article>
+                <article class="manual-pour-card" data-manual-pour-card="4">
+                  <label>Pour 4 (ml)
+                    <input id="manualPour4" class="manual-pour-input" type="number" min="0" max="1000" step="1" placeholder="Contoh: 225" />
+                  </label>
+                  <label class="manual-pour-valve" data-manual-valve-for="4">Valve
+                    <select id="manualPour4Valve" class="manual-pour-valve-select"><option>Open</option><option>Closed</option></select>
+                  </label>
+                  <label class="manual-pour-note" data-manual-note-for="4">Keterangan
+                    <input id="manualPour4Note" class="manual-pour-note-input" placeholder="Contoh: finish pour" />
+                  </label>
+                </article>
+              </div>
+              <label id="manualValveOpenTimeWrap" class="manual-valve-open-time hidden">Valve Open
+                <input id="manualValveOpenTime" placeholder="Contoh: buka valve di 1:30 / setelah 75 detik" />
+                <small>Khusus Full Immersion: isi waktu kapan valve dibuka.</small>
+              </label>
+            </div>
+
+            <label class="span-2">Recipe / Tahapan Seduh Tambahan
+              <textarea id="manualPourPlan" rows="3" placeholder="Opsional. Contoh: agitasi ringan di akhir Pour 2, swirl 1x sebelum drawdown, selesai 2:45"></textarea>
             </label>
 
             <div class="form-subtitle span-2"><span>2. Evaluasi Seduhan</span><small>Nilai sensorik menentukan apakah tombol simpan aktif. Minimal QA 6.5.</small></div>

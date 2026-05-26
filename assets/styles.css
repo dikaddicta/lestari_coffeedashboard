@@ -3266,3 +3266,63 @@ button:active,
     text-align: left;
   }
 }
+
+
+/* v23.3: adaptive pour fields for manual Input Seduhan */
+.manual-pour-section {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 24px;
+  border: 1px solid rgba(75,46,43,.11);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(192,133,82,.18), transparent 28rem),
+    linear-gradient(135deg, rgba(255,253,249,.90), rgba(255,248,240,.70));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 14px 34px rgba(75,46,43,.055);
+}
+.manual-pour-title { margin: 0; }
+.manual-pour-grid { display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 12px; }
+.manual-pour-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(75,46,43,.12);
+  background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,248,240,.62));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 12px 24px rgba(75,46,43,.05);
+  transition: transform .24s var(--luxury-ease), box-shadow .24s var(--luxury-ease), border-color .24s var(--luxury-ease);
+}
+.manual-pour-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--section-accent, #C08552) 28%, rgba(75,46,43,.12));
+  box-shadow: 0 16px 34px rgba(75,46,43,.08), inset 0 1px 0 rgba(255,255,255,.78);
+}
+.manual-pour-card label { min-width: 0; }
+.manual-pour-valve select { text-transform: capitalize; }
+.manual-valve-open-time {
+  display: grid;
+  gap: 7px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px dashed rgba(75,46,43,.22);
+  background: linear-gradient(135deg, rgba(75,46,43,.06), rgba(192,133,82,.10));
+}
+#manualIceWrap {
+  border-color: rgba(15,118,110,.20);
+  background: linear-gradient(180deg, rgba(240,253,250,.82), rgba(255,248,240,.64));
+}
+#manualIceWrap small,
+#manualSwitchValveModeWrap small,
+.manual-valve-open-time small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+@media (max-width: 1180px) { .manual-pour-grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); } }
+@media (max-width: 720px) {
+  .manual-pour-section { padding: 12px; border-radius: 20px; }
+  .manual-pour-grid { grid-template-columns: 1fr; }
+}

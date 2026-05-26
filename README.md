@@ -124,3 +124,8 @@ Patch ini memperhalus tampilan menjadi **Coffee Brew OS** dengan nuansa lebih kr
 - Scrollbar tabel dibuat custom sesuai palet warna kopi.
 - Panel, kartu, tabel, dan hero diberi micro-interaction ringan.
 - Layout responsive diperbaiki agar lebih nyaman di layar kecil.
+
+
+## Update v23.3
+
+Menu Input Seduhan kini memiliki detail Pour 1–4, logika Switch Valve Mode adaptif, dan kolom Es Batu khusus Japanese Iced.

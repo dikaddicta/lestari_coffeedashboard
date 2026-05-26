@@ -2240,6 +2240,7 @@
 
   function renderManualBrewPreview() {
     syncManualTotalWater(false);
+    renderManualConditionalFields();
     const final = computeManualQAFromForm();
     const pass = final >= APPROVAL_THRESHOLD;
     const finalEl = $("manualFinalPreview");
@@ -2269,22 +2270,129 @@
     return grinder;
   }
 
+  function isManualSwitchDripper() {
+    return /switch/i.test($("manualDripper")?.value || "");
+  }
+
+  function manualValveMode() {
+    if (!isManualSwitchDripper()) return "N/A";
+    return $("manualSwitchValveMode")?.value || "Full Open";
+  }
+
+  function setManualGroupVisible(selector, visible) {
+    document.querySelectorAll(selector).forEach(el => {
+      el.classList.toggle("hidden", !visible);
+      el.querySelectorAll?.("input, select, textarea").forEach(field => {
+        field.disabled = !visible;
+      });
+    });
+  }
+
+  function renderManualConditionalFields() {
+    const isSwitchManual = isManualSwitchDripper();
+    const valveMode = manualValveMode();
+    const isJapanese = /japanese/i.test($("manualMode")?.value || "");
+    const modeWrap = $("manualSwitchValveModeWrap");
+    if (modeWrap) modeWrap.classList.toggle("hidden", !isSwitchManual);
+    if (modeWrap) modeWrap.querySelectorAll("input, select, textarea").forEach(field => { field.disabled = !isSwitchManual; });
+    if (!isSwitchManual && $("manualSwitchValveMode")) $("manualSwitchValveMode").value = "N/A";
+    if (isSwitchManual && $("manualSwitchValveMode")?.value === "N/A") $("manualSwitchValveMode").value = "Full Open";
+
+    const iceWrap = $("manualIceWrap");
+    if (iceWrap) iceWrap.classList.toggle("hidden", !isJapanese);
+    if (iceWrap) iceWrap.querySelectorAll("input, select, textarea").forEach(field => { field.disabled = !isJapanese; });
+
+    const fullImmersion = isSwitchManual && /full immersion/i.test(valveMode);
+    const hybrid = isSwitchManual && /hybrid/i.test(valveMode);
+    const hint = $("manualPourModeHint");
+    if (hint) {
+      if (fullImmersion) hint.textContent = "Full Immersion: isi Pour 1 saja dan waktu kapan valve dibuka.";
+      else if (hybrid) hint.textContent = "Hybrid Switch: isi Pour 1–4, valve open/closed, dan keterangan tiap pour.";
+      else if (isSwitchManual) hint.textContent = "Full Open: isi Pour 1–4 seperti dripper biasa, valve tetap open.";
+      else hint.textContent = "Isi volume Pour 1 sampai Pour 4 sesuai resep manual.";
+    }
+
+    document.querySelectorAll("[data-manual-pour-card]").forEach(card => {
+      const n = Number(card.dataset.manualPourCard || 0);
+      const visible = fullImmersion ? n === 1 : n >= 1 && n <= 4;
+      card.classList.toggle("hidden", !visible);
+      card.querySelectorAll("input, select, textarea").forEach(field => { field.disabled = !visible; });
+    });
+
+    setManualGroupVisible(".manual-pour-valve", hybrid);
+    setManualGroupVisible(".manual-pour-note", hybrid);
+    setManualGroupVisible("#manualValveOpenTimeWrap", fullImmersion);
+  }
+
+  function manualPourDetails() {
+    const valveMode = manualValveMode();
+    const fullImmersion = /full immersion/i.test(valveMode);
+    const hybrid = /hybrid/i.test(valveMode);
+    const maxPour = fullImmersion ? 1 : 4;
+    const rows = [];
+    for (let i = 1; i <= maxPour; i += 1) {
+      const amount = Number($(`manualPour${i}`)?.value || 0);
+      const valve = $(`manualPour${i}Valve`)?.value || "Open";
+      const note = $(`manualPour${i}Note`)?.value.trim() || "";
+      if (!amount && !note) continue;
+      let text = `Pour ${i}: ${amount ? `${amount}ml` : "volume tidak diisi"}`;
+      if (hybrid) text += ` · valve ${valve.toLowerCase()}`;
+      if (note) text += ` · ${note}`;
+      rows.push(text);
+    }
+    return rows;
+  }
+
+  function manualPourCountValue() {
+    const fullImmersion = /full immersion/i.test(manualValveMode());
+    if (fullImmersion) return 1;
+    const filled = manualPourDetails().length;
+    return filled || 4;
+  }
+
+  function manualValvePlanText() {
+    if (!isManualSwitchDripper()) return "N/A";
+    const valveMode = manualValveMode();
+    if (/full immersion/i.test(valveMode)) {
+      const openAt = $("manualValveOpenTime")?.value.trim() || "waktu open valve belum diisi";
+      return `Full Immersion · valve dibuka: ${openAt}`;
+    }
+    if (/hybrid/i.test(valveMode)) {
+      const rows = [];
+      for (let i = 1; i <= 4; i += 1) {
+        const valve = $(`manualPour${i}Valve`)?.value || "Open";
+        const note = $(`manualPour${i}Note`)?.value.trim() || "";
+        rows.push(`Pour ${i}: ${valve}${note ? ` (${note})` : ""}`);
+      }
+      return `Hybrid · ${rows.join(" | ")}`;
+    }
+    return "Full Open · valve open sepanjang pour";
+  }
+
   function manualPourPlanText() {
+    const structured = manualPourDetails();
     const text = $("manualPourPlan")?.value.trim() || "";
-    if (text) return text;
     const bloom = Number($("manualBloom")?.value || 0);
     const total = Number($("manualTotalWater")?.value || 0);
-    const pourCount = Number($("manualPourCount")?.value || 0);
     const time = Number($("manualBrewTime")?.value || 0);
-    return `Bloom ${bloom}ml, ${pourCount || 1}x pour sampai ${total}ml, target selesai ${fmtTime(time || 0)}.`;
+    const ice = Number($("manualIce")?.value || 0);
+    const pieces = [];
+    if (bloom) pieces.push(`Bloom ${bloom}ml`);
+    if (structured.length) pieces.push(...structured);
+    else pieces.push(`${manualPourCountValue()}x pour sampai ${total}ml`);
+    if (/japanese/i.test($("manualMode")?.value || "") && ice) pieces.push(`Es batu ${ice}g`);
+    if (time) pieces.push(`target selesai ${fmtTime(time)}`);
+    if (text) pieces.push(`Catatan: ${text}`);
+    return pieces.join(" | ");
   }
 
   function manualBrewPayloadBase(extra = {}) {
     const method = $("manualMode")?.value || "Hot V60";
     const totalWater = Number($("manualTotalWater")?.value || 0);
     const isIced = /japanese/i.test(method);
-    const hotWater = isIced ? Math.round(totalWater * 0.6) : totalWater;
-    const ice = isIced ? Math.max(0, totalWater - hotWater) : 0;
+    const manualIce = Number($("manualIce")?.value || 0);
+    const ice = isIced ? manualIce : 0;
+    const hotWater = isIced ? Math.max(0, totalWater - ice) : totalWater;
     const waterName = $("manualWater")?.value || "";
     const qaId = extra.QA_ID || nextId("QA", allQA(), "QA_ID");
     const brewerName = $("manualEvaluator")?.value.trim() || currentBrewerName();
@@ -2313,7 +2421,7 @@
       Ice_g: ice,
       BrewTime_sec: Number($("manualBrewTime")?.value || 0),
       Bloom_ml: Number($("manualBloom")?.value || 0),
-      PourCount: Number($("manualPourCount")?.value || 0),
+      PourCount: manualPourCountValue(),
       PourPlan: manualPourPlanText(),
       Water: waterName,
       TDS_ppm: getBy(DATA.waters, "Water", waterName).TDS_ppm || "",
@@ -2331,8 +2439,8 @@
       RecipeKey: recipeKey($("manualVariety")?.value, $("manualProcess")?.value, $("manualRoast")?.value),
       CurrentMatchScore: "",
       Water_Formula_Note: "Input manual dari menu Input Seduhan.",
-      SwitchValveMode: $("manualSwitchValveMode")?.value || "N/A",
-      ValvePlan: $("manualSwitchValveMode")?.value && $("manualSwitchValveMode")?.value !== "N/A" ? `Manual: ${$("manualSwitchValveMode").value}` : "N/A",
+      SwitchValveMode: manualValveMode(),
+      ValvePlan: manualValvePlanText(),
       WorkspaceID: activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID,
       CreatedBy: currentUser?.id || null,
       ModerationStatus: "approved",
@@ -3455,8 +3563,12 @@
     $("manualSubmitBtn")?.addEventListener("click", saveManualBrew);
     ["manualDose", "manualRatio"].forEach(id => $(id)?.addEventListener("input", () => { if ($("manualTotalWater")) $("manualTotalWater").dataset.userEdited = "false"; renderManualBrewPreview(); }));
     $("manualTotalWater")?.addEventListener("input", e => { e.target.dataset.userEdited = "true"; renderManualBrewPreview(); });
-    document.querySelectorAll(".manual-qa-score, #manualDefect").forEach(el => el.addEventListener("input", renderManualBrewPreview));
-    document.querySelectorAll(".manual-qa-score, #manualDefect").forEach(el => el.addEventListener("change", renderManualBrewPreview));
+    ["manualMode", "manualDripper", "manualSwitchValveMode", "manualIce", "manualBrewTime", "manualBloom", "manualPourPlan", "manualValveOpenTime"].forEach(id => {
+      $(id)?.addEventListener("input", renderManualBrewPreview);
+      $(id)?.addEventListener("change", renderManualBrewPreview);
+    });
+    document.querySelectorAll(".manual-pour-input, .manual-pour-valve-select, .manual-pour-note-input, .manual-qa-score, #manualDefect").forEach(el => el.addEventListener("input", renderManualBrewPreview));
+    document.querySelectorAll(".manual-pour-input, .manual-pour-valve-select, .manual-pour-note-input, .manual-qa-score, #manualDefect").forEach(el => el.addEventListener("change", renderManualBrewPreview));
     $("brewLogTable")?.addEventListener("click", e => {
       const editBtn = e.target.closest("button[data-brew-edit]");
       if (editBtn) return openBrewLogEdit(editBtn.dataset.brewEdit);
