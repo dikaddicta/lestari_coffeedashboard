@@ -1,14 +1,21 @@
-# Premium Patch v24
+# Premium Patch v25 — Mobile Experience & Responsive QA
 
-Fokus patch ini adalah redesign total section **Cara Pakai** agar terasa lebih premium, lebih mudah dipahami, dan lebih rapi secara konsep.
+Patch ini fokus pada pengalaman mobile sebelum dashboard diarahkan ke hosting/custom domain.
 
 ## Perubahan utama
 
-- Mengubah `Cara Pakai` menjadi pengalaman onboarding / guided experience.
-- Menambahkan hero mini khusus panduan dengan copy final.
-- Menambahkan alur workflow 4 langkah.
-- Menambahkan kartu rekomendasi `Mulai dari sini`.
-- Mendesain ulang role selector menjadi role cards premium.
-- Menulis ulang copy final untuk Guest, Admin, QA, dan Brewer.
-- Mengubah daftar panjang menjadi menu cards + best practice + FAQ mini.
-- Menjaga tampilan tetap selaras dengan tema coffee premium dashboard.
+- Menambahkan **mobile menu switcher** berbentuk dropdown agar navigasi di HP tidak terlalu penuh.
+- Desktop tab tetap ada, tetapi tab grid disembunyikan di layar kecil.
+- Dropdown mobile tersinkron dengan tab aktif.
+- Mencegah horizontal overflow pada body tanpa menghilangkan scroll tabel.
+- Memperbaiki ukuran hero, logo, heading, badge, dan panel di layar kecil.
+- Membuat form dan tombol lebih nyaman untuk touch device dengan minimum height 48px.
+- Merapikan menu **Input Seduhan** di mobile, termasuk adaptive pour cards dan field QA.
+- Membuat tabel mobile lebih aman dengan scroll area khusus dan hint `Geser tabel →`.
+- Memperbaiki modal detail public brew agar lebih nyaman di layar kecil.
+- Menjaga `assets/supabase-config.js` tetap tidak ikut patch.
+
+## Validasi
+
+- `assets/app.js` lolos syntax check.
+- Patch ini tidak mengubah schema Supabase.

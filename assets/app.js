@@ -3419,9 +3419,18 @@
     reader.readAsText(file);
   }
 
+  function syncMobileTabSelect(name) {
+    const select = $("mobileTabSelect");
+    if (select && select.value !== name) select.value = name;
+  }
+
   function showTab(name) {
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
     document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.toggle("active", panel.id === `tab-${name}`));
+    syncMobileTabSelect(name);
+    if (window.matchMedia?.("(max-width: 760px)").matches) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
 
 
@@ -3452,6 +3461,11 @@
     setElementHidden($("saveCurrentBrew"), !privateReady);
     setElementHidden($("applyBeanToBrew"), !privateReady);
     setElementHidden(document.querySelector('[data-tab="beans"]'), !privateReady);
+    const mobileBeansOption = document.querySelector('#mobileTabSelect option[value="beans"]');
+    if (mobileBeansOption) {
+      mobileBeansOption.hidden = !privateReady;
+      mobileBeansOption.disabled = !privateReady;
+    }
     setElementHidden($("brewLogHistoryPanel"), !privateReady);
     setElementHidden($("qaParentWrap"), !currentUser);
     setElementHidden($("qaVariableWrap"), !currentUser);
@@ -3503,6 +3517,7 @@
 
   function bindEvents() {
     document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => showTab(btn.dataset.tab)));
+    $("mobileTabSelect")?.addEventListener("change", e => showTab(e.target.value));
     document.addEventListener("click", e => {
       const saveBtn = e.target.closest?.("#saveCurrentBrew,[data-action='save-brew-draft']");
       if (saveBtn) {

@@ -3688,3 +3688,427 @@ button:active,
 
   .guide-role-btn { min-height: auto; }
 }
+
+
+/* v25 Mobile Experience & Responsive QA */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+.app-shell,
+main,
+.tab-panel,
+.panel,
+.hero,
+.table-wrap,
+.form-grid,
+.output-grid,
+.recipe-grid,
+.guide-premium-shell {
+  max-width: 100%;
+}
+
+.mobile-tab-switcher {
+  display: none;
+}
+
+.table-wrap {
+  max-width: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.table-wrap table {
+  min-width: 720px;
+}
+
+.table-wrap td,
+.table-wrap th {
+  overflow-wrap: anywhere;
+}
+
+.touch-action-row,
+.inline-actions,
+.form-actions {
+  align-items: center;
+}
+
+@media (hover: none) {
+  .output-card:hover,
+  .recipe-card:hover,
+  .stat-card:hover,
+  .hero-card:hover,
+  .auth-card:hover,
+  .guide-role-panel:hover,
+  .brew-insight-panel:hover,
+  .guide-flow-card:hover,
+  .guide-start-card:hover,
+  .guide-faq-card:hover,
+  .guide-menu-card:hover,
+  .guide-role-btn:hover,
+  .guide-note-box:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --mobile-pad: 12px;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(192,133,82,.18), transparent 22rem),
+      linear-gradient(145deg, #fff8f0 0%, #f6eadf 100%);
+  }
+
+  .app-shell {
+    padding: var(--mobile-pad);
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .hero-title-row {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+  }
+
+  .hero-icon.hero-icon-image {
+    width: 56px;
+    height: 56px;
+    flex-basis: 56px;
+    border-radius: 18px;
+  }
+
+  .hero h1 {
+    font-size: clamp(42px, 15vw, 64px);
+    line-height: .96;
+    letter-spacing: -.055em;
+    padding-right: 2px;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: .14em;
+  }
+
+  .hero-lead,
+  .hero-copy,
+  .hero-footnote {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .premium-badge-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .hero-side {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tabs {
+    display: none !important;
+  }
+
+  .mobile-tab-switcher {
+    display: block;
+    position: sticky;
+    top: 8px;
+    z-index: 60;
+    margin: 12px 0 14px;
+    padding: 12px;
+    border-radius: 22px;
+    border: 1px solid rgba(75,46,43,.12);
+    background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,248,240,.88));
+    box-shadow: 0 16px 40px rgba(75,46,43,.12), inset 0 1px 0 rgba(255,255,255,.82);
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-tab-switcher label {
+    display: grid;
+    gap: 7px;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #6b4331;
+  }
+
+  .mobile-tab-switcher select {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 16px;
+    padding: 0 42px 0 14px;
+    border: 1px solid rgba(75,46,43,.18);
+    background: linear-gradient(180deg, #fffdf8, #fff8f0);
+    color: #3d2521;
+    font-size: 15px;
+    font-weight: 800;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
+  }
+
+  .mobile-tab-switcher small {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .panel {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .section-title {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .section-title h2,
+  .guide-hero-copy h2 {
+    font-size: clamp(24px, 8vw, 34px);
+    line-height: 1.05;
+  }
+
+  .grid.two-col,
+  .two-col,
+  .top-align,
+  .form-grid,
+  .form-grid.compact,
+  .form-grid.stock-form,
+  .form-grid.qa-form,
+  .form-grid.beans-filter,
+  .manual-brew-form,
+  .output-grid,
+  .recipe-grid,
+  .library-controls,
+  .guide-hero-premium,
+  .guide-flow-grid,
+  .guide-start-grid,
+  .guide-role-tabs-premium,
+  .guide-menu-grid,
+  .guide-faq-grid,
+  .guide-section-head,
+  .guide-role-header {
+    grid-template-columns: 1fr !important;
+  }
+
+  .span-2,
+  .span-full {
+    grid-column: 1 / -1 !important;
+  }
+
+  label {
+    gap: 7px;
+    font-size: 13px;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  textarea {
+    min-height: 116px;
+  }
+
+  button,
+  .button,
+  .auth-jump-link,
+  .hero-inline-link {
+    touch-action: manipulation;
+  }
+
+  .inline-actions,
+  .form-actions,
+  .auth-actions,
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .inline-actions button,
+  .form-actions button,
+  .auth-actions button,
+  .modal-actions button {
+    width: 100%;
+  }
+
+  .guide-hero-copy,
+  .guide-hero-aside,
+  .guide-role-panel-premium,
+  .guide-flow-card,
+  .guide-start-card,
+  .guide-menu-card,
+  .guide-note-box,
+  .guide-faq-card,
+  .guide-role-btn {
+    border-radius: 20px;
+    padding: 16px;
+  }
+
+  .guide-role-btn {
+    min-height: auto;
+  }
+
+  .guide-path {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .guide-path span {
+    white-space: nowrap;
+  }
+
+  .manual-pour-section {
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .manual-pour-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+
+  .manual-pour-card {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .manual-pour-card label {
+    margin: 0;
+  }
+
+  .qa-total {
+    display: grid;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .table-wrap {
+    border-radius: 20px;
+    margin-inline: calc(var(--mobile-pad) * -0.35);
+    padding-bottom: 2px;
+  }
+
+  .table-wrap::after {
+    content: "Geser tabel →";
+    position: sticky;
+    left: 10px;
+    bottom: 8px;
+    display: inline-flex;
+    margin: 8px 0 8px 10px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(75,46,43,.86);
+    color: #fff8f0;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    box-shadow: 0 8px 22px rgba(75,46,43,.18);
+    pointer-events: none;
+  }
+
+  .table-wrap table {
+    min-width: 680px;
+  }
+
+  th,
+  td {
+    padding: 12px 11px;
+    font-size: 12px;
+  }
+
+  .modal-overlay {
+    align-items: end;
+    padding: 10px;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-height: 88vh;
+    border-radius: 24px 24px 18px 18px;
+    overflow: auto;
+  }
+
+  .public-brew-detail-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .app-shell {
+    padding: 10px;
+  }
+
+  .hero {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .hero-title-row {
+    grid-template-columns: 50px minmax(0, 1fr);
+  }
+
+  .hero-icon.hero-icon-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(38px, 15vw, 54px);
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    padding: 14px;
+  }
+
+  .guide-hero-badges,
+  .premium-badge-row {
+    gap: 8px;
+  }
+
+  .table-wrap table {
+    min-width: 620px;
+  }
+}
