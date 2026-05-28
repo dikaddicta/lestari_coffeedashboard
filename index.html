@@ -58,69 +58,223 @@
 
     <main>
       <section id="tab-guide" class="tab-panel active">
-        <section class="panel wide guide-panel">
-          <div class="section-title"><span>Panduan</span><h2>Cara Pakai</h2></div>
-          <p class="hint">Pilih panduan sesuai peran yang kamu gunakan. Bagian yang dicetak tebal menunjukkan nama menu atau area penting di dashboard.</p>
-          <div class="guide-role-tabs" aria-label="Pilihan panduan berdasarkan peran">
-            <button class="guide-role-btn active" type="button" data-guide-role="guest">Guest</button>
-            <button class="guide-role-btn" type="button" data-guide-role="admin">Admin</button>
-            <button class="guide-role-btn" type="button" data-guide-role="qa">QA</button>
-            <button class="guide-role-btn" type="button" data-guide-role="brewer">Brewer</button>
+        <section class="panel wide guide-panel guide-premium-shell">
+          <div class="guide-hero-premium">
+            <div class="guide-hero-copy">
+              <p class="guide-kicker">Quick Start · Guided Experience</p>
+              <h2>Cara Pakai Dashboard</h2>
+              <p class="guide-hero-lead">Panduan ini disusun agar dashboard terasa lebih mudah dipahami: mulai dari eksplorasi resep, pencatatan seduhan, evaluasi QA, hingga publikasi hasil yang layak dibagikan.</p>
+              <p class="guide-hero-text">Kalau baru pertama kali membuka dashboard, mulai dari alur ringkas di bawah, lalu pilih peran yang paling sesuai dengan cara kamu menggunakan dashboard ini.</p>
+              <div class="guide-hero-badges" aria-label="Highlight panduan">
+                <span>Role Based Guide</span>
+                <span>Workflow Clarity</span>
+                <span>Quick Start Ready</span>
+              </div>
+            </div>
+            <div class="guide-hero-aside">
+              <div class="guide-stat-card">
+                <strong>Mulai dari sini</strong>
+                <p>Jika bingung harus mulai dari mana, buka <b>Rekomendasi Seduh</b> untuk titik awal, lanjutkan ke <b>Input Seduhan</b> untuk eksperimen manual, lalu simpan hasil terbaik ke publik jika nilai QA memenuhi standar.</p>
+              </div>
+            </div>
           </div>
 
-          <div class="guide-role-panel" data-guide-panel="guest">
-            <h3>Guest</h3>
-            <ol class="guide-list">
-              <li><strong>Rekomendasi Seduh</strong><p>Gunakan menu ini untuk rekomendasi seduh.</p><div class="guide-sub"><strong>Data Seduhan</strong><p>Isi bagian ini untuk mendapatkan rekomendasi seduh. Sesuaikan dengan kebutuhan kamu.</p><strong>Rekomendasi Seduh Dasar</strong><p>Bagian ini akan menampilkan rekomendasi seduh berdasarkan data yang sudah kamu input pada <strong>Data Seduhan</strong>. Rekomendasi ini bersifat <strong>dasar</strong>, sehingga jika rasa yang dihasilkan kurang sesuai, adjust sesuai kebutuhan kamu.</p><strong>Tahapan Seduh + Rencana Valve</strong><p>Bagian ini akan menampilkan rekomendasi seduh beserta detail pour, interval, dan brew time berdasarkan data yang sudah kamu input.</p><strong>Rekomendasi Dasar + Brew Log Terverifikasi</strong><p>Bagian ini menampilkan Opsi 1 sebagai rangkuman data yang sudah kamu input dan opsi lain yang menampilkan rekomendasi seduh dari teman-teman yang pernah menyeduh dengan salah satu atau lebih variabel yang sama seperti varietas, proses pasca panen, dan/atau roast profile dengan QA ≥ 6.5.</p></div></li>
-              <li><strong>Input Seduhan</strong><p>Menu manual untuk mencatat seduhan dengan resep sendiri. Hasil hanya bisa disimpan ke publik jika Final QA ≥ 6.5.</p></li>
-              <li><strong>Rekomendasi Biji Kopi</strong><p>Hanya muncul ketika kamu login.</p></li>
-              <li><strong>Stok Kopi</strong><p>Hanya bisa diakses untuk pengguna yang login.</p></li>
-              <li><strong>Brew Log &amp; QA</strong><p>Menu ini ditujukan untuk kamu menyimpan hasil seduhan kamu. Hasil seduhan kamu bisa membantu teman-teman lain untuk menyeduh jika ada kesamaan variabel beans atau alat yang digunakan. Hasil seduhan dengan QA ≥ 6.5 saja yang akan ditampilkan secara publik.</p></li>
-              <li><strong>Hasil Seduhan Publik</strong><p>Menu ini menampilkan semua hasil seduhan teman-teman yang telah diinput dengan QA ≥ 6.5. Kamu bisa mencari berdasarkan metode seduh ataupun nilai QA, atau menampilkan seluruh data.</p></li>
-              <li><strong>Kotak Saran</strong><p>Bagian ini ditujukan agar teman-teman bisa membantu saya dalam pengembangan dashboard ini. Sedikit atau banyak akan sangat membantu perkembangan dashboard ini.</p></li>
-              <li><strong>Akun &amp; Admin</strong><p>Menu ini digunakan untuk mendaftar ataupun login.</p></li>
-              <li><strong>Pustaka Data</strong><p>Menu ini menampilkan data dari beberapa variabel seperti varietas, pasca panen, roast profile, grinder, dan lainnya.</p></li>
-            </ol>
+          <div class="guide-flow-grid" aria-label="Alur utama dashboard">
+            <article class="guide-flow-card">
+              <span class="guide-flow-step">01</span>
+              <h3>Pilih Tujuan</h3>
+              <p>Tentukan apakah kamu ingin mencari titik awal resep, mencatat seduhan manual, menilai kualitas, atau membaca hasil publik.</p>
+            </article>
+            <article class="guide-flow-card">
+              <span class="guide-flow-step">02</span>
+              <h3>Isi Data Seduhan</h3>
+              <p>Masukkan data beans, alat, mode seduh, suhu, rasio, dan detail penting lainnya agar hasil rekomendasi atau catatan seduhan lebih relevan.</p>
+            </article>
+            <article class="guide-flow-card">
+              <span class="guide-flow-step">03</span>
+              <h3>Evaluasi Hasil</h3>
+              <p>Gunakan evaluasi seduhan dan QA untuk membaca karakter ekstraksi, mencatat insight, dan menyimpan eksperimen yang layak dipakai ulang.</p>
+            </article>
+            <article class="guide-flow-card">
+              <span class="guide-flow-step">04</span>
+              <h3>Publikasikan Jika Layak</h3>
+              <p>Hanya hasil dengan kualitas yang cukup baik yang sebaiknya dibagikan. Threshold publik di dashboard ini menggunakan nilai QA minimal 6.5.</p>
+            </article>
           </div>
 
-          <div class="guide-role-panel hidden" data-guide-panel="admin">
-            <h3>Admin</h3>
-            <ol class="guide-list">
-              <li><strong>Rekomendasi Seduh</strong><p>Gunakan menu ini untuk rekomendasi seduh.</p><div class="guide-sub"><strong>Data Seduhan</strong><p>Isi bagian ini untuk mendapatkan rekomendasi seduh. Sesuaikan dengan kebutuhan kamu.</p><strong>Rekomendasi Seduh Dasar</strong><p>Bagian ini akan menampilkan rekomendasi seduh berdasarkan data yang sudah kamu input pada <strong>Data Seduhan</strong>. Rekomendasi ini bersifat <strong>dasar</strong>, sehingga jika rasa yang dihasilkan kurang sesuai, adjust sesuai kebutuhan kamu.</p><strong>Tahapan Seduh + Rencana Valve</strong><p>Bagian ini akan menampilkan rekomendasi seduh beserta detail pour, interval, dan brew time berdasarkan data yang sudah kamu input.</p><strong>Rekomendasi Dasar + Brew Log Terverifikasi</strong><p>Bagian ini menampilkan Opsi 1 sebagai rangkuman data yang sudah kamu input dan opsi lain dari brew log terverifikasi dengan variabel yang sama dan QA ≥ 6.5.</p></div></li>
-              <li><strong>Rekomendasi Biji Kopi</strong><p>Gunakan menu ini untuk menampilkan rekomendasi biji kopi untuk kamu seduh sesuai kriteria yang kamu tentukan.</p><div class="guide-sub"><strong>Filter Rekomendasi Biji Kopi dari Stok</strong><p>Isi bagian ini sesuai kebutuhan.</p><strong>Rekomendasi Biji Kopi</strong><p>Bagian ini menampilkan urutan biji kopi yang paling sesuai dengan data yang telah kamu input di bagian filter.</p></div></li>
-              <li><strong>Stok Kopi</strong><p>Menu ini digunakan untuk melihat stok kopi beserta ketersediaannya. Admin dapat menambah, mengedit, dan menghapus stok kopi.</p></li>
-              <li><strong>Brew Log &amp; QA</strong><p>Menu ini ditujukan untuk menyimpan hasil seduhan. Hasil seduhan dengan QA ≥ 6.5 saja yang akan ditampilkan secara publik.</p></li>
-              <li><strong>Hasil Seduhan Publik</strong><p>Menu ini menampilkan hasil seduhan yang telah diinput dengan QA ≥ 6.5. Kamu bisa mencari berdasarkan metode seduh ataupun nilai QA.</p></li>
-              <li><strong>Kotak Saran</strong><p>Bagian ini ditujukan agar teman-teman bisa membantu pengembangan dashboard ini.</p></li>
-              <li><strong>Akun &amp; Admin</strong><p>Admin dapat membuat workspace, memberi akses workspace, melihat member workspace, melakukan suspend kepada member, menghapus akses member, serta menyetujui, menolak, dan menghapus data QA/Brew Log di panel moderasi.</p></li>
-              <li><strong>Pustaka Data</strong><p>Menu ini menampilkan data dari beberapa variabel seperti varietas, pasca panen, roast profile, grinder, dan lainnya.</p></li>
-            </ol>
+          <div class="guide-start-grid">
+            <article class="guide-start-card">
+              <span class="guide-start-label">Untuk pemula</span>
+              <h3>Mulai dari Rekomendasi Seduh</h3>
+              <p>Cocok untuk mencari titik awal resep tanpa harus merancang semuanya dari nol. Setelah itu, kamu bisa bandingkan hasilnya dengan eksperimen manual di Input Seduhan.</p>
+            </article>
+            <article class="guide-start-card">
+              <span class="guide-start-label">Untuk eksperimen</span>
+              <h3>Pakai Input Seduhan</h3>
+              <p>Jika kamu sudah punya rumus sendiri atau ingin menguji biji kopi tertentu dengan pendekatan pribadi, gunakan Input Seduhan agar semua detail resep dan evaluasi tercatat rapi.</p>
+            </article>
+            <article class="guide-start-card">
+              <span class="guide-start-label">Untuk tim</span>
+              <h3>Gabungkan Stok, Brew Log, dan QA</h3>
+              <p>Workflow ini paling cocok untuk coffee shop kecil, roastery, atau tim internal yang ingin melacak stok, evaluasi kualitas, dan hasil seduhan dalam satu tempat.</p>
+            </article>
           </div>
 
-          <div class="guide-role-panel hidden" data-guide-panel="qa">
-            <h3>QA</h3>
-            <ol class="guide-list">
-              <li><strong>Rekomendasi Seduh</strong><p>Gunakan menu ini untuk rekomendasi seduh berdasarkan data seduhan yang kamu input.</p></li>
-              <li><strong>Rekomendasi Biji Kopi</strong><p>Gunakan menu ini untuk menampilkan rekomendasi biji kopi sesuai kriteria yang kamu tentukan.</p></li>
-              <li><strong>Stok Kopi</strong><p>QA dapat melihat stok workspace dan menambah stok kopi baru. Edit dan hapus stok hanya tersedia untuk Admin.</p></li>
-              <li><strong>Brew Log &amp; QA</strong><p>Menu ini digunakan untuk menyimpan hasil seduhan dan evaluasi QA. Hasil seduhan dengan QA ≥ 6.5 saja yang akan tampil secara publik setelah disetujui.</p></li>
-              <li><strong>Panel Moderasi di Akun &amp; Admin</strong><p>QA dapat menyetujui, menolak, dan menghapus data pada panel <strong>Menunggu Review / Disetujui / Ditolak</strong>. Akses QA dibatasi hanya untuk panel moderasi, bukan pengelolaan workspace dan member.</p></li>
-              <li><strong>Hasil Seduhan Publik, Kotak Saran, dan Pustaka Data</strong><p>Gunakan menu ini untuk membaca hasil seduhan publik, memberi masukan, dan melihat pustaka data dashboard.</p></li>
-            </ol>
+          <div class="guide-section-head">
+            <div>
+              <p class="guide-kicker small">Pilih Peran</p>
+              <h3>Panduan Berdasarkan Cara Pakai</h3>
+            </div>
+            <p class="guide-section-copy">Setiap peran memiliki jalur kerja yang sedikit berbeda. Pilih peran yang paling mendekati kebutuhanmu untuk melihat menu yang paling relevan dan urutan langkah yang disarankan.</p>
           </div>
 
-          <div class="guide-role-panel hidden" data-guide-panel="brewer">
-            <h3>Brewer</h3>
-            <ol class="guide-list">
-              <li><strong>Rekomendasi Seduh</strong><p>Gunakan menu ini untuk rekomendasi seduh berdasarkan kebutuhan brew kamu.</p></li>
-              <li><strong>Rekomendasi Biji Kopi</strong><p>Gunakan menu ini untuk menampilkan rekomendasi biji kopi yang paling sesuai dengan filter dari stok workspace.</p></li>
-              <li><strong>Stok Kopi</strong><p>Brewer dapat melihat stok workspace dan menambah stok kopi baru. Edit dan hapus stok hanya tersedia untuk Admin.</p></li>
-              <li><strong>Brew Log &amp; QA</strong><p>Menu ini digunakan untuk menyimpan hasil seduhan. Hasil seduhan dengan QA ≥ 6.5 saja yang akan ditampilkan secara publik setelah disetujui.</p></li>
-              <li><strong>Hasil Seduhan Publik, Kotak Saran, Akun, dan Pustaka Data</strong><p>Gunakan menu ini untuk membaca hasil seduhan publik, memberi masukan, mengelola akun, dan melihat pustaka data.</p></li>
-            </ol>
+          <div class="guide-role-tabs guide-role-tabs-premium" aria-label="Pilihan panduan berdasarkan peran">
+            <button class="guide-role-btn active" type="button" data-guide-role="guest">
+              <span class="role-btn-kicker">Explore</span>
+              <strong>Guest</strong>
+              <small>Untuk mencoba dashboard tanpa login</small>
+            </button>
+            <button class="guide-role-btn" type="button" data-guide-role="admin">
+              <span class="role-btn-kicker">Control</span>
+              <strong>Admin</strong>
+              <small>Untuk workspace, member, dan moderasi</small>
+            </button>
+            <button class="guide-role-btn" type="button" data-guide-role="qa">
+              <span class="role-btn-kicker">Review</span>
+              <strong>QA</strong>
+              <small>Untuk evaluasi, validasi, dan persetujuan</small>
+            </button>
+            <button class="guide-role-btn" type="button" data-guide-role="brewer">
+              <span class="role-btn-kicker">Brew</span>
+              <strong>Brewer</strong>
+              <small>Untuk seduh, eksperimen, dan pencatatan</small>
+            </button>
+          </div>
+
+          <div class="guide-role-panel guide-role-panel-premium" data-guide-panel="guest">
+            <div class="guide-role-header">
+              <div>
+                <p class="guide-kicker small">Mode Guest</p>
+                <h3>Explore tanpa login, pahami alur dasarnya lebih dulu</h3>
+              </div>
+              <p>Mode ini cocok untuk pengguna yang ingin mengenal dashboard, mencoba rekomendasi seduh, menginput seduhan manual, dan membaca hasil seduhan publik sebelum memutuskan membuat akun.</p>
+            </div>
+            <div class="guide-path"><span>Rekomendasi Seduh</span><span>Input Seduhan</span><span>Hasil Seduhan Publik</span><span>Kotak Saran</span><span>Akun</span></div>
+            <div class="guide-menu-grid">
+              <article class="guide-menu-card"><h4>Rekomendasi Seduh</h4><p>Gunakan menu ini sebagai titik awal. Isi <b>Data Seduhan</b> untuk mendapatkan rekomendasi dasar, tahapan seduh, dan referensi dari brew log terverifikasi dengan kemiripan variabel utama.</p></article>
+              <article class="guide-menu-card"><h4>Input Seduhan</h4><p>Pakai menu ini jika kamu ingin mencatat resep manual dengan biji kopi dan rumus sendiri. Hasil hanya bisa disimpan ke publik ketika <b>Final QA ≥ 6.5</b>.</p></article>
+              <article class="guide-menu-card"><h4>Hasil Seduhan Publik</h4><p>Baca hasil seduhan pengguna lain untuk membandingkan pendekatan, memahami pola ekstraksi, dan mencari referensi brew dengan nilai QA yang layak.</p></article>
+              <article class="guide-menu-card"><h4>Kotak Saran & Akun</h4><p>Gunakan <b>Kotak Saran</b> untuk memberi masukan, lalu masuk ke <b>Akun & Admin</b> jika kamu ingin menyimpan data pribadi atau bekerja di dalam workspace.</p></article>
+            </div>
+            <div class="guide-note-box">
+              <strong>Best practice untuk Guest</strong>
+              <ul>
+                <li>Mulai dari <b>Rekomendasi Seduh</b> jika kamu butuh titik awal yang cepat.</li>
+                <li>Pakai <b>Input Seduhan</b> untuk menguji rumus pribadi dan membandingkan hasilnya.</li>
+                <li>Gunakan hasil publik sebagai referensi, bukan patokan mutlak.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="guide-role-panel guide-role-panel-premium hidden" data-guide-panel="admin">
+            <div class="guide-role-header">
+              <div>
+                <p class="guide-kicker small">Mode Admin</p>
+                <h3>Kendalikan workspace, akses anggota, dan kualitas data</h3>
+              </div>
+              <p>Mode ini ditujukan untuk pengelola dashboard di level workspace. Fokusnya adalah pengaturan member, kontrol akses, manajemen stok, dan moderasi hasil brew log atau QA.</p>
+            </div>
+            <div class="guide-path"><span>Akun & Admin</span><span>Stok Kopi</span><span>Rekomendasi Biji Kopi</span><span>Brew Log & QA</span><span>Publikasi</span></div>
+            <div class="guide-menu-grid">
+              <article class="guide-menu-card"><h4>Akun & Admin</h4><p>Pusat kontrol utama untuk membuat workspace, mengelola member, memberi atau mencabut akses, dan memoderasi data pada panel <b>Menunggu Review / Disetujui / Ditolak</b>.</p></article>
+              <article class="guide-menu-card"><h4>Stok Kopi</h4><p>Gunakan menu ini untuk menjaga data stok tetap akurat. Admin dapat menambah, mengedit, dan menghapus stok, sehingga workflow brewer dan QA tetap terhubung ke data yang rapi.</p></article>
+              <article class="guide-menu-card"><h4>Rekomendasi Biji Kopi</h4><p>Menu ini membantu melihat stok mana yang paling sesuai dengan target rasa atau parameter seduh tertentu, sehingga keputusan penggunaan biji kopi menjadi lebih terarah.</p></article>
+              <article class="guide-menu-card"><h4>Brew Log & QA</h4><p>Review hasil seduhan tim, pantau kualitas, dan pastikan hanya data yang layak yang diloloskan ke ranah publik atau arsip internal.</p></article>
+            </div>
+            <div class="guide-note-box">
+              <strong>Best practice untuk Admin</strong>
+              <ul>
+                <li>Buat struktur workspace dan role dengan jelas sebelum tim mulai input data.</li>
+                <li>Pastikan stok kopi aktif selalu terbarui agar rekomendasi dan log tetap relevan.</li>
+                <li>Gunakan moderasi untuk menjaga kualitas data publik.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="guide-role-panel guide-role-panel-premium hidden" data-guide-panel="qa">
+            <div class="guide-role-header">
+              <div>
+                <p class="guide-kicker small">Mode QA</p>
+                <h3>Evaluasi karakter ekstraksi dan jaga standar kualitas</h3>
+              </div>
+              <p>Mode ini cocok untuk pengguna yang fokus pada penilaian hasil seduhan, moderasi kualitas, dan validasi apakah sebuah brew layak dibagikan sebagai referensi publik.</p>
+            </div>
+            <div class="guide-path"><span>Rekomendasi Seduh</span><span>Input Seduhan</span><span>Brew Log & QA</span><span>Moderasi</span><span>Publikasi</span></div>
+            <div class="guide-menu-grid">
+              <article class="guide-menu-card"><h4>Rekomendasi Seduh</h4><p>Gunakan untuk membangun baseline sebelum pengujian. Menu ini berguna saat kamu ingin membandingkan resep rekomendasi dengan hasil evaluasi aktual.</p></article>
+              <article class="guide-menu-card"><h4>Input Seduhan & Brew Log</h4><p>Catat detail resep, hasil seduhan, dan evaluasi rasa secara lengkap. Ini membantu QA membaca pola ekstraksi dan menyusun insight yang lebih terukur.</p></article>
+              <article class="guide-menu-card"><h4>Panel Moderasi</h4><p>Di dalam <b>Akun & Admin</b>, QA dapat menyetujui, menolak, atau menghapus data pada panel moderasi. Fokus QA adalah kualitas data, bukan pengelolaan member workspace.</p></article>
+              <article class="guide-menu-card"><h4>Hasil Seduhan Publik</h4><p>Gunakan menu ini untuk memeriksa hasil akhir yang sudah lolos standar serta membaca data mana yang paling berguna sebagai referensi bersama.</p></article>
+            </div>
+            <div class="guide-note-box">
+              <strong>Best practice untuk QA</strong>
+              <ul>
+                <li>Gunakan catatan evaluasi untuk menjelaskan perubahan variabel dan hasilnya.</li>
+                <li>Jadikan threshold publik sebagai standar minimum, bukan akhir dari penilaian.</li>
+                <li>Pastikan insight yang dipublikasikan tetap jelas, jujur, dan mudah dipahami.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="guide-role-panel guide-role-panel-premium hidden" data-guide-panel="brewer">
+            <div class="guide-role-header">
+              <div>
+                <p class="guide-kicker small">Mode Brewer</p>
+                <h3>Eksplorasi resep, catat seduhan, dan bangun rutinitas yang konsisten</h3>
+              </div>
+              <p>Mode ini cocok untuk brewer yang aktif menyeduh, menguji recipe, mengelola stok kerja, dan menyimpan hasil seduhan yang ingin dipakai ulang atau dibagikan ke tim.</p>
+            </div>
+            <div class="guide-path"><span>Rekomendasi Seduh</span><span>Rekomendasi Biji Kopi</span><span>Input Seduhan</span><span>Stok Kopi</span><span>Brew Log & QA</span></div>
+            <div class="guide-menu-grid">
+              <article class="guide-menu-card"><h4>Rekomendasi Seduh</h4><p>Mulai dari sini jika kamu ingin baseline cepat. Menu ini ideal untuk memahami arah resep sebelum melakukan penyesuaian manual.</p></article>
+              <article class="guide-menu-card"><h4>Rekomendasi Biji Kopi</h4><p>Gunakan untuk memilih biji kopi yang paling sesuai dari stok berdasarkan target rasa, proses, roast profile, atau kebutuhan brew tertentu.</p></article>
+              <article class="guide-menu-card"><h4>Input Seduhan</h4><p>Pakai untuk eksperimen manual yang lebih bebas. Di sinilah kamu bisa menyimpan resep sendiri, mencatat evaluasi, dan mengunci hasil terbaik dengan struktur yang rapi.</p></article>
+              <article class="guide-menu-card"><h4>Stok Kopi & Brew Log</h4><p>Pastikan stok dan catatan seduhan selalu sinkron. Ini membantu menghubungkan penggunaan biji kopi dengan hasil brew yang dihasilkan dari waktu ke waktu.</p></article>
+            </div>
+            <div class="guide-note-box">
+              <strong>Best practice untuk Brewer</strong>
+              <ul>
+                <li>Simpan eksperimen yang penting, terutama ketika kamu mengubah satu variabel utama.</li>
+                <li>Gunakan detail pour, valve plan, dan catatan evaluasi agar resep bisa direplikasi.</li>
+                <li>Bandingkan recipe pribadi dengan rekomendasi sistem untuk menemukan pola yang paling cocok.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="guide-section-head guide-section-head-faq">
+            <div>
+              <p class="guide-kicker small">Tips & FAQ</p>
+              <h3>Hal yang Perlu Diingat</h3>
+            </div>
+            <p class="guide-section-copy">Bagian ini merangkum prinsip dasar penggunaan dashboard agar pengalaman membaca data dan menyimpan seduhan terasa lebih konsisten.</p>
+          </div>
+          <div class="guide-faq-grid">
+            <article class="guide-faq-card">
+              <h4>Kapan memakai Rekomendasi Seduh?</h4>
+              <p>Gunakan saat kamu ingin baseline cepat dan tidak ingin memulai dari nol. Menu ini ideal untuk membuka arah awal resep sebelum masuk ke eksperimen yang lebih manual.</p>
+            </article>
+            <article class="guide-faq-card">
+              <h4>Kapan memakai Input Seduhan?</h4>
+              <p>Gunakan saat kamu sudah punya rumus sendiri, ingin menguji resep pribadi, atau ingin mencatat seduhan dengan detail yang lebih bebas tanpa bergantung pada stok workspace.</p>
+            </article>
+            <article class="guide-faq-card">
+              <h4>Mengapa ada batas QA 6.5?</h4>
+              <p>Batas ini dipakai agar hasil yang dibagikan ke publik tetap punya kualitas minimum yang cukup baik sebagai referensi. Nilai ini bukan kebenaran mutlak, tetapi standar awal untuk menjaga mutu data.</p>
+            </article>
           </div>
         </section>
       </section>
+
 
       <section id="tab-brew" class="tab-panel">
         <div class="grid two-col top-align">

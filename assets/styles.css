@@ -3326,3 +3326,365 @@ button:active,
   .manual-pour-section { padding: 12px; border-radius: 20px; }
   .manual-pour-grid { grid-template-columns: 1fr; }
 }
+
+
+/* v24 premium guide experience */
+.guide-premium-shell {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(192,133,82,.16), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(255,248,240,.7), transparent 24%),
+    linear-gradient(180deg, rgba(255,252,248,.98), rgba(255,248,240,.94));
+}
+
+.guide-premium-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22), transparent 40%),
+    linear-gradient(180deg, transparent 0%, rgba(75,46,43,.02) 100%);
+  pointer-events: none;
+}
+
+.guide-premium-shell > * { position: relative; z-index: 1; }
+
+.guide-hero-premium {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, .8fr);
+  gap: 22px;
+  align-items: stretch;
+  margin-bottom: 22px;
+}
+
+.guide-kicker {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.guide-kicker.small { font-size: 11px; letter-spacing: .18em; }
+
+.guide-hero-copy,
+.guide-hero-aside,
+.guide-flow-card,
+.guide-start-card,
+.guide-menu-card,
+.guide-note-box,
+.guide-faq-card,
+.guide-role-btn {
+  border: 1px solid rgba(75,46,43,.1);
+  background: linear-gradient(180deg, rgba(255,255,255,.84), rgba(255,248,240,.78));
+  box-shadow: 0 16px 42px rgba(75,46,43,.07), inset 0 1px 0 rgba(255,255,255,.85);
+}
+
+.guide-hero-copy {
+  padding: 28px 30px;
+  border-radius: 28px;
+}
+
+.guide-hero-copy h2 {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.02;
+  letter-spacing: -.03em;
+  color: var(--ui-espresso, #4B2E2B);
+}
+
+.guide-hero-lead {
+  margin: 14px 0 0;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #5a4038;
+}
+
+.guide-hero-text {
+  margin: 12px 0 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.guide-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.guide-hero-badges span,
+.guide-path span,
+.guide-start-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(75,46,43,.08);
+  background: linear-gradient(180deg, rgba(255,255,255,.84), rgba(253,244,236,.72));
+  color: #6a4a3a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.guide-hero-aside {
+  border-radius: 28px;
+  padding: 18px;
+  display: flex;
+  align-items: stretch;
+}
+
+.guide-stat-card {
+  width: 100%;
+  border-radius: 22px;
+  padding: 22px;
+  background: linear-gradient(145deg, #4B2E2B, #6b4331 65%, #8C5A3C);
+  color: #fff8f0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 18px 36px rgba(75,46,43,.2);
+}
+
+.guide-stat-card strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 18px;
+  letter-spacing: -.02em;
+}
+
+.guide-stat-card p {
+  margin: 0;
+  line-height: 1.7;
+  color: rgba(255,248,240,.84);
+}
+
+.guide-flow-grid,
+.guide-start-grid,
+.guide-faq-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.guide-start-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 18px; }
+.guide-faq-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.guide-flow-card,
+.guide-start-card,
+.guide-faq-card {
+  padding: 20px;
+  border-radius: 22px;
+  transition: transform .28s var(--luxury-ease), box-shadow .28s var(--luxury-ease), border-color .28s var(--luxury-ease);
+}
+
+.guide-flow-card:hover,
+.guide-start-card:hover,
+.guide-faq-card:hover,
+.guide-menu-card:hover,
+.guide-role-btn:hover,
+.guide-note-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 48px rgba(75,46,43,.1);
+  border-color: rgba(192,133,82,.28);
+}
+
+.guide-flow-step {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #4B2E2B, #8C5A3C);
+  color: #fff8f0;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.guide-flow-card h3,
+.guide-start-card h3,
+.guide-faq-card h4,
+.guide-menu-card h4,
+.guide-section-head h3,
+.guide-role-header h3 {
+  margin: 0;
+  color: var(--ui-espresso, #4B2E2B);
+  letter-spacing: -.02em;
+}
+
+.guide-flow-card p,
+.guide-start-card p,
+.guide-faq-card p,
+.guide-menu-card p,
+.guide-role-header p,
+.guide-section-copy,
+.guide-note-box li {
+  color: var(--muted);
+  line-height: 1.68;
+}
+
+.guide-section-head {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 18px;
+  align-items: end;
+  margin: 28px 0 16px;
+}
+
+.guide-section-head-faq { margin-top: 28px; }
+
+.guide-role-tabs-premium {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+  background: transparent;
+  padding: 0;
+  border: 0;
+}
+
+.guide-role-btn {
+  min-height: 132px;
+  padding: 18px;
+  border-radius: 22px;
+  text-align: left;
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  position: relative;
+  overflow: hidden;
+}
+
+.guide-role-btn::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .24s ease;
+  background: linear-gradient(90deg, #C08552, #8C5A3C);
+}
+
+.guide-role-btn:hover::after,
+.guide-role-btn.active::after { transform: scaleX(1); }
+
+.guide-role-btn .role-btn-kicker {
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #a26b42;
+}
+
+.guide-role-btn strong {
+  font-size: 20px;
+  color: var(--ui-espresso, #4B2E2B);
+}
+
+.guide-role-btn small {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.guide-role-btn.active {
+  background: linear-gradient(155deg, rgba(255,255,255,.98), rgba(248,234,220,.95));
+  border-color: rgba(192,133,82,.28);
+  box-shadow: 0 20px 46px rgba(75,46,43,.12), inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.guide-role-panel-premium {
+  padding: 24px;
+  border-radius: 28px;
+  border: 1px solid rgba(75,46,43,.1);
+  background: linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,249,244,.82));
+}
+
+.guide-role-header {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.guide-role-header p { margin: 0; }
+
+.guide-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.guide-path span { position: relative; }
+
+.guide-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.guide-menu-card {
+  padding: 18px;
+  border-radius: 20px;
+}
+
+.guide-menu-card p { margin-bottom: 0; }
+
+.guide-note-box {
+  margin-top: 18px;
+  padding: 18px 20px;
+  border-radius: 22px;
+}
+
+.guide-note-box strong {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--ui-espresso, #4B2E2B);
+}
+
+.guide-note-box ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+@media (max-width: 1100px) {
+  .guide-hero-premium,
+  .guide-section-head,
+  .guide-role-header,
+  .guide-flow-grid,
+  .guide-faq-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .guide-start-grid,
+  .guide-role-tabs-premium,
+  .guide-menu-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .guide-hero-aside { min-height: 100%; }
+}
+
+@media (max-width: 760px) {
+  .guide-hero-premium,
+  .guide-flow-grid,
+  .guide-start-grid,
+  .guide-role-tabs-premium,
+  .guide-menu-grid,
+  .guide-faq-grid,
+  .guide-section-head,
+  .guide-role-header {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-hero-copy,
+  .guide-hero-aside,
+  .guide-role-panel-premium { padding: 20px; }
+
+  .guide-role-btn { min-height: auto; }
+}

@@ -1,34 +1,14 @@
-# Premium Patch v23
+# Premium Patch v24
 
-Patch ini melanjutkan v22 dengan fokus luxury polish dan interaksi:
+Fokus patch ini adalah redesign total section **Cara Pakai** agar terasa lebih premium, lebih mudah dipahami, dan lebih rapi secara konsep.
 
-- Setiap tab/section sekarang memiliki identitas visual sendiri melalui accent color, section marker, dan table tone.
-- Empty state tabel dibuat lebih cantik dengan ikon, judul, dan deskripsi singkat.
-- Header tabel dibuat lebih konsisten, seamless, dan tidak terasa patah/berulang.
-- Card, panel, stat, recipe card, hero card, dan insight panel diberi hover yang lebih halus.
-- Tab transition dibuat lebih smooth.
-- Form input/select/textarea diberi hover dan focus state yang lebih premium.
-- Scrollbar tabel tetap mengikuti palette kopi dan menyesuaikan accent section.
-- Patch tetap ringan, static, dan tanpa dependency tambahan.
+## Perubahan utama
 
-File Supabase config tidak disertakan agar API URL dan anon key lokal tidak tertimpa.
-
-
-## v23.2 Input Seduhan Restoration
-
-- Added a dedicated `Input Seduhan` tab.
-- Manual input combines coffee identity, brew recipe fields, and QA scoring in one form.
-- Removed stock dependency from this workflow.
-- Save button is disabled until Final QA reaches 6.5.
-- Passing manual brews are inserted as public approved brew logs and displayed in `Hasil Seduhan Publik`.
-
-
-## v23.3 — Adaptive Pour Fields
-
-- Menambahkan kolom Pour 1 sampai Pour 4 di menu Input Seduhan.
-- Dripper Switch sekarang adaptif berdasarkan Valve Mode.
-  - Full Open: Pour 1–4 seperti biasa.
-  - Hybrid: Pour 1–4 + pilihan valve open/closed + keterangan tiap pour.
-  - Full Immersion: hanya Pour 1 + waktu Valve Open.
-- Mode Seduh Japanese sekarang menampilkan kolom Es Batu.
-- Payload publik menyimpan detail pour ke `PourPlan`, valve ke `ValvePlan`, dan es batu ke `Ice_g`.
+- Mengubah `Cara Pakai` menjadi pengalaman onboarding / guided experience.
+- Menambahkan hero mini khusus panduan dengan copy final.
+- Menambahkan alur workflow 4 langkah.
+- Menambahkan kartu rekomendasi `Mulai dari sini`.
+- Mendesain ulang role selector menjadi role cards premium.
+- Menulis ulang copy final untuk Guest, Admin, QA, dan Brewer.
+- Mengubah daftar panjang menjadi menu cards + best practice + FAQ mini.
+- Menjaga tampilan tetap selaras dengan tema coffee premium dashboard.
