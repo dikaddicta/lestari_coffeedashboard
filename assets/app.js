@@ -8,6 +8,9 @@
   let brewDraftSaving = false;
   let qaSaving = false;
   let manualBrewSaving = false;
+  let manualEditingBrewId = null;
+  let manualEditingOriginalLog = null;
+  let manualEditingOriginalQA = null;
   let editingStockId = null;
   let brewStockOptionsSignature = "";
   const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
@@ -810,6 +813,7 @@
       ModerationStatus: row.moderation_status || row.status || "approved",
       Visibility: row.visibility || "public",
       WorkspaceName: row.workspaces?.name || row.workspace_name || "",
+      SourceClientID: row.source_client_id,
       Source: "Supabase"
     };
   }
@@ -876,6 +880,7 @@
       WorkspaceID: row.workspace_id,
       CreatedBy: row.created_by,
       ModerationStatus: row.moderation_status || "approved",
+      SourceClientID: row.source_client_id,
       Source: "Supabase"
     };
   }
@@ -2480,6 +2485,155 @@
     };
   }
 
+
+  function isPublicBrewOwner(log) {
+    if (!log) return false;
+    if (currentUser?.id && log.CreatedBy && String(log.CreatedBy) === String(currentUser.id)) return true;
+    return false;
+  }
+
+  function findQAForBrew(log) {
+    if (!log) return null;
+    return (state.cloudQA || []).find(qa =>
+      (log.QA_ID && qa.QA_ID === log.QA_ID) ||
+      (log.BrewID && qa.BrewID === log.BrewID)
+    ) || null;
+  }
+
+  function setManualFieldValue(id, value) {
+    const el = $(id);
+    if (!el) return;
+    const safe = value === null || value === undefined ? "" : String(value);
+    if (el.tagName === "SELECT") {
+      const options = Array.from(el.options || []);
+      const match = options.find(opt => norm(opt.value) === norm(safe) || norm(opt.textContent) === norm(safe));
+      if (match) el.value = match.value;
+      else if (safe && options.length) {
+        const option = document.createElement("option");
+        option.value = safe;
+        option.textContent = safe;
+        el.appendChild(option);
+        el.value = safe;
+      }
+      return;
+    }
+    el.value = safe;
+  }
+
+  function resetManualPourFields() {
+    for (let i = 1; i <= 4; i += 1) {
+      setManualFieldValue(`manualPour${i}`, "");
+      setManualFieldValue(`manualPour${i}Valve`, "Open");
+      setManualFieldValue(`manualPour${i}Note`, "");
+    }
+    setManualFieldValue("manualValveOpenTime", "");
+  }
+
+  function parseManualPourPlanFromLog(log) {
+    resetManualPourFields();
+    const pourPlan = String(log?.PourPlan || "");
+    const valvePlan = String(log?.ValvePlan || "");
+    const combined = `${pourPlan} | ${valvePlan}`;
+    let structuredFound = false;
+    for (let i = 1; i <= 4; i += 1) {
+      const amountMatch = combined.match(new RegExp(`Pour\\s*${i}\\s*:\\s*(\\d+(?:\\.\\d+)?)\\s*ml`, "i"));
+      const valveMatch = combined.match(new RegExp(`Pour\\s*${i}[^|]*(?:valve\\s+|:\\s*)(Open|Closed)`, "i"));
+      if (amountMatch) {
+        setManualFieldValue(`manualPour${i}`, amountMatch[1]);
+        structuredFound = true;
+      }
+      if (valveMatch) setManualFieldValue(`manualPour${i}Valve`, valveMatch[1].replace(/^./, ch => ch.toUpperCase()));
+      const segmentMatch = combined.match(new RegExp(`Pour\\s*${i}\\s*:[^|]+`, "i"));
+      if (segmentMatch) {
+        const note = segmentMatch[0]
+          .replace(new RegExp(`Pour\\s*${i}\\s*:\\s*`, "i"), "")
+          .replace(/\\d+(?:\\.\\d+)?\\s*ml/i, "")
+          .replace(/valve\\s+(open|closed)/i, "")
+          .replace(/^\\s*[·:-]+\\s*/g, "")
+          .trim();
+        if (note && !/^(open|closed)$/i.test(note)) setManualFieldValue(`manualPour${i}Note`, note);
+      }
+    }
+    const valveOpenMatch = valvePlan.match(/valve\s+dibuka\s*:\s*([^|]+)/i);
+    if (valveOpenMatch) setManualFieldValue("manualValveOpenTime", valveOpenMatch[1].trim());
+
+    const catatanMatch = pourPlan.match(/Catatan:\s*([^|]+)$/i);
+    if (catatanMatch) setManualFieldValue("manualPourPlan", catatanMatch[1].trim());
+    else if (!structuredFound && pourPlan) setManualFieldValue("manualPourPlan", pourPlan);
+    else setManualFieldValue("manualPourPlan", "");
+  }
+
+  function setManualEditMode(active, log = null, qa = null) {
+    manualEditingOriginalLog = active ? log : null;
+    manualEditingOriginalQA = active ? qa : null;
+    manualEditingBrewId = active ? log?.CloudID || null : null;
+    const banner = $("manualEditBanner");
+    const title = $("manualEditTitle");
+    const submit = $("manualSubmitBtn");
+    const cancel = $("manualCancelEditBtn");
+    if (banner) banner.classList.toggle("hidden", !active);
+    if (title) title.textContent = active ? `Sedang mengedit: ${log?.BeanName || "Hasil Seduhan"}` : "Mode edit hasil seduhan";
+    if (submit) submit.textContent = active ? "Simpan Perubahan Hasil Seduhan" : "Simpan Hasil Seduhan Publik";
+    if (cancel) cancel.classList.toggle("hidden", !active);
+  }
+
+  function openPublicBrewEdit(key) {
+    const log = findPublicBrewLog(key);
+    if (!log) return showMessage("Data seduhan tidak ditemukan. Muat ulang lalu coba lagi.", "error");
+    if (!isPublicBrewOwner(log)) return showMessage("Edit hanya tersedia untuk akun yang menginput hasil seduhan ini.", "error");
+    const qa = findQAForBrew(log);
+    setManualEditMode(true, log, qa);
+
+    setManualFieldValue("manualBeanName", log.BeanName || "");
+    setManualFieldValue("manualOrigin", log.Origin || "");
+    setManualFieldValue("manualEvaluator", log.BrewerName || qa?.Evaluator || currentBrewerName());
+    setManualFieldValue("manualVariety", log.Variety || "");
+    setManualFieldValue("manualProcess", log.Process || "");
+    setManualFieldValue("manualRoast", log.RoastProfile || "");
+    setManualFieldValue("manualDripper", log.Dripper || "");
+    setManualFieldValue("manualMode", log.Method || "Hot V60");
+    setManualFieldValue("manualSwitchValveMode", log.SwitchValveMode || (/switch/i.test(log.Dripper || "") ? "Full Open" : "N/A"));
+    setManualFieldValue("manualIce", Number(log.Ice_g || 0));
+    setManualFieldValue("manualGrinder", log.Grinder || "");
+    setManualFieldValue("manualGrindSetting", log.GrindSetting || "");
+    setManualFieldValue("manualWater", log.Water || "");
+    setManualFieldValue("manualDose", log.Dose_g || "");
+    setManualFieldValue("manualRatio", log.Ratio || "");
+    setManualFieldValue("manualTotalWater", log.TotalWater_ml || "");
+    setManualFieldValue("manualTemp", log.Temp_C || "");
+    setManualFieldValue("manualBrewTime", log.BrewTime_sec || "");
+    setManualFieldValue("manualBloom", log.Bloom_ml || "");
+    parseManualPourPlanFromLog(log);
+
+    setManualFieldValue("manualVariable", log.PrimaryVariableChanged || qa?.PrimaryVariableChanged || "");
+    setManualFieldValue("manualHypothesis", log.Hypothesis || qa?.Hypothesis || "");
+    setManualFieldValue("manualNotes", log.ResultNotes || qa?.ResultNotes || qa?.QA_Notes || "");
+    const fallback = Number(log.QA_Final || qa?.Final_QA || 8.5);
+    setManualFieldValue("manualAroma", qa?.Aroma ?? fallback);
+    setManualFieldValue("manualFlavor", qa?.Flavor ?? fallback);
+    setManualFieldValue("manualAftertaste", qa?.Aftertaste ?? fallback);
+    setManualFieldValue("manualAcidityQuality", qa?.AcidityQuality ?? fallback);
+    setManualFieldValue("manualSweetness", qa?.Sweetness ?? fallback);
+    setManualFieldValue("manualBody", qa?.Body ?? fallback);
+    setManualFieldValue("manualBalance", qa?.Balance ?? fallback);
+    setManualFieldValue("manualClarity", qa?.Clarity ?? fallback);
+    setManualFieldValue("manualFinish", qa?.Finish ?? fallback);
+    setManualFieldValue("manualConsistency", qa?.Consistency ?? fallback);
+    setManualFieldValue("manualDefect", qa?.DefectPenalty ?? 0);
+
+    closePublicBrewDetail();
+    renderManualBrewPreview();
+    showTab("input-seduhan");
+    setTimeout(() => $("manualBeanName")?.focus(), 120);
+    showMessage("Mode edit aktif. Ubah field seperti Input Seduhan, lalu simpan perubahan.", "info");
+  }
+
+  function cancelManualBrewEdit() {
+    setManualEditMode(false);
+    renderManualBrewPreview();
+    showMessage("Mode edit dibatalkan. Form kembali untuk input seduhan baru.", "info");
+  }
+
   async function saveManualBrew(e) {
     e?.preventDefault?.();
     e?.stopPropagation?.();
@@ -2517,18 +2671,49 @@
       watchdog = createButtonWatchdog({ key: "manual-brew", button: btn, originalText, label: "Simpan Input Seduhan" });
       showMessage("Sedang menyimpan hasil seduhan publik...", "info");
 
-      const log = manualBrewPayloadBase({ QA_Final: final });
+      const editing = Boolean(manualEditingBrewId && manualEditingOriginalLog);
+      let log = manualBrewPayloadBase({
+        BrewID: editing ? manualEditingOriginalLog.BrewID : undefined,
+        QA_ID: editing ? (manualEditingOriginalLog.QA_ID || manualEditingOriginalQA?.QA_ID) : undefined,
+        QA_Final: final
+      });
+      if (editing) {
+        log = {
+          ...log,
+          CloudID: manualEditingOriginalLog.CloudID,
+          Date: manualEditingOriginalLog.Date || log.Date,
+          CreatedBy: manualEditingOriginalLog.CreatedBy || currentUser?.id || null,
+          WorkspaceID: manualEditingOriginalLog.WorkspaceID || activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID,
+          CreatedAt: manualEditingOriginalLog.CreatedAt,
+          UpdatedAt: new Date().toISOString()
+        };
+      }
       const qa = manualQARecord(log);
-      const savedLog = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
-      state.cloudBrewLogs.unshift(savedLog);
-      const savedQA = await insertCloud("qa_scores", toSnakeQA(qa), fromSnakeQA);
-      state.cloudQA = uniqueByCloudId([savedQA, ...(state.cloudQA || [])]);
+      let savedLog;
+      let savedQA;
+      if (editing) {
+        if (!isPublicBrewOwner(manualEditingOriginalLog)) throw new Error("Edit hanya tersedia untuk akun yang menginput hasil seduhan ini.");
+        savedLog = await updateCloud("brew_logs", manualEditingBrewId, toSnakeBrew(log), fromSnakeBrew);
+        state.cloudBrewLogs = uniqueByCloudId([savedLog, ...(state.cloudBrewLogs || []).filter(item => item.CloudID !== savedLog.CloudID)]);
+        if (manualEditingOriginalQA?.CloudID) {
+          savedQA = await updateCloud("qa_scores", manualEditingOriginalQA.CloudID, toSnakeQA({ ...qa, QA_ID: manualEditingOriginalQA.QA_ID || qa.QA_ID }), fromSnakeQA);
+        } else {
+          savedQA = await insertCloud("qa_scores", toSnakeQA(qa), fromSnakeQA);
+        }
+        state.cloudQA = uniqueByCloudId([savedQA, ...(state.cloudQA || []).filter(item => item.CloudID !== savedQA.CloudID)]);
+        setManualEditMode(false);
+      } else {
+        savedLog = await insertCloud("brew_logs", toSnakeBrew(log), fromSnakeBrew);
+        state.cloudBrewLogs.unshift(savedLog);
+        savedQA = await insertCloud("qa_scores", toSnakeQA(qa), fromSnakeQA);
+        state.cloudQA = uniqueByCloudId([savedQA, ...(state.cloudQA || [])]);
+      }
 
       renderBrewLogTable();
       renderQABrewOptions();
       renderPublicBrewTable();
       renderRecipeOptions(computeBrew());
-      showMessage("Hasil seduhan berhasil disimpan dan masuk ke Hasil Seduhan Publik.", "success");
+      showMessage(editing ? "Perubahan hasil seduhan berhasil disimpan." : "Hasil seduhan berhasil disimpan dan masuk ke Hasil Seduhan Publik.", "success");
       showTab("public-brews");
     } catch (err) {
       console.error("saveManualBrew error", err);
@@ -2539,7 +2724,7 @@
       if (watchdog) clearTimeout(watchdog);
       manualBrewSaving = false;
       if (btn) {
-        btn.textContent = originalText;
+        btn.textContent = manualEditingBrewId ? originalText : "Simpan Hasil Seduhan Publik";
       }
       renderManualBrewPreview();
     }
@@ -3275,6 +3460,7 @@
         <span class="edit-kicker">Detail Seduhan Publik</span>
         <h3 id="publicBrewModalTitle">${html(log.BeanName || "Tanpa nama")}</h3>
         <p>${html(log.BrewerName || "Brewer")} · ${html(log.Method || "-")} · QA ${html(log.QA_Final || "-")}</p>
+        ${isPublicBrewOwner(log) ? `<button class="secondary small-action public-brew-edit-modal" type="button" data-public-brew-edit="${html(publicBrewKey(log))}">Edit Hasil Seduhan</button>` : ""}
       </div>
       <div class="public-detail-grid">
         <section>
@@ -3344,7 +3530,7 @@
         <td>${html(log.BrewerName || "Brewer")}</td>
         <td>${html(log.Method || "-")}</td>
         <td><span class="score-pill">${html(log.QA_Final || "-")}</span></td>
-        <td><button class="secondary small-action" type="button" data-public-brew-detail="${key}">Detail</button></td>
+        <td><div class="public-brew-actions"><button class="secondary small-action" type="button" data-public-brew-detail="${key}">Detail</button>${isPublicBrewOwner(log) ? `<button class="ghost small-action" type="button" data-public-brew-edit="${key}">Edit</button>` : ""}</div></td>
       </tr>`;
     }).join("");
   }
@@ -3608,10 +3794,17 @@
     $("publicBrewMethod")?.addEventListener("change", renderPublicBrewTable);
     $("publicBrewMinQA")?.addEventListener("change", renderPublicBrewTable);
     $("publicBrewTable")?.addEventListener("click", e => {
+      const editBtn = e.target.closest("button[data-public-brew-edit]");
+      if (editBtn) return openPublicBrewEdit(editBtn.dataset.publicBrewEdit);
       const btn = e.target.closest("button[data-public-brew-detail]");
       if (!btn) return;
       openPublicBrewDetail(btn.dataset.publicBrewDetail);
     });
+    $("publicBrewModalBody")?.addEventListener("click", e => {
+      const editBtn = e.target.closest("button[data-public-brew-edit]");
+      if (editBtn) openPublicBrewEdit(editBtn.dataset.publicBrewEdit);
+    });
+    $("manualCancelEditBtn")?.addEventListener("click", cancelManualBrewEdit);
     $("publicBrewModalClose")?.addEventListener("click", closePublicBrewDetail);
     $("publicBrewModal")?.addEventListener("click", e => {
       if (e.target.id === "publicBrewModal") closePublicBrewDetail();

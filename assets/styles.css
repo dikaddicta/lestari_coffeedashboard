@@ -4112,3 +4112,70 @@ main,
     min-width: 620px;
   }
 }
+
+
+/* v26 public brew owner edit */
+.manual-edit-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 14px 0 18px;
+  padding: 15px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(192,133,82,.28);
+  background:
+    linear-gradient(135deg, rgba(255,248,240,.94), rgba(240,218,196,.72)),
+    radial-gradient(circle at top left, rgba(192,133,82,.18), transparent 38%);
+  box-shadow: 0 14px 32px rgba(75,46,43,.08), inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+.manual-edit-banner strong {
+  display: block;
+  color: var(--ui-espresso, #4B2E2B);
+  font-size: 15px;
+  margin-bottom: 3px;
+}
+
+.manual-edit-banner small {
+  display: block;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.manual-submit-row {
+  display: flex;
+  justify-content: stretch;
+}
+
+.manual-submit-row .primary {
+  width: 100%;
+}
+
+.public-brew-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.public-brew-edit-modal {
+  margin-top: 12px;
+}
+
+@media (max-width: 760px) {
+  .manual-edit-banner {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .manual-edit-banner .small-action {
+    width: 100%;
+  }
+  .public-brew-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .public-brew-actions .small-action {
+    width: 100%;
+  }
+}

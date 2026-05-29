@@ -408,6 +408,7 @@
         <section class="panel wide manual-input-panel">
           <div class="section-title"><span>Manual Brew</span><h2>Input Seduhan</h2></div>
           <p class="hint">Menu ini untuk guest atau brewer yang ingin mencatat seduhan dengan rumus sendiri dan biji kopi sendiri. Data akan masuk ke <strong>Hasil Seduhan Publik</strong> hanya jika Final QA minimal <strong>6.5</strong>.</p>
+          <div id="manualEditBanner" class="manual-edit-banner hidden"><div><strong id="manualEditTitle">Mode edit hasil seduhan</strong><small>Form edit memakai kolom yang sama seperti Input Seduhan. Tombol edit hanya muncul untuk akun yang menginput data tersebut.</small></div><button id="manualCancelEditBtn" class="ghost small-action" type="button">Batalkan Edit</button></div>
           <form id="manualBrewForm" class="form-grid qa-form manual-brew-form">
             <div class="form-subtitle span-2"><span>1. Data Seduhan</span><small>Tanpa stok. Isi biji kopi dan resep manual yang kamu gunakan.</small></div>
             <label class="span-2">Nama Kopi
@@ -559,7 +560,7 @@
             </label>
             <div class="qa-total manual-qa-total span-2">Final QA: <strong id="manualFinalPreview">8.50</strong> <span id="manualStatusPreview" class="qa-pass">QA PASS</span></div>
             <p id="manualGateHint" class="manual-gate-hint span-2">Tombol simpan aktif karena Final QA memenuhi batas publik 6.5.</p>
-            <button id="manualSubmitBtn" class="primary span-2" type="submit">Simpan Hasil Seduhan Publik</button>
+            <div class="manual-submit-row span-2"><button id="manualSubmitBtn" class="primary" type="submit">Simpan Hasil Seduhan Publik</button></div>
           </form>
         </section>
       </section>
@@ -782,7 +783,7 @@
           <div class="table-wrap tall">
             <table id="publicBrewTable">
               <thead>
-                <tr><th>Kopi</th><th>Brewer</th><th>Metode</th><th>QA</th><th>Detail</th></tr>
+                <tr><th>Kopi</th><th>Brewer</th><th>Metode</th><th>QA</th><th>Aksi</th></tr>
               </thead>
               <tbody></tbody>
             </table>

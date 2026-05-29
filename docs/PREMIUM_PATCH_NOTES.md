@@ -1,21 +1,16 @@
-# Premium Patch v25 — Mobile Experience & Responsive QA
+# Premium Patch v26
 
-Patch ini fokus pada pengalaman mobile sebelum dashboard diarahkan ke hosting/custom domain.
+Fokus patch ini adalah fitur **Edit Hasil Seduhan Publik** untuk pemilik/inputer data.
 
 ## Perubahan utama
 
-- Menambahkan **mobile menu switcher** berbentuk dropdown agar navigasi di HP tidak terlalu penuh.
-- Desktop tab tetap ada, tetapi tab grid disembunyikan di layar kecil.
-- Dropdown mobile tersinkron dengan tab aktif.
-- Mencegah horizontal overflow pada body tanpa menghilangkan scroll tabel.
-- Memperbaiki ukuran hero, logo, heading, badge, dan panel di layar kecil.
-- Membuat form dan tombol lebih nyaman untuk touch device dengan minimum height 48px.
-- Merapikan menu **Input Seduhan** di mobile, termasuk adaptive pour cards dan field QA.
-- Membuat tabel mobile lebih aman dengan scroll area khusus dan hint `Geser tabel →`.
-- Memperbaiki modal detail public brew agar lebih nyaman di layar kecil.
-- Menjaga `assets/supabase-config.js` tetap tidak ikut patch.
+- Tombol **Edit** muncul di tabel dan modal detail **hanya** untuk hasil seduhan milik akun yang sedang login.
+- Hasil seduhan milik orang lain hanya menampilkan tombol **Detail**.
+- Edit membuka menu **Input Seduhan** dan mengisi form dengan data lama.
+- Form edit memakai field yang sama seperti Input Seduhan, termasuk detail pour, valve mode Switch, Japanese ice, dan evaluasi QA.
+- Tombol simpan tetap terkunci jika Final QA kurang dari 6.5.
+- Saat disimpan, data `brew_logs` dan `qa_scores` diperbarui di Supabase.
 
-## Validasi
+## Catatan keamanan
 
-- `assets/app.js` lolos syntax check.
-- Patch ini tidak mengubah schema Supabase.
+Edit owner memakai `created_by = auth.uid()` melalui RLS Supabase. Data yang dibuat sebagai guest tanpa login tidak bisa diverifikasi dengan aman lintas perangkat, sehingga tombol edit aman difokuskan untuk akun login yang menginput data.
