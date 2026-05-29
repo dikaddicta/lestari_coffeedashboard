@@ -28,7 +28,8 @@
   let moderationRows = [];
   let pendingMemberRows = [];
   let workspaceMemberRows = [];
-  let dashboardUserCount = 0;
+  let dashboardUserCount = null;
+  let dashboardUserCountSource = "local";
   const LAST_WORKSPACE_KEY = "coffeeDashboardActiveWorkspace";
   const DEFAULT_PUBLIC_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -1230,39 +1231,97 @@
     if ($("stockFlavor1")) $("stockFlavor1").value = "Fruity";
   }
 
-  function localDashboardUserCount() {
-    const ids = new Set();
+  function knownDashboardContributorCount() {
+    const accountIds = new Set();
+    const guestKeys = new Set();
+    const addAccount = (value) => {
+      const key = String(value || "").trim();
+      if (key) accountIds.add(`u:${key}`);
+    };
+    const addGuest = (value, prefix = "guest") => {
+      const key = norm(value);
+      if (key) guestKeys.add(`${prefix}:${key}`);
+    };
+
     [state.cloudBrewLogs, state.cloudQA, state.cloudStock, state.userBrewLogs, state.userQA, state.userStock].forEach(rows => {
       (rows || []).forEach(row => {
-        if (row.CreatedBy) ids.add(`u:${row.CreatedBy}`);
-        if (row.Evaluator && !row.CreatedBy) ids.add(`g:${norm(row.Evaluator)}`);
-        if (row.BrewerName && !row.CreatedBy) ids.add(`g:${norm(row.BrewerName)}`);
+        if (row.CreatedBy) {
+          addAccount(row.CreatedBy);
+          return;
+        }
+        addGuest(row.SourceClientID, "client");
+        addGuest(row.Evaluator, "name");
+        addGuest(row.BrewerName, "name");
       });
     });
-    (userMemberships || []).forEach(ws => { if (ws.user_id) ids.add(`u:${ws.user_id}`); });
-    return Math.max(dashboardUserCount || 0, ids.size || (currentUser ? 1 : 0));
+    (userMemberships || []).forEach(ws => addAccount(ws.user_id));
+    (workspaceMemberRows || []).forEach(row => addAccount(row.user_id));
+    (pendingMemberRows || []).forEach(row => addAccount(row.user_id));
+    if (currentUser?.id) addAccount(currentUser.id);
+
+    return {
+      accounts: accountIds.size,
+      guests: guestKeys.size,
+      total: accountIds.size + guestKeys.size
+    };
+  }
+
+  function localDashboardUserCount() {
+    return knownDashboardContributorCount().total;
+  }
+
+  function dashboardUserMetric() {
+    const local = localDashboardUserCount();
+    const remote = Number.isFinite(Number(dashboardUserCount)) ? Number(dashboardUserCount) : null;
+    if (remote !== null) {
+      return {
+        value: Math.max(remote, local),
+        hint: remote >= local
+          ? "Dihitung dari RPC Supabase: akun profiles, workspace member, pemilik brew/QA/stok, dan kontributor guest."
+          : "Dihitung dari data Supabase yang terbaca di dashboard; nilai lokal lebih tinggi dari RPC sehingga dipakai sebagai fallback aman."
+      };
+    }
+    if (isSupabaseConfigured() && !cloudReady && local === 0) {
+      return {
+        value: "…",
+        hint: "Sedang membaca jumlah pengguna dari Supabase. Jika tetap 0, jalankan migration get_dashboard_user_count terbaru."
+      };
+    }
+    return {
+      value: local,
+      hint: "Fallback lokal: dihitung dari pemilik data brew log, QA, stok, workspace member yang bisa dibaca, dan user login saat ini."
+    };
   }
 
   async function loadDashboardUserCount() {
+    const local = localDashboardUserCount();
     if (!supabaseClient) {
-      dashboardUserCount = localDashboardUserCount();
+      dashboardUserCount = local;
+      dashboardUserCountSource = "local";
       return;
     }
     const { data, error } = await supabaseClient.rpc("get_dashboard_user_count");
-    if (!error && Number.isFinite(Number(data))) dashboardUserCount = Number(data);
-    else dashboardUserCount = localDashboardUserCount();
+    if (!error && Number.isFinite(Number(data))) {
+      dashboardUserCount = Math.max(Number(data), local);
+      dashboardUserCountSource = Number(data) >= local ? "supabase_rpc" : "local_fallback";
+    } else {
+      dashboardUserCount = local;
+      dashboardUserCountSource = "local_fallback";
+      console.warn("get_dashboard_user_count fallback", error);
+    }
   }
 
   function renderMetrics() {
+    const users = dashboardUserMetric();
     const metrics = [
-      [DATA.varieties?.length || 0, "Varietas"],
-      [DATA.drippers?.length || 0, "Dripper"],
-      [DATA.processes?.length || 0, "Proses"],
-      [DATA.roasts?.length || 0, "Roast Profile"],
-      [DATA.waters?.length || 0, "Water"],
-      [localDashboardUserCount(), "Pengguna"]
+      { value: DATA.varieties?.length || 0, label: "Varietas", hint: "Jumlah varietas/kultivar di pustaka data lokal dashboard." },
+      { value: DATA.drippers?.length || 0, label: "Dripper", hint: "Jumlah dripper di pustaka data lokal dashboard." },
+      { value: DATA.processes?.length || 0, label: "Proses", hint: "Jumlah metode pasca panen di pustaka data lokal dashboard." },
+      { value: DATA.roasts?.length || 0, label: "Roast Profile", hint: "Jumlah profil roasting di pustaka data lokal dashboard." },
+      { value: DATA.waters?.length || 0, label: "Water", hint: "Jumlah profil air/mineral di pustaka data lokal dashboard." },
+      { value: users.value, label: "Pengguna Tercatat", hint: users.hint }
     ];
-    $("libraryMetrics").innerHTML = metrics.map(([n, label]) => `<div class="metric"><strong>${html(n)}</strong><span>${html(label)}</span></div>`).join("");
+    $("libraryMetrics").innerHTML = metrics.map(item => `<div class="metric" title="${html(item.hint)}"><strong>${html(item.value)}</strong><span>${html(item.label)}</span></div>`).join("");
   }
 
   function resolveSwitchMode() {

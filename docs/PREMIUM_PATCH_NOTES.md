@@ -1,16 +1,21 @@
-# Premium Patch v26
+# Patch v27 — Accurate Metrics & Library Expansion
 
-Fokus patch ini adalah fitur **Edit Hasil Seduhan Publik** untuk pemilik/inputer data.
+## Fokus
 
-## Perubahan utama
+- Membenahi kartu metrik **Pengguna** agar tidak ambigu dan tidak menampilkan 0 saat data masih dibaca.
+- Mengubah label menjadi **Pengguna Tercatat** dengan tooltip sumber data.
+- Memperkuat fallback frontend jika RPC Supabase belum tersedia atau belum diperbarui.
+- Menambahkan migration Supabase untuk `get_dashboard_user_count()` yang lebih akurat.
+- Melengkapi pustaka varietas lokal Indonesia, terutama Gayo/Aceh/Sumatra dan alias pasar.
+- Melengkapi pustaka pasca panen eksperimental lokal termasuk `Anaerobic Natural Inoculum`.
 
-- Tombol **Edit** muncul di tabel dan modal detail **hanya** untuk hasil seduhan milik akun yang sedang login.
-- Hasil seduhan milik orang lain hanya menampilkan tombol **Detail**.
-- Edit membuka menu **Input Seduhan** dan mengisi form dengan data lama.
-- Form edit memakai field yang sama seperti Input Seduhan, termasuk detail pour, valve mode Switch, Japanese ice, dan evaluasi QA.
-- Tombol simpan tetap terkunci jika Final QA kurang dari 6.5.
-- Saat disimpan, data `brew_logs` dan `qa_scores` diperbarui di Supabase.
+## File penting
 
-## Catatan keamanan
+- `assets/app.js`: metric count logic diperbaiki.
+- `assets/data.js`: varietas dan proses diperluas.
+- `supabase/migration_v27_accurate_dashboard_user_count.sql`: wajib dijalankan di Supabase lama agar metrik pengguna akurat dari database.
+- `supabase/schema.sql`: fungsi count juga diselaraskan untuk setup baru.
 
-Edit owner memakai `created_by = auth.uid()` melalui RLS Supabase. Data yang dibuat sebagai guest tanpa login tidak bisa diverifikasi dengan aman lintas perangkat, sehingga tombol edit aman difokuskan untuk akun login yang menginput data.
+## Catatan
+
+Untuk project Supabase lama, jalankan file migration v27 di SQL Editor. Untuk project baru, `schema.sql` sudah berisi versi fungsi terbaru.
