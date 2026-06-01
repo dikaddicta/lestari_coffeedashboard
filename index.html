@@ -913,6 +913,13 @@
           <div class="table-wrap tall"><table id="workspaceUserTable"><thead><tr><th>Nama / Email</th><th>Role</th><th>Status</th><th>Bergabung</th><th>Update Terakhir</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
         </section>
 
+        <section class="panel wide" id="suggestionInboxPanel">
+          <div class="section-title"><span>Masukan</span><h2>Kotak Saran Masuk</h2></div>
+          <p class="hint">Admin Workspace dapat membaca masukan yang dikirim dari menu Kotak Saran. Data cloud disimpan di tabel Supabase <code>suggestions</code>; jika Supabase tidak aktif, salinan lokal hanya ada di browser pengirim.</p>
+          <div class="admin-toolbar"><button id="refreshSuggestions" class="secondary" type="button">Muat Ulang Masukan</button></div>
+          <div class="table-wrap tall"><table id="suggestionInboxTable"><thead><tr><th>Status</th><th>Kategori</th><th>Masukan</th><th>Pengirim</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+        </section>
+
         <section class="panel wide">
           <div class="section-title"><span>Peran</span><h2>Peran & Aturan Moderasi</h2></div>
           <div class="role-grid">

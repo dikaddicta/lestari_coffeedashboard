@@ -95,9 +95,16 @@ supabase/migration_v18_20_stable_submit_delete_brew.sql
 supabase/migration_v18_23_safer_stock_restore_on_brew_delete.sql
 supabase/migration_v18_24_performance_indexes.sql
 supabase/migration_v18_25_qa_details_fast_save.sql
+supabase/migration_v19_suggestion_inbox_resilient_save.sql
 ```
 
 Catatan: `migration_v18_23_safer_stock_restore_on_brew_delete.sql` menggantikan fungsi dari `migration_v18_20_stable_submit_delete_brew.sql` dengan versi restore stok yang lebih aman. Keduanya tetap aman dijalankan berurutan karena memakai `create or replace function`.
+
+## Melihat data masukan
+
+Data dari menu Kotak Saran disimpan di tabel Supabase `suggestions`. Admin Workspace juga bisa membukanya dari menu `Akun & Admin` bagian `Kotak Saran Masuk`. Jika Supabase tidak aktif saat saran dikirim, data fallback hanya tersimpan di `localStorage` browser pengirim dengan key `coffeeDashboardWebV1`.
+
+Jika saat menjalankan migration muncul error `relation public.workspace_members does not exist`, database belum memiliki schema workspace/role. Untuk project baru jalankan `supabase/schema.sql`. Untuk project lama, jalankan migration sebelumnya sesuai urutan README sebelum `migration_v19_suggestion_inbox_resilient_save.sql`.
 
 ## Alur role
 

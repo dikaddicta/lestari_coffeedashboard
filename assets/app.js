@@ -28,10 +28,14 @@
   let moderationRows = [];
   let pendingMemberRows = [];
   let workspaceMemberRows = [];
+  let suggestionRows = [];
   let dashboardUserCount = null;
   let dashboardUserCountSource = "local";
   const LAST_WORKSPACE_KEY = "coffeeDashboardActiveWorkspace";
   const DEFAULT_PUBLIC_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001";
+  const CLOUD_WRITE_TIMEOUT_MS = 30000;
+  const CLOUD_READ_TIMEOUT_MS = 60000;
+  const SESSION_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 
   const $ = (id) => document.getElementById(id);
   const fmt = (n, d = 0) => Number.isFinite(Number(n)) ? Number(n).toFixed(d).replace(/\.0$/, "") : "-";
@@ -320,6 +324,7 @@
     if (canAdmin()) {
       await loadMemberRequests().catch(console.warn);
       await loadWorkspaceMembers().catch(console.warn);
+      await loadSuggestionRows().catch(console.warn);
     }
   }
 
@@ -468,12 +473,17 @@
 
   async function requestWorkspaceAccess(workspaceId, role, userId = currentUser?.id) {
     if (!supabaseClient || !userId || !workspaceId || !["brewer", "qa"].includes(role)) return;
-    const { error } = await supabaseClient.from("workspace_members").insert({
-      workspace_id: workspaceId,
-      user_id: userId,
-      role,
-      status: "pending"
-    });
+    if (currentUser && cloudReady) await prepareCloudWrite("Request akses workspace");
+    const { error } = await withTimeout(
+      supabaseClient.from("workspace_members").insert({
+        workspace_id: workspaceId,
+        user_id: userId,
+        role,
+        status: "pending"
+      }),
+      CLOUD_WRITE_TIMEOUT_MS,
+      "Request akses workspace"
+    );
     if (error && error.code !== "23505" && !/duplicate|already exists/i.test(error.message || "")) throw error;
   }
 
@@ -502,8 +512,8 @@
     });
   }
 
-  function withTimeout(request, arg2 = 60000, arg3 = "request") {
-    const ms = typeof arg2 === "number" ? arg2 : 60000;
+  function withTimeout(request, arg2 = CLOUD_READ_TIMEOUT_MS, arg3 = "request") {
+    const ms = typeof arg2 === "number" ? arg2 : CLOUD_READ_TIMEOUT_MS;
     const label = typeof arg2 === "string" ? arg2 : arg3;
     const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
     let task = request;
@@ -520,15 +530,55 @@
     return Promise.race([Promise.resolve(task), timeout]).finally(() => clearTimeout(timer));
   }
 
-  function createButtonWatchdog({ key, button, originalText, label, ms = 70000 }) {
+  async function refreshCurrentSession(label = "Validasi sesi Supabase") {
+    if (!supabaseClient) return null;
+    const { data: sessionData, error: sessionError } = await withTimeout(supabaseClient.auth.getSession(), 15000, label);
+    if (sessionError) throw sessionError;
+    let session = sessionData?.session || null;
+    if (!session) {
+      currentSession = null;
+      currentUser = null;
+      return null;
+    }
+
+    const expiresAtMs = Number(session.expires_at || 0) * 1000;
+    if (expiresAtMs && expiresAtMs - Date.now() < SESSION_REFRESH_BUFFER_MS) {
+      const { data: refreshed, error: refreshError } = await withTimeout(supabaseClient.auth.refreshSession(), 15000, "Refresh sesi Supabase");
+      if (refreshError) {
+        throw new Error(`Sesi login perlu diperbarui. Masuk ulang lalu coba simpan lagi. Detail: ${refreshError.message}`);
+      }
+      session = refreshed?.session || session;
+    }
+
+    const previousUserId = currentUser?.id || null;
+    currentSession = session;
+    currentUser = session?.user || null;
+    if (currentUser && previousUserId && currentUser.id !== previousUserId) {
+      userProfile = null;
+      await ensureProfile().catch(console.warn);
+      await loadWorkspaces().catch(console.warn);
+    }
+    return session;
+  }
+
+  async function prepareCloudWrite(label = "Simpan data") {
+    if (!cloudReady || !supabaseClient) throw new Error("Supabase belum siap.");
+    if (!currentUser) return;
+    const session = await refreshCurrentSession(label);
+    if (!session) throw new Error("Sesi login sudah habis. Silakan masuk ulang lalu coba simpan lagi.");
+  }
+
+  function createButtonWatchdog({ key, button, originalText, label, ms = CLOUD_WRITE_TIMEOUT_MS + 5000 }) {
     return setTimeout(() => {
       if (key === "brew") brewDraftSaving = false;
       if (key === "qa") qaSaving = false;
       if (key === "stock") stockSaving = false;
+      if (key === "manual-brew") manualBrewSaving = false;
       if (button) {
         button.disabled = false;
         button.textContent = originalText;
       }
+      if (key === "manual-brew") renderManualBrewPreview();
       showMessage(`${label} belum selesai karena Supabase belum memberi respons. Tombol sudah diaktifkan kembali; coba ulangi atau refresh halaman.`, "error");
     }, ms);
   }
@@ -589,7 +639,12 @@
       };
 
       showMessage("Sedang membuat workspace...", "info");
-      const { data, error } = await supabaseClient.from("workspaces").insert(payload).select().single();
+      await prepareCloudWrite("Buat workspace");
+      const { data, error } = await withTimeout(
+        supabaseClient.from("workspaces").insert(payload).select().single(),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Buat workspace"
+      );
       if (error) {
         const duplicate = /duplicate key|already exists|unique/i.test(error.message || "");
         showMessage(duplicate ? "Company sudah dipakai. Coba company lain." : `Gagal membuat workspace: ${error.message}`, "error");
@@ -615,7 +670,12 @@
     if (!supabaseClient || !currentUser) return showMessage("Masuk terlebih dahulu untuk bergabung ke workspace.");
     const workspaceId = $("joinWorkspaceSelect").value;
     if (!workspaceId) return showMessage("Pilih workspace yang ingin diikuti.");
-    const { error } = await supabaseClient.from("workspace_members").insert({ workspace_id: workspaceId, user_id: currentUser.id, role: "brewer", status: "active" });
+    await prepareCloudWrite("Join workspace");
+    const { error } = await withTimeout(
+      supabaseClient.from("workspace_members").insert({ workspace_id: workspaceId, user_id: currentUser.id, role: "brewer", status: "active" }),
+      CLOUD_WRITE_TIMEOUT_MS,
+      "Join workspace"
+    );
     if (error) return showMessage(`Gagal bergabung ke workspace: ${error.message}`);
     await loadWorkspaces();
     await setActiveWorkspace(workspaceId);
@@ -1005,22 +1065,22 @@
   }
 
   async function insertCloud(table, payload, mapper) {
-    if (!cloudReady || !supabaseClient) throw new Error("Supabase belum siap.");
-    const { data, error } = await withTimeout(supabaseClient.from(table).insert(payload).select().single(), `Simpan ${table}`);
+    await prepareCloudWrite(`Simpan ${table}`);
+    const { data, error } = await withTimeout(supabaseClient.from(table).insert(payload).select().single(), CLOUD_WRITE_TIMEOUT_MS, `Simpan ${table}`);
     if (error) throw error;
     return mapper(data);
   }
 
   async function updateCloud(table, id, payload, mapper) {
-    if (!cloudReady || !supabaseClient) throw new Error("Supabase belum siap.");
-    const { data, error } = await withTimeout(supabaseClient.from(table).update(payload).eq("id", id).select().single(), `Update ${table}`);
+    await prepareCloudWrite(`Update ${table}`);
+    const { data, error } = await withTimeout(supabaseClient.from(table).update(payload).eq("id", id).select().single(), CLOUD_WRITE_TIMEOUT_MS, `Update ${table}`);
     if (error) throw error;
     return mapper(data);
   }
 
   async function updateCloudNoReturn(table, id, payload, label = "Update data") {
-    if (!cloudReady || !supabaseClient) throw new Error("Supabase belum siap.");
-    const { error } = await withTimeout(supabaseClient.from(table).update(payload).eq("id", id), 60000, label);
+    await prepareCloudWrite(label);
+    const { error } = await withTimeout(supabaseClient.from(table).update(payload).eq("id", id), CLOUD_WRITE_TIMEOUT_MS, label);
     if (error) throw error;
     return true;
   }
@@ -1929,13 +1989,18 @@
     if (!bean?.CloudID) return showMessage("Stok ini belum tersimpan di Supabase atau tidak punya CloudID.", "error");
     if (!confirm(`Hapus stok ${bean.CoffeeName || bean.BeanID} dari workspace?`)) return;
     try {
-      const { data, error } = await supabaseClient
-        .from("stock_beans")
-        .delete()
-        .eq("id", bean.CloudID)
-        .eq("workspace_id", currentWorkspace.id)
-        .select("id")
-        .single();
+      await prepareCloudWrite("Hapus stok kopi");
+      const { data, error } = await withTimeout(
+        supabaseClient
+          .from("stock_beans")
+          .delete()
+          .eq("id", bean.CloudID)
+          .eq("workspace_id", currentWorkspace.id)
+          .select("id")
+          .single(),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Hapus stok kopi"
+      );
       if (error || !data) throw error || new Error("Data stok tidak terhapus. Cek policy RLS.");
       state.cloudStock = (state.cloudStock || []).filter(item => item.CloudID !== bean.CloudID);
       renderStockTable();
@@ -2029,10 +2094,11 @@
 
   async function consumeStockForBrew(stockBean, amount) {
     if (!stockBean?.CloudID || !amount) return null;
+    await prepareCloudWrite("Update stok kopi");
     const { data, error } = await withTimeout(supabaseClient.rpc("consume_stock_for_brew", {
       p_stock_id: stockBean.CloudID,
       p_amount: Number(amount || 0)
-    }), "Update stok kopi");
+    }), CLOUD_WRITE_TIMEOUT_MS, "Update stok kopi");
     if (error) throw error;
     const updated = fromSnakeStock(data);
     state.cloudStock = uniqueByCloudId([updated, ...(state.cloudStock || []).filter(bean => bean.CloudID !== updated.CloudID)]);
@@ -2945,8 +3011,9 @@
     try {
       showMessage("Menghapus Brew Log dan memulihkan stok jika ada...", "info");
       let result = null;
+      await prepareCloudWrite("Hapus Brew Log");
       const rpc = supabaseClient.rpc("delete_brew_log_and_restore_stock", { p_brew_id: log.CloudID });
-      const { data, error } = await withTimeout(rpc, 70000, "Hapus Brew Log");
+      const { data, error } = await withTimeout(rpc, CLOUD_WRITE_TIMEOUT_MS, "Hapus Brew Log");
       if (error) throw error;
       result = data || {};
 
@@ -3034,13 +3101,18 @@
         const payload = toSnakeStock({ ...bean, BeanID: current.BeanID });
         delete payload.created_by;
         delete payload.source_client_id;
-        const { data, error } = await supabaseClient
-          .from("stock_beans")
-          .update(payload)
-          .eq("id", current.CloudID)
-          .eq("workspace_id", currentWorkspace.id)
-          .select("*")
-          .single();
+        await prepareCloudWrite("Update stok kopi");
+        const { data, error } = await withTimeout(
+          supabaseClient
+            .from("stock_beans")
+            .update(payload)
+            .eq("id", current.CloudID)
+            .eq("workspace_id", currentWorkspace.id)
+            .select("*")
+            .single(),
+          CLOUD_WRITE_TIMEOUT_MS,
+          "Update stok kopi"
+        );
         if (error || !data) throw error || new Error("Data stok tidak berhasil diperbarui.");
         saved = fromSnakeStock(data);
         state.cloudStock = uniqueByCloudId([saved, ...(state.cloudStock || []).filter(item => item.CloudID !== saved.CloudID)]);
@@ -3158,16 +3230,25 @@
     if (!confirm("Hapus data ini permanen dari Supabase?")) return;
 
     try {
+      await prepareCloudWrite("Hapus data moderasi");
       if (table === "brew_logs" && row.brew_code) {
-        await supabaseClient.from("qa_scores").delete().eq("workspace_id", currentWorkspace.id).eq("brew_code", row.brew_code);
+        await withTimeout(
+          supabaseClient.from("qa_scores").delete().eq("workspace_id", currentWorkspace.id).eq("brew_code", row.brew_code),
+          CLOUD_WRITE_TIMEOUT_MS,
+          "Hapus QA terkait"
+        );
       }
-      const { data, error } = await supabaseClient
-        .from(table)
-        .delete()
-        .eq("id", id)
-        .eq("workspace_id", currentWorkspace.id)
-        .select("id")
-        .single();
+      const { data, error } = await withTimeout(
+        supabaseClient
+          .from(table)
+          .delete()
+          .eq("id", id)
+          .eq("workspace_id", currentWorkspace.id)
+          .select("id")
+          .single(),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Hapus data moderasi"
+      );
       if (error || !data) throw error || new Error("Data tidak terhapus. Kemungkinan policy RLS belum mengizinkan delete untuk QA/Admin workspace.");
       state.cloudBrewLogs = state.cloudBrewLogs.filter(item => item.CloudID !== id);
       state.cloudQA = state.cloudQA.filter(item => item.CloudID !== id);
@@ -3212,13 +3293,18 @@
     }
 
     try {
-      const { data, error } = await supabaseClient
-        .from(table)
-        .update(payload)
-        .eq("id", id)
-        .eq("workspace_id", currentWorkspace.id)
-        .select("id")
-        .single();
+      await prepareCloudWrite("Update moderasi");
+      const { data, error } = await withTimeout(
+        supabaseClient
+          .from(table)
+          .update(payload)
+          .eq("id", id)
+          .eq("workspace_id", currentWorkspace.id)
+          .select("id")
+          .single(),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Update moderasi"
+      );
       if (error || !data) throw error || new Error("Tidak ada row yang berubah. Cek RLS policy dan role workspace.");
       await syncFromCloud(true).catch(console.warn);
       await loadModerationRows();
@@ -3241,7 +3327,8 @@
     ["id", "created_at", "updated_at"].forEach(k => delete payload[k]);
     payload.moderated_by = currentUser.id;
     payload.moderated_at = new Date().toISOString();
-    const { error } = await supabaseClient.from(table).update(payload).eq("id", id);
+    await prepareCloudWrite("Edit data moderasi");
+    const { error } = await withTimeout(supabaseClient.from(table).update(payload).eq("id", id), CLOUD_WRITE_TIMEOUT_MS, "Edit data moderasi");
     if (error) return showMessage(`Edit gagal: ${error.message}`);
     await syncFromCloud(true).catch(console.warn);
     await loadModerationRows();
@@ -3306,14 +3393,19 @@
   async function updateMemberRequest(userId, action) {
     if (!supabaseClient || !canAdmin() || !currentWorkspace) return showMessage("Butuh role Admin Workspace.", "error");
     const status = action === "approve" ? "active" : "rejected";
-    const { data, error } = await supabaseClient
-      .from("workspace_members")
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq("workspace_id", currentWorkspace.id)
-      .eq("user_id", userId)
-      .eq("status", "pending")
-      .select("workspace_id,user_id,status")
-      .single();
+    await prepareCloudWrite("Update request akses");
+    const { data, error } = await withTimeout(
+      supabaseClient
+        .from("workspace_members")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("workspace_id", currentWorkspace.id)
+        .eq("user_id", userId)
+        .eq("status", "pending")
+        .select("workspace_id,user_id,status")
+        .single(),
+      CLOUD_WRITE_TIMEOUT_MS,
+      "Update request akses"
+    );
     if (error || !data) return showMessage(`Gagal memproses request: ${(error && error.message) || "row tidak ditemukan"}`, "error");
     await loadMemberRequests();
     await loadWorkspaceMembers();
@@ -3401,13 +3493,18 @@
     if (action === "delete") {
       const label = row.profile?.display_name || row.profile?.email || row.user_id;
       if (!confirm(`Hapus akses ${label} dari workspace ${currentWorkspace.name}? Akun Supabase user tidak dihapus.`)) return;
-      const { data, error } = await supabaseClient
-        .from("workspace_members")
-        .delete()
-        .eq("workspace_id", currentWorkspace.id)
-        .eq("user_id", userId)
-        .select("workspace_id,user_id")
-        .single();
+      await prepareCloudWrite("Hapus akses user");
+      const { data, error } = await withTimeout(
+        supabaseClient
+          .from("workspace_members")
+          .delete()
+          .eq("workspace_id", currentWorkspace.id)
+          .eq("user_id", userId)
+          .select("workspace_id,user_id")
+          .single(),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Hapus akses user"
+      );
       if (error || !data) return showMessage(`Gagal menghapus akses: ${(error && error.message) || "row tidak ditemukan"}`, "error");
       await loadWorkspaceMembers();
       showMessage("Akses user ke workspace berhasil dihapus.", "success");
@@ -3417,13 +3514,18 @@
     const status = action === "activate" ? "active" : "disabled";
     const verb = status === "active" ? "mengaktifkan kembali" : "menangguhkan akses";
     showMessage(`Sedang ${verb} user...`, "info");
-    const { data, error } = await supabaseClient
-      .from("workspace_members")
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq("workspace_id", currentWorkspace.id)
-      .eq("user_id", userId)
-      .select("workspace_id,user_id,status")
-      .single();
+    await prepareCloudWrite("Update akses user");
+    const { data, error } = await withTimeout(
+      supabaseClient
+        .from("workspace_members")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("workspace_id", currentWorkspace.id)
+        .eq("user_id", userId)
+        .select("workspace_id,user_id,status")
+        .single(),
+      CLOUD_WRITE_TIMEOUT_MS,
+      "Update akses user"
+    );
     if (error || !data) return showMessage(`Gagal memperbarui akses: ${(error && error.message) || "row tidak ditemukan"}`, "error");
     await loadWorkspaceMembers();
     showMessage(status === "active" ? "Akses user diaktifkan kembali." : "Akses user disuspend sementara.", status === "active" ? "success" : "info");
@@ -3439,13 +3541,14 @@
       category: $("suggestionCategory")?.value || "Lainnya",
       priority: $("suggestionPriority")?.value || "Normal",
       message: $("suggestionMessage")?.value.trim() || "",
-      workspace_id: activeWorkspaceId(),
+      workspace_id: activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID,
       created_by: currentUser?.id || null
     };
     if (!suggestion.message) return showMessage("Isi saran/masukan terlebih dahulu.", "error");
     try {
       if (supabaseClient) {
-        const { error } = await supabaseClient.from("suggestions").insert({
+        if (currentUser) await prepareCloudWrite("Kirim saran");
+        const { error } = await withTimeout(supabaseClient.from("suggestions").insert({
           name: suggestion.name,
           email: suggestion.email || null,
           category: suggestion.category,
@@ -3454,13 +3557,14 @@
           workspace_id: suggestion.workspace_id,
           created_by: suggestion.created_by,
           status: "open"
-        });
+        }), CLOUD_WRITE_TIMEOUT_MS, "Kirim saran");
         if (error) throw error;
         e.target.reset();
         if (currentUser) {
           $("suggestionName").value = userProfile?.display_name || currentUser.email?.split("@")[0] || "";
           $("suggestionEmail").value = currentUser.email || "";
         }
+        if (canAdmin()) loadSuggestionRows().catch(console.warn);
         return showMessage("Terima kasih. Saran berhasil dikirim.", "success");
       }
       throw new Error("Supabase belum aktif");
@@ -3469,6 +3573,93 @@
       persist();
       e.target.reset();
       showMessage("Terima kasih. Saran tersimpan lokal karena tabel Supabase belum tersedia/aktif.", "info");
+    }
+  }
+
+  async function loadSuggestionRows(message = "") {
+    if (!supabaseClient || !currentUser || !canAdmin()) {
+      suggestionRows = [];
+      renderSuggestionInbox();
+      return;
+    }
+
+    const workspaceId = activeWorkspaceId() || DEFAULT_PUBLIC_WORKSPACE_ID;
+    let query = supabaseClient
+      .from("suggestions")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(300);
+    if (workspaceId) query = query.or(`workspace_id.eq.${workspaceId},workspace_id.eq.${DEFAULT_PUBLIC_WORKSPACE_ID}`);
+
+    const { data, error } = await withTimeout(query, CLOUD_READ_TIMEOUT_MS, "Muat masukan");
+    if (error) {
+      suggestionRows = [];
+      renderSuggestionInbox(message || `Gagal membaca masukan: ${error.message}`);
+      return;
+    }
+    suggestionRows = data || [];
+    renderSuggestionInbox(message);
+  }
+
+  function renderSuggestionInbox(message = "") {
+    const table = $("suggestionInboxTable");
+    if (!table) return;
+    const tbody = table.querySelector("tbody");
+    if (!tbody) return;
+    if (!canAdmin()) {
+      tbody.innerHTML = emptyRow(6, "Panel khusus Admin Workspace", "Masuk sebagai admin untuk melihat masukan dari Kotak Saran.", "i");
+      return;
+    }
+    if (message) {
+      tbody.innerHTML = emptyRow(6, "Informasi masukan", message, "i");
+      return;
+    }
+
+    const localRows = (state.suggestions || []).map(row => ({ ...row, source: "local" }));
+    const rows = [...(suggestionRows || []).map(row => ({ ...row, source: "supabase" })), ...localRows];
+    if (!rows.length) {
+      tbody.innerHTML = emptyRow(6, "Belum ada masukan", "Data dari Kotak Saran akan muncul di sini dan di tabel Supabase suggestions.", "i");
+      return;
+    }
+
+    tbody.innerHTML = rows.map(row => {
+      const isCloud = row.source === "supabase";
+      const status = row.status || (isCloud ? "open" : "local");
+      const sender = [row.name, row.email].filter(Boolean).join(" / ") || "-";
+      const actions = isCloud
+        ? `<div class="moderation-actions"><button class="secondary" data-suggestion-action="reviewed" data-id="${html(row.id)}">Review</button><button class="danger" data-suggestion-action="closed" data-id="${html(row.id)}">Tutup</button></div>`
+        : `<small class="member-self-note">Tersimpan lokal browser ini</small>`;
+      return `<tr>
+        <td><span class="status-pill ${html(status)}">${html(status)}</span></td>
+        <td>${html(row.category || "-")}<br><small>${html(row.priority || "Normal")}</small></td>
+        <td><strong>${html(row.message || "-")}</strong></td>
+        <td><small>${html(sender)}</small></td>
+        <td>${html((row.created_at || "").slice(0, 10))}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  async function updateSuggestionStatus(id, status) {
+    if (!supabaseClient || !canAdmin()) return showMessage("Butuh role Admin Workspace untuk mengubah status masukan.", "error");
+    try {
+      await prepareCloudWrite("Update status masukan");
+      const { data, error } = await withTimeout(
+        supabaseClient
+          .from("suggestions")
+          .update({ status })
+          .eq("id", id)
+          .select("id")
+          .single(),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Update status masukan"
+      );
+      if (error || !data) throw error || new Error("Masukan tidak ditemukan atau tidak bisa diubah.");
+      await loadSuggestionRows();
+      showMessage(status === "closed" ? "Masukan ditutup." : "Masukan ditandai sudah direview.", "success");
+    } catch (err) {
+      console.error("update suggestion failed", err);
+      showMessage(`Gagal mengubah status masukan: ${err.message || err}`, "error");
     }
   }
 
@@ -3717,6 +3908,7 @@
     renderWorkspacePanelAccess();
     setElementHidden($("memberApprovalPanel"), !canAdmin());
     setElementHidden($("workspaceUserPanel"), !canAdmin());
+    setElementHidden($("suggestionInboxPanel"), !canAdmin());
     setElementHidden($("adminPanel"), !canModerate());
 
     if (!privateReady && document.querySelector(".tab-btn.active")?.dataset.tab === "beans") {
@@ -3891,10 +4083,16 @@
     $("refreshModeration")?.addEventListener("click", loadModerationRows);
     $("refreshMemberRequests")?.addEventListener("click", loadMemberRequests);
     $("refreshWorkspaceUsers")?.addEventListener("click", loadWorkspaceMembers);
+    $("refreshSuggestions")?.addEventListener("click", loadSuggestionRows);
     $("moderationTable")?.addEventListener("click", e => {
       const btn = e.target.closest("button[data-mod-action]");
       if (!btn) return;
       moderateRow(btn.dataset.id, btn.dataset.modAction);
+    });
+    $("suggestionInboxTable")?.addEventListener("click", e => {
+      const btn = e.target.closest("button[data-suggestion-action]");
+      if (!btn) return;
+      updateSuggestionStatus(btn.dataset.id, btn.dataset.suggestionAction);
     });
     $("memberRequestTable")?.addEventListener("click", e => {
       const btn = e.target.closest("button[data-member-action]");
@@ -3957,9 +4155,11 @@
     if (canAdmin()) {
       loadMemberRequests().catch(console.warn);
       loadWorkspaceMembers().catch(console.warn);
+      loadSuggestionRows().catch(console.warn);
     } else {
       renderMemberRequests?.();
       renderWorkspaceMembers?.();
+      renderSuggestionInbox?.();
     }
   }
 
