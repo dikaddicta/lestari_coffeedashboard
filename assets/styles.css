@@ -4179,3 +4179,290 @@ main,
     width: 100%;
   }
 }
+
+/* v27 visual QA refinement: compact dashboard entry, mobile feed cards, sticky manual submit */
+.hero {
+  min-height: 0;
+}
+
+.hero .hero-copy,
+.hero .hero-footnote,
+.hero .hero-lead {
+  max-width: 76ch;
+}
+
+@media (min-width: 761px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+    align-items: stretch;
+    gap: clamp(18px, 2vw, 28px);
+    padding: clamp(20px, 2.4vw, 32px);
+  }
+
+  .hero-main {
+    justify-content: center;
+  }
+
+  .hero-side {
+    align-content: center;
+  }
+
+  .hero-card,
+  .auth-card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 761px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+
+  .hero h1 {
+    font-size: clamp(54px, 8vw, 82px);
+  }
+
+  .hero-copy,
+  .hero-footnote {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .premium-badge-row {
+    margin-top: 14px;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero {
+    gap: 12px;
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .hero::before {
+    inset: 10px;
+    border-radius: 18px;
+  }
+
+  .hero-title-row {
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .hero-icon.hero-icon-image {
+    width: 46px;
+    height: 46px;
+    flex-basis: 46px;
+    border-radius: 15px;
+  }
+
+  .hero h1 {
+    font-size: clamp(34px, 12.4vw, 46px);
+    line-height: .98;
+    letter-spacing: -.045em;
+  }
+
+  .hero-lead {
+    margin: 12px 0 0;
+    font-size: 14px;
+    line-height: 1.48;
+  }
+
+  .hero-copy {
+    display: none;
+  }
+
+  .hero-footnote {
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .premium-badge-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .premium-badge-row span {
+    min-height: 34px;
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  .hero-side {
+    gap: 10px;
+  }
+
+  .hero-side .auth-card {
+    display: none;
+  }
+
+  .hero-card,
+  .auth-card {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .metric {
+    min-height: 74px;
+    padding: 10px 11px;
+    border-radius: 14px;
+  }
+
+  .metric strong {
+    font-size: 22px;
+  }
+
+  .metric span {
+    font-size: 11px;
+  }
+
+  .mobile-tab-switcher {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 430px) {
+  .metric-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 340px) {
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  #tab-public-brews .table-wrap {
+    overflow: visible;
+    margin-inline: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #tab-public-brews .table-wrap::after {
+    content: none;
+  }
+
+  #publicBrewTable,
+  #publicBrewTable tbody,
+  #publicBrewTable tr,
+  #publicBrewTable td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #publicBrewTable {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  #publicBrewTable thead {
+    display: none;
+  }
+
+  #publicBrewTable tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  #publicBrewTable tr {
+    padding: 14px;
+    border: 1px solid rgba(75,46,43,.13);
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at top right, rgba(192,133,82,.12), transparent 38%),
+      linear-gradient(180deg, rgba(255,253,249,.96), rgba(255,248,240,.88));
+    box-shadow: 0 12px 28px rgba(75,46,43,.08), inset 0 1px 0 rgba(255,255,255,.72);
+  }
+
+  #publicBrewTable td {
+    display: grid;
+    grid-template-columns: minmax(78px, .34fr) minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 9px 0;
+    border: 0;
+    border-bottom: 1px solid rgba(75,46,43,.10);
+    font-size: 13px;
+  }
+
+  #publicBrewTable td:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  #publicBrewTable td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  #publicBrewTable td[data-label="Kopi"] {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding-top: 0;
+  }
+
+  #publicBrewTable td[data-label="Kopi"]::before {
+    content: "Kopi";
+  }
+
+  #publicBrewTable td[data-label="Kopi"] strong {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  #publicBrewTable .score-pill {
+    justify-self: start;
+  }
+
+  #publicBrewTable .public-brew-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  #publicBrewTable .public-brew-actions .small-action {
+    width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  #tab-input-seduhan .manual-submit-row {
+    position: sticky;
+    bottom: 10px;
+    z-index: 45;
+    margin: 6px -2px 0;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(75,46,43,.14);
+    background: linear-gradient(180deg, rgba(255,253,249,.92), rgba(255,248,240,.88));
+    box-shadow: 0 16px 38px rgba(75,46,43,.16), inset 0 1px 0 rgba(255,255,255,.82);
+    backdrop-filter: blur(14px);
+  }
+
+  #manualSubmitBtn {
+    min-height: 52px;
+    border-radius: 16px;
+  }
+
+  .manual-gate-hint {
+    margin-bottom: 0;
+  }
+}

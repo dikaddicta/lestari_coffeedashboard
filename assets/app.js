@@ -3776,11 +3776,11 @@
     tbody.innerHTML = rows.map(log => {
       const key = html(publicBrewKey(log));
       return `<tr>
-        <td><strong>${html(log.BeanName || "Tanpa nama")}</strong></td>
-        <td>${html(log.BrewerName || "Brewer")}</td>
-        <td>${html(log.Method || "-")}</td>
-        <td><span class="score-pill">${html(log.QA_Final || "-")}</span></td>
-        <td><div class="public-brew-actions"><button class="secondary small-action" type="button" data-public-brew-detail="${key}">Detail</button>${isPublicBrewOwner(log) ? `<button class="ghost small-action" type="button" data-public-brew-edit="${key}">Edit</button>` : ""}</div></td>
+        <td data-label="Kopi"><strong>${html(log.BeanName || "Tanpa nama")}</strong></td>
+        <td data-label="Brewer">${html(log.BrewerName || "Brewer")}</td>
+        <td data-label="Metode">${html(log.Method || "-")}</td>
+        <td data-label="QA"><span class="score-pill">${html(log.QA_Final || "-")}</span></td>
+        <td data-label="Aksi"><div class="public-brew-actions"><button class="secondary small-action" type="button" data-public-brew-detail="${key}">Detail</button>${isPublicBrewOwner(log) ? `<button class="ghost small-action" type="button" data-public-brew-edit="${key}">Edit</button>` : ""}</div></td>
       </tr>`;
     }).join("");
   }
