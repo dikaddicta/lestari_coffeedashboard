@@ -4466,3 +4466,29 @@ main,
     margin-bottom: 0;
   }
 }
+
+/* v27.1: keep the original spacious hero footnote and badge rhythm */
+@media (min-width: 761px) {
+  .hero-footnote {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 248, 240, .12);
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: rgba(255, 248, 240, .68);
+  }
+
+  .premium-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .premium-badge-row span {
+    min-height: 36px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+}
