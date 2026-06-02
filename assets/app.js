@@ -1439,13 +1439,14 @@
   }
 
   function renderMetrics() {
+    const userCountValue = Number.isFinite(Number(dashboardUserCount)) ? Number(dashboardUserCount) : localDashboardUserCount();
     const metrics = [
       { value: DATA.varieties?.length || 0, label: "Varietas", hint: "Jumlah varietas/kultivar di pustaka data lokal dashboard." },
       { value: DATA.drippers?.length || 0, label: "Dripper", hint: "Jumlah dripper di pustaka data lokal dashboard." },
       { value: DATA.processes?.length || 0, label: "Proses", hint: "Jumlah metode pasca panen di pustaka data lokal dashboard." },
       { value: DATA.roasts?.length || 0, label: "Roast Profile", hint: "Jumlah profil roasting di pustaka data lokal dashboard." },
       { value: DATA.waters?.length || 0, label: "Water", hint: "Jumlah profil air/mineral di pustaka data lokal dashboard." },
-      { value: DATA.grinders?.length || 0, label: "Grinder", hint: "Jumlah grinder/manual grinder yang dipakai untuk estimasi setting." }
+      { value: userCountValue, label: "Pengguna Tercatat", hint: "Jumlah pengguna/kontributor yang terbaca dari Supabase atau fallback lokal." }
     ];
     $("libraryMetrics").innerHTML = metrics.map(item => `<div class="metric" title="${html(item.hint)}"><strong>${html(item.value)}</strong><span>${html(item.label)}</span></div>`).join("");
   }

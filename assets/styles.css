@@ -6180,3 +6180,66 @@ main,
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ===== v13 locked baseline hero format ===== */
+.hero-card .metric-grid,
+.metric-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.hero-card .metric,
+.metric {
+  min-height: 86px !important;
+}
+
+.hero-card .metric:first-child {
+  grid-column: auto !important;
+  min-height: 86px !important;
+  background: rgba(255,255,255,.12) !important;
+}
+
+.hero-card .metric:first-child strong {
+  font-size: 24px !important;
+}
+
+.hero-card .metric:first-child span::after {
+  content: "" !important;
+}
+
+.hero {
+  grid-template-columns: minmax(0, 1fr) 360px !important;
+  align-items: stretch !important;
+  padding: 34px 36px !important;
+}
+
+.hero-main {
+  justify-content: space-between !important;
+  min-height: 500px !important;
+}
+
+.hero-side {
+  align-content: center !important;
+  gap: 18px !important;
+}
+
+.hero-text {
+  max-width: 930px !important;
+}
+
+.hero-lead {
+  max-width: 56ch !important;
+}
+
+@media (max-width: 1260px) {
+  .hero {
+    grid-template-columns: 1fr !important;
+  }
+  .hero-main {
+    min-height: 0 !important;
+  }
+  .hero-side {
+    align-content: start !important;
+  }
+}
