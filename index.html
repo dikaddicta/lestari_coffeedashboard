@@ -6,7 +6,7 @@
   <title>Lestari Coffee Dashboard — Personal Brew Companion</title>
   <meta name="description" content="Dashboard kopi gratis untuk penggunaan pribadi, eksplorasi resep, stok, brew log, QA, dan rekomendasi seduh." />
   <meta name="theme-color" content="#4B2E2B" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260603-stable-v8" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260603-stable-v10" />
 </head>
 <body>
   <div class="app-shell">
@@ -16,24 +16,9 @@
         <strong id="floatingMascotStatus">Balanced Brew</strong>
         <span id="floatingMascotText">Mascot siap memberi feedback seduh.</span>
       </div>
-      <div class="floating-mascot-character" aria-hidden="true">
-        <span class="fm-orbit fm-orbit-a"></span>
-        <span class="fm-orbit fm-orbit-b"></span>
-        <span class="fm-shadow"></span>
-        <span class="fm-arm fm-arm-left"></span>
-        <span class="fm-arm fm-arm-right"></span>
-        <span class="fm-kettle"></span>
-        <span class="fm-head">
-          <span class="fm-face">
-            <i class="fm-eye fm-eye-left"><b></b></i>
-            <i class="fm-eye fm-eye-right"><b></b></i>
-            <i class="fm-mouth"></i>
-          </span>
-        </span>
-        <span class="fm-body"><i></i></span>
-        <span class="fm-steam fm-steam-a"></span>
-        <span class="fm-steam fm-steam-b"></span>
-        <span class="fm-steam fm-steam-c"></span>
+      <div class="floating-mascot-stage" aria-hidden="true">
+        <span class="floating-mascot-halo"></span>
+        <img class="floating-mascot-image" src="assets/barista-mascot.png" alt="" />
       </div>
     </div>
     <header class="hero">
@@ -47,6 +32,36 @@
           <p class="hero-lead">Dashboard yang disusun untuk penggunaan pribadi berdasarkan kebutuhan dan keresahan pribadi.</p>
           <p class="hero-copy">Gunakan secara gratis. Jadikan ini sebagai dasar untuk teman-teman bisa explore lebih jauh lagi. Semoga bisa bermanfaat baik untuk homebrewer, barista maupun coffeeshop owner.</p>
           <p class="hero-footnote">Mulai dari rekomendasi seduh, stok, brew log, QA, sampai pustaka data. Kalau ada data dripper, varietas, proses, roast profile, air, atau grinder yang perlu dilengkapi, kirim melalui <button class="hero-inline-link" type="button" data-jump-tab="suggestion">kotak saran</button>.</p>
+          <div class="hero-feature-grid" id="heroFeatureGrid" aria-label="Ringkasan dashboard">
+            <article class="hero-feature-card">
+              <span>Mode Seduh</span>
+              <strong id="heroFeatureMode">Balanced Brew</strong>
+              <small id="heroFeatureModeCopy">Rekomendasi berubah mengikuti input seduhan.</small>
+            </article>
+            <article class="hero-feature-card">
+              <span>Source Ready</span>
+              <strong id="heroFeatureSource">5/5 aktif</strong>
+              <small id="heroFeatureSourceCopy">Varietas, proses, dripper, roast, dan air terhubung.</small>
+            </article>
+            <article class="hero-feature-card">
+              <span>Cloud Save</span>
+              <strong id="heroFeatureSave">Autosave Guard</strong>
+              <small id="heroFeatureSaveCopy">Draft lokal, retry, dan refresh session siap dipakai.</small>
+            </article>
+          </div>
+          <div class="hero-workflow-card">
+            <div class="hero-workflow-copy">
+              <span>Workflow Ringkas</span>
+              <strong>Dari rekomendasi seduh ke QA dan publikasi tanpa mengubah layout utama.</strong>
+              <small>Gunakan rekomendasi dasar sebagai start point, simpan draft saat eksperimen, validasi di Brew Log & QA, lalu bagikan hasil yang sudah lolos standar publik.</small>
+            </div>
+            <div class="hero-workflow-steps">
+              <span>1. Dial-In</span>
+              <span>2. Save Draft</span>
+              <span>3. QA Review</span>
+              <span>4. Publish</span>
+            </div>
+          </div>
           <div class="premium-badge-row" aria-label="Fitur utama">
             <span>Gratis Digunakan</span>
             <span>Personal Workflow</span>
@@ -392,6 +407,7 @@
               <button id="applyBeanToBrew" class="ghost" type="button">Gunakan biji kopi ranking #1</button>
             </div>
             <div class="brew-input-compass" id="brewInputCompass" aria-live="polite"></div>
+            <div class="brew-preflight-panel" id="brewPreflightPanel" aria-live="polite"></div>
           </section>
 
           <section class="panel output-panel brew-output-showcase">
@@ -399,21 +415,29 @@
               <span>Output</span>
               <h2>Rekomendasi Seduh Dasar</h2>
             </div>
-            <div class="brew-visualizer" aria-hidden="true">
-              <div class="brew-orbit brew-orbit-one"></div>
-              <div class="brew-orbit brew-orbit-two"></div>
-              <div class="brew-dripper-3d"><span></span></div>
-              <div class="brew-stream-3d"></div>
-              <div class="brew-cup-3d"><span></span></div>
-              <div class="brew-steam-3d steam-one"></div>
-              <div class="brew-steam-3d steam-two"></div>
-              <div class="brew-steam-3d steam-three"></div>
+            <div class="brew-visualizer" id="brewVisualizer" aria-hidden="true" data-mood="balanced">
+              <div class="brew-visualizer-copy">
+                <span class="visual-pill" id="brewVisualBadge">Balanced Brew</span>
+                <strong id="brewVisualTitle">Barista visual / steady extraction</strong>
+                <p id="brewVisualText">Karakter barista membaca arah seduh dan memberi visual yang lebih premium tanpa mengganggu layout output.</p>
+              </div>
+              <div class="brew-visualizer-scene">
+                <span class="brew-visual-glow"></span>
+                <img class="brew-visual-banner" src="assets/barista-banner.png" alt="" />
+              </div>
             </div>
             <div class="output-grid" id="brewOutputs"></div>
             <div class="callout" id="waterNote"></div>
-            <div class="brew-insight-panel" id="brewInsightPanel" aria-live="polite"></div>
           </section>
         </div>
+
+        <section class="panel wide brew-insight-wide-panel">
+          <div class="section-title compact-title">
+            <span>Intelligence</span>
+            <h2>Insight Seduh + Source Evidence</h2>
+          </div>
+          <div class="brew-insight-panel wide-mode" id="brewInsightPanel" aria-live="polite"></div>
+        </section>
 
         <section class="panel wide">
           <div class="section-title">

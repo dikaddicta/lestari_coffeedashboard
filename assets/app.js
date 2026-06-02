@@ -2076,11 +2076,7 @@
 
   function renderBrewVisualizer(brew) {
     updateFloatingMascot(brew);
-    const visual = document.querySelector(".brew-visualizer");
-    if (!visual || !brew) return;
-    visual.dataset.mood = brew.risk >= 4 ? "ferment" : brew.intent?.primary === "clarity" ? "clarity" : brew.body >= 4 ? "body" : "balanced";
-    visual.style.setProperty("--brew-temp", `${clamp((brew.temp - 86) / 12, 0, 1)}`);
-    visual.style.setProperty("--brew-flow", `${clamp(brew.flow / 5, .2, 1)}`);
+    updateBrewVisualNarrative(brew);
   }
 
   function waterNote(brew) {
@@ -2093,6 +2089,7 @@
   function renderBrewInsight(brew) {
     const panel = $("brewInsightPanel");
     if (!panel) return;
+    panel.classList.remove("is-live");
     const tips = (brew.dialInTips || []).map(tip => `<li>${html(tip)}</li>`).join("");
     const qaSignal = brew.confidence >= 88 ? "High confidence" : brew.confidence >= 74 ? "Ready to test" : "Needs validation";
     const sources = [
@@ -2115,6 +2112,7 @@
       </div>
       <ul class="dial-tips">${tips}</ul>
       ${sources ? `<div class="source-chip-row"><span>Source</span>${sources}</div>` : ""}`;
+    requestAnimationFrame(() => panel.classList.add("is-live"));
   }
 
   function renderBrewInputCompass(brew) {
@@ -2143,6 +2141,54 @@
     `;
   }
 
+  function renderHeroSignals(brew) {
+    if (!brew) return;
+    const feedback = floatingMascotFeedback(brew);
+    const sourceCount = [brew.variety, brew.process, brew.roast, brew.dripper, brew.water].filter(Boolean).filter(row => sourceUrl(row)).length;
+    if ($("heroFeatureMode")) $("heroFeatureMode").textContent = feedback.label;
+    if ($("heroFeatureModeCopy")) $("heroFeatureModeCopy").textContent = feedback.text;
+    if ($("heroFeatureSource")) $("heroFeatureSource").textContent = `${sourceCount}/5 aktif`;
+    if ($("heroFeatureSourceCopy")) $("heroFeatureSourceCopy").textContent = `${brew.dripper?.DripperName || "Dripper"} · ${brew.mineralBand} water · ${brew.intent?.label || "Balanced"}`;
+    if ($("heroFeatureSaveCopy")) $("heroFeatureSaveCopy").textContent = `Draft lokal aktif, retry 1x, timeout 45s, dan refresh session saat tab kembali aktif.`;
+  }
+
+  function renderBrewPreflight(brew) {
+    const wrap = $("brewPreflightPanel");
+    if (!wrap || !brew) return;
+    const feedback = floatingMascotFeedback(brew);
+    const sourceCount = [brew.variety, brew.process, brew.roast, brew.dripper, brew.water].filter(Boolean).filter(row => sourceUrl(row)).length;
+    const caution = brew.risk >= 4 ? "High caution" : brew.risk >= 3 ? "Moderate caution" : "Controlled";
+    const items = [
+      ["Confidence", `${brew.confidence}%`, "Kesiapan rekomendasi berdasarkan data & fit."],
+      ["Source", `${sourceCount}/5 aktif`, "Referensi utama sudah terhubung ke dashboard."],
+      ["Guardrail", caution, feedback.text]
+    ];
+    const cards = items.map(([label, value, desc], idx) => `<article class="preflight-card cinematic-reveal" style="--stagger:${idx}"><span>${html(label)}</span><strong>${html(value)}</strong><small>${html(desc)}</small></article>`).join("");
+    wrap.innerHTML = `
+      <div class="preflight-header">
+        <div>
+          <span class="mini-label">Brew Preflight</span>
+          <strong>${html(feedback.label)} · ${html(brew.intent?.label || "Balanced")}</strong>
+        </div>
+        <p>${html(brew.dripper?.DripperName || "Dripper")} · ${html(brew.mode)} · ${html(brew.water?.WaterName || brew.water?.Brand || "Water profile")}</p>
+      </div>
+      <div class="preflight-grid">${cards}</div>
+    `;
+  }
+
+  function updateBrewVisualNarrative(brew) {
+    const visual = $("brewVisualizer");
+    if (!visual || !brew) return;
+    const feedback = floatingMascotFeedback(brew);
+    visual.dataset.mood = feedback.mood === 'risk' ? 'ferment' : feedback.mood;
+    if ($("brewVisualBadge")) $("brewVisualBadge").textContent = feedback.label;
+    if ($("brewVisualTitle")) $("brewVisualTitle").textContent = `${brew.intent?.label || "Balanced"} / ${brew.dripper?.DripperName || "Filter Brewer"}`;
+    if ($("brewVisualText")) $("brewVisualText").textContent = `${feedback.text} Rasio 1:${fmt(brew.ratio,1)} · ${brew.temp}°C · target ${brew.grindTarget} µm.`;
+    visual.classList.remove("is-cinematic");
+    void visual.offsetWidth;
+    visual.classList.add("is-cinematic");
+  }
+
   function renderBrew() {
     renderBrewStockOptions();
     syncBrewStockUI({ apply: true });
@@ -2158,9 +2204,14 @@
       ["Brew Time", fmtTime(brew.brewTime), "Target selesai", "timer"],
       ["Profil Rasa", `A ${brew.acidity}/5 · S ${brew.sweetness}/5 · B ${brew.body}/5`, "Prediksi dari varietas, proses, roast", "profile"],
     ];
-    $("brewOutputs").innerHTML = cards.map(([label, value, desc, icon]) => `<div class="output-card" data-output="${html(icon)}"><span>${html(label)}</span><strong>${html(value)}</strong><small>${html(desc)}</small></div>`).join("");
+    const outputWrap = $("brewOutputs");
+    outputWrap.classList.remove("is-live");
+    outputWrap.innerHTML = cards.map(([label, value, desc, icon], idx) => `<div class="output-card cinematic-reveal" style="--stagger:${idx}" data-output="${html(icon)}"><span>${html(label)}</span><strong>${html(value)}</strong><small>${html(desc)}</small></div>`).join("");
+    requestAnimationFrame(() => outputWrap.classList.add("is-live"));
     $("waterNote").textContent = waterNote(brew);
     renderBrewInputCompass(brew);
+    renderBrewPreflight(brew);
+    renderHeroSignals(brew);
     renderBrewInsight(brew);
     renderSteps(brew);
     renderRecipeOptions(brew);
@@ -2216,7 +2267,7 @@
       const waterText = opt.ice ? `Hot ${opt.hotWater}ml + es ${opt.ice}g` : `Total ${opt.totalWater}ml`;
       const dripperSource = sourceLink(opt.dripper, "Source dripper");
       const activeClass = idx === 0 ? " active" : "";
-      return `<article class="recipe-card recipe-option-card${activeClass}${idx === 0 ? " base" : ""}" role="button" tabindex="0" data-recipe-option="${html(opt.key)}" data-recipe-title="${html(opt.title)}">
+      return `<article class="recipe-card recipe-option-card cinematic-reveal${activeClass}${idx === 0 ? " base" : ""}" style="--stagger:${idx}" role="button" tabindex="0" data-recipe-option="${html(opt.key)}" data-recipe-title="${html(opt.title)}">
         <span class="badge">${html(opt.badge)}</span>
         <h3>${html(opt.title)}</h3>
         <p class="recipe-line"><strong>${html(opt.dripperName)}</strong><span>${html(opt.mode)}</span><span>${html(opt.switchMode)}</span></p>
@@ -2233,11 +2284,14 @@
 
     const approvedCards = approved.map((log, idx) => {
       const grinderText = [log.Grinder, log.GrindSetting].filter(Boolean).join(" · ") || "-";
-      return `<article class="recipe-card verified-recipe-card"><span class="badge">Terverifikasi ${idx + 1} · QA ${fmt(log.QA_Final, 2)}</span><h3>${html(log.BrewID)}</h3><p><strong>${html(log.Dripper)}</strong> · ${html(log.Method)} · ${html(log.SwitchValveMode || "N/A")}</p><p>${html(grinderText)} · ${html(log.Temp_C)}°C · 1:${html(log.Ratio)}</p><p>Dosis ${html(log.Dose_g)}g · Total ${html(log.TotalWater_ml)}ml · Air panas ${html(log.HotWater_ml)}ml${Number(log.Ice_g) ? ` · Es ${html(log.Ice_g)}g` : ""}</p><p>${html(log.PrimaryVariableChanged || "Resep terverifikasi dari brew log")}</p></article>`;
+      return `<article class="recipe-card verified-recipe-card cinematic-reveal" style="--stagger:${idx + options.length}"><span class="badge">Terverifikasi ${idx + 1} · QA ${fmt(log.QA_Final, 2)}</span><h3>${html(log.BrewID)}</h3><p><strong>${html(log.Dripper)}</strong> · ${html(log.Method)} · ${html(log.SwitchValveMode || "N/A")}</p><p>${html(grinderText)} · ${html(log.Temp_C)}°C · 1:${html(log.Ratio)}</p><p>Dosis ${html(log.Dose_g)}g · Total ${html(log.TotalWater_ml)}ml · Air panas ${html(log.HotWater_ml)}ml${Number(log.Ice_g) ? ` · Es ${html(log.Ice_g)}g` : ""}</p><p>${html(log.PrimaryVariableChanged || "Resep terverifikasi dari brew log")}</p></article>`;
     }).join("");
 
-    const verifiedEmpty = approvedCards ? "" : `<article class="recipe-card verified-recipe-card muted"><span class="badge">Brew Log</span><h3>Belum ada resep terverifikasi</h3><p>Resep dengan QA ≥ 6.5 dan persetujuan manual akan muncul di sini jika key varietas × proses × profil sangrai cocok.</p></article>`;
-    $("recipeOptions").innerHTML = optionCards + approvedCards + verifiedEmpty;
+    const verifiedEmpty = approvedCards ? "" : `<article class="recipe-card verified-recipe-card muted cinematic-reveal" style="--stagger:${options.length + 1}"><span class="badge">Brew Log</span><h3>Belum ada resep terverifikasi</h3><p>Resep dengan QA ≥ 6.5 dan persetujuan manual akan muncul di sini jika key varietas × proses × profil sangrai cocok.</p></article>`;
+    const recipeWrap = $("recipeOptions");
+    recipeWrap.classList.remove("is-live");
+    recipeWrap.innerHTML = optionCards + approvedCards + verifiedEmpty;
+    requestAnimationFrame(() => recipeWrap.classList.add("is-live"));
   }
 
   function toggleSwitchVisibility() {
