@@ -1708,6 +1708,289 @@
     return steps;
   }
 
+  function sourceUrl(row = {}) {
+    const raw = String(row.SourceURL || row.SourceUrl || row.URL || "").trim();
+    if (raw) return raw;
+    const source = String(row.Source || "").trim();
+    return /^https?:\/\//i.test(source) ? source : "";
+  }
+
+  function sourceDomain(url) {
+    try {
+      return new URL(String(url)).hostname.replace(/^www\./, "");
+    } catch (_err) {
+      return String(url || "").replace(/^https?:\/\//, "").split("/")[0] || "Source";
+    }
+  }
+
+  function sourceLink(row = {}, label = "Source") {
+    const url = sourceUrl(row);
+    const staticSource = String(row.Source || "").trim();
+    if (!url && staticSource) return `<span class="source-link source-static">${html(staticSource)}</span>`;
+    if (!url) return `<span class="source-missing">-</span>`;
+    return `<a class="source-link" href="${html(url)}" target="_blank" rel="noopener noreferrer" title="${html(url)}">${html(label === "Source" ? sourceDomain(url) : label)}</a>`;
+  }
+
+  function sourceChip(label, row = {}) {
+    const url = sourceUrl(row);
+    if (!url) return "";
+    return `<a class="source-chip" href="${html(url)}" target="_blank" rel="noopener noreferrer"><span>${html(label)}</span><strong>${html(sourceDomain(url))}</strong></a>`;
+  }
+
+  function compatibleDripper(row = {}, mode = "Hot V60") {
+    const methods = String(row.CompatibleMethods || "Hot V60").toLowerCase();
+    if (/japanese iced/i.test(mode)) return methods.includes("japanese iced") || methods.includes("hot v60");
+    return methods.includes("hot v60") || methods.includes("open/percolation") || methods.includes("hybrid");
+  }
+
+  function pickDripperByStyle(style, brew = {}, excludeNames = []) {
+    const mode = brew.mode || "Hot V60";
+    const current = brew.dripper || {};
+    const excluded = new Set(excludeNames.map(norm));
+    const rows = (DATA.drippers || []).filter(row => row.DripperName && compatibleDripper(row, mode) && !excluded.has(norm(row.DripperName)));
+    if (!rows.length) return current;
+    const score = (row) => {
+      const nameText = `${row.DripperName || ""} ${row.Brand || ""} ${row.Geometry || ""} ${row.BrewFamily || ""} ${row.RecommendedFor || ""} ${row.Bypass || ""}`.toLowerCase();
+      const flow = numberField(row, "FlowSpeed_1slow_5fast", 3);
+      const heat = numberField(row, "HeatRetention_1low_5high", 3);
+      let value = 0;
+      if (style === "clarity") {
+        value += flow * 10;
+        if (/v60|flower|origami|graycano|sibarist|crystal eye|suiren/.test(nameText)) value += 20;
+        if (/clarity|aroma|floral|fast|bright/.test(nameText)) value += 22;
+        if (/flat-bottom|no-bypass|immersion/.test(nameText)) value -= 7;
+        if (mode === "Japanese Iced" && /plastic|resin|polypropylene/.test(nameText)) value += 5;
+      } else if (style === "sweetness") {
+        value += (6 - flow) * 8 + heat * 4;
+        if (/flat-bottom|wave|april|b75|stagg|orea|kalita|low/.test(nameText)) value += 24;
+        if (/sweet|even|body|rounded|low-bypass/.test(nameText)) value += 18;
+        if (/very low|no-bypass/.test(nameText)) value += 8;
+      } else if (style === "fermentSafe") {
+        value += (6 - flow) * 9 + heat * 3;
+        if (/switch|clever|pulsar|valve|hybrid|immersion|steep/.test(nameText)) value += 30;
+        if (/low agitation|consistent|body|sweet/.test(nameText)) value += 10;
+        if (/metal mesh|high oils/.test(nameText)) value -= 18;
+      } else if (style === "cleanBody") {
+        value += (6 - flow) * 6;
+        if (/flat-bottom|kalita|april|stagg|b75|orea/.test(nameText)) value += 26;
+        if (/conical 60/.test(nameText)) value -= 4;
+      }
+      if (norm(row.DripperName) === norm(current.DripperName)) value -= 10;
+      return value;
+    };
+    return rows.sort((a, b) => score(b) - score(a))[0] || current;
+  }
+
+  function optionGrinderSetting(micron, brew = {}) {
+    return getGrinderSetting(getSelectedGrinderName(), micron, brew.mode, brew.switchMode === "Full Immersion" || /Immersion/i.test(brew.switchMode || ""));
+  }
+
+  function buildRecipeOption(brew, spec, index) {
+    const dose = Number(brew.dose || 15);
+    const temp = round(clamp(brew.temp + (spec.tempDelta || 0), brew.mode === "Japanese Iced" ? 87 : 86, brew.roastTone >= 1.5 ? 94 : 98), 0);
+    const ratio = round(clamp(brew.ratio + (spec.ratioDelta || 0), 14, 18), 1);
+    const totalWater = Math.round(dose * ratio);
+    const hotWaterRatio = brew.mode === "Japanese Iced" ? (brew.risk >= 4 ? 0.58 : 0.6) : 1;
+    const hotWater = brew.mode === "Japanese Iced" ? Math.round(totalWater * hotWaterRatio) : totalWater;
+    const ice = brew.mode === "Japanese Iced" ? totalWater - hotWater : 0;
+    const grindTarget = round(clamp(brew.grindTarget + (spec.grindDelta || 0), 450, 1020));
+    const brewTime = round(clamp(brew.brewTime + (spec.timeDelta || 0), brew.mode === "Japanese Iced" ? 115 : 130, 360));
+    const pourCount = clamp(spec.pourCount || brew.pourCount || 3, 1, 5);
+    const dripper = spec.dripper || brew.dripper || {};
+    return {
+      index,
+      key: spec.key,
+      title: spec.title,
+      badge: spec.badge,
+      dripperName: dripper.DripperName || $("brewDripper")?.value || "Dripper input",
+      dripper,
+      mode: brew.mode,
+      switchMode: isSwitch(dripper.DripperName) ? (spec.switchMode || brew.switchMode || "Hybrid") : "-",
+      dose,
+      temp,
+      ratio,
+      totalWater,
+      hotWater,
+      ice,
+      grindTarget,
+      grinderSetting: optionGrinderSetting(grindTarget, brew),
+      brewTime,
+      pourCount,
+      agitation: spec.agitation,
+      fit: spec.fit,
+      why: spec.why,
+      source: spec.source || "Engine rekomendasi"
+    };
+  }
+
+  function recipeOptionSpecs(brew) {
+    const selected = brew.dripper || {};
+    const used = [selected.DripperName];
+    const specs = [
+      {
+        key: "control",
+        badge: "Opsi 1 · Control",
+        title: brew.intent?.label || "Balanced Control",
+        dripper: selected,
+        tempDelta: 0,
+        ratioDelta: 0,
+        grindDelta: 0,
+        timeDelta: 0,
+        pourCount: brew.pourCount,
+        agitation: brew.risk >= 4 ? "Low" : brew.body >= 4 ? "Medium-soft" : "Medium",
+        fit: "Titik awal paling aman untuk membandingkan hasil tasting.",
+        why: "Mengikuti input user dan koreksi data varietas × proses × roast × dripper × air."
+      }
+    ];
+
+    if (brew.risk >= 4) {
+      const safe = pickDripperByStyle("fermentSafe", brew, used); used.push(safe.DripperName);
+      specs.push({
+        key: "ferment-safe",
+        badge: "Opsi 2 · Ferment-Safe",
+        title: "Ferment-safe clarity",
+        dripper: safe,
+        tempDelta: -1.5,
+        ratioDelta: -0.4,
+        grindDelta: 45,
+        timeDelta: -12,
+        pourCount: 2,
+        switchMode: /switch|pulsar|clever/i.test(safe.DripperName || "") ? "Hybrid" : "-",
+        agitation: "Low",
+        fit: "Untuk anaerobic, co-ferment, infused, atau proses intens supaya aroma tetap bersih.",
+        why: "Suhu lebih rendah, grind lebih kasar, dan tuangan lebih sedikit mengurangi risiko over-extraction/boozy."
+      });
+      const sweet = pickDripperByStyle("sweetness", brew, used); used.push(sweet.DripperName);
+      specs.push({
+        key: "sweet-clean",
+        badge: "Opsi 3 · Sweet Clean",
+        title: "Sweetness tanpa berat",
+        dripper: sweet,
+        tempDelta: -0.5,
+        ratioDelta: -0.1,
+        grindDelta: 18,
+        timeDelta: 4,
+        pourCount: 3,
+        agitation: "Medium-soft",
+        fit: "Untuk menjaga sweetness dan body tanpa membuat aftertaste ferment terlalu dominan.",
+        why: "Flat/hybrid brewer dan agitasi lembut membantu ekstraksi rata sambil tetap menjaga clean finish."
+      });
+      return specs;
+    }
+
+    if (brew.acidity >= 4 || brew.floral >= 4 || brew.intent?.primary === "clarity") {
+      const clarity = pickDripperByStyle("clarity", brew, used); used.push(clarity.DripperName);
+      specs.push({
+        key: "clarity",
+        badge: "Opsi 2 · Clarity",
+        title: "Aroma & clarity lift",
+        dripper: clarity,
+        tempDelta: brew.roastTone <= 0 ? 0.8 : 0.2,
+        ratioDelta: 0.2,
+        grindDelta: -20,
+        timeDelta: 8,
+        pourCount: 3,
+        agitation: "Medium",
+        fit: "Untuk varietas floral/bright seperti Ethiopia, Gesha, Rume Sudan, atau proses washed bersih.",
+        why: "Sedikit lebih fine dan suhu/rasio lebih tinggi mengangkat clarity, acidity, dan aromatik."
+      });
+      const sweet = pickDripperByStyle("sweetness", brew, used); used.push(sweet.DripperName);
+      specs.push({
+        key: "sweet-balance",
+        badge: "Opsi 3 · Sweet Balance",
+        title: "Sweetness balancer",
+        dripper: sweet,
+        tempDelta: -0.5,
+        ratioDelta: -0.1,
+        grindDelta: 20,
+        timeDelta: 2,
+        pourCount: 3,
+        agitation: "Medium-soft",
+        fit: "Jika cup control terasa terlalu tajam atau finish terlalu kering.",
+        why: "Dripper lebih stabil dan grind sedikit kasar membuat cup lebih rounded."
+      });
+      return specs;
+    }
+
+    if (brew.body >= 4 || brew.intent?.primary === "body") {
+      const clean = pickDripperByStyle("cleanBody", brew, used); used.push(clean.DripperName);
+      specs.push({
+        key: "clean-body",
+        badge: "Opsi 2 · Clean Body",
+        title: "Body bersih",
+        dripper: clean,
+        tempDelta: -0.7,
+        ratioDelta: 0,
+        grindDelta: 28,
+        timeDelta: -4,
+        pourCount: 3,
+        agitation: "Low-medium",
+        fit: "Untuk kopi body-forward, wet-hulled, dark-ish, atau robusta/fine robusta.",
+        why: "Menjaga tekstur tanpa membuat aftertaste berat/chalky."
+      });
+      const sweet = pickDripperByStyle("sweetness", brew, used); used.push(sweet.DripperName);
+      specs.push({
+        key: "sweet-body",
+        badge: "Opsi 3 · Round Sweet",
+        title: "Round sweetness",
+        dripper: sweet,
+        tempDelta: -0.2,
+        ratioDelta: -0.2,
+        grindDelta: 12,
+        timeDelta: 8,
+        pourCount: 4,
+        agitation: "Medium-soft",
+        fit: "Jika ingin cup lebih syrupy dan nyaman untuk daily brew.",
+        why: "Flat-bottom/low-bypass style meningkatkan konsistensi dan persepsi sweetness."
+      });
+      return specs;
+    }
+
+    const clarity = pickDripperByStyle("clarity", brew, used); used.push(clarity.DripperName);
+    const sweet = pickDripperByStyle("sweetness", brew, used); used.push(sweet.DripperName);
+    specs.push({
+      key: "clarity-check",
+      badge: "Opsi 2 · Brighter",
+      title: "Clarity check",
+      dripper: clarity,
+      tempDelta: 0.6,
+      ratioDelta: 0.2,
+      grindDelta: -18,
+      timeDelta: 6,
+      pourCount: 3,
+      agitation: "Medium",
+      fit: "Untuk melihat apakah kopi punya potensi aroma/acidity yang belum keluar.",
+      why: "Sedikit lebih agresif menaikkan ekstraksi tanpa keluar dari rentang filter aman."
+    });
+    specs.push({
+      key: "sweetness-check",
+      badge: "Opsi 3 · Sweeter",
+      title: "Sweetness check",
+      dripper: sweet,
+      tempDelta: -0.4,
+      ratioDelta: -0.1,
+      grindDelta: 18,
+      timeDelta: 4,
+      pourCount: 3,
+      agitation: "Medium-soft",
+      fit: "Untuk membandingkan apakah cup lebih enak saat lebih manis dan rounded.",
+      why: "Agitasi lebih lembut dan flow lebih stabil menekan dryness."
+    });
+    return specs;
+  }
+
+  function recipeOptionsFromBrew(brew) {
+    return recipeOptionSpecs(brew).slice(0, 3).map((spec, idx) => buildRecipeOption(brew, spec, idx + 1));
+  }
+
+  function renderBrewVisualizer(brew) {
+    const visual = document.querySelector(".brew-visualizer");
+    if (!visual || !brew) return;
+    visual.dataset.mood = brew.risk >= 4 ? "ferment" : brew.intent?.primary === "clarity" ? "clarity" : brew.body >= 4 ? "body" : "balanced";
+    visual.style.setProperty("--brew-temp", `${clamp((brew.temp - 86) / 12, 0, 1)}`);
+    visual.style.setProperty("--brew-flow", `${clamp(brew.flow / 5, .2, 1)}`);
+  }
+
   function waterNote(brew) {
     if (brew.mineralBand === "soft") return "Water intelligence: TDS sangat rendah. Gunakan sebagai base remineralisasi/blending, atau naikkan suhu ±1°C jika cup terasa tipis dan acidity terlalu tajam.";
     if (brew.mineralBand === "hard") return "Water intelligence: mineral tinggi. Body bisa naik, tetapi clarity dan aftertaste berisiko mute/chalky. Pertimbangkan blend dengan air rendah mineral.";
@@ -1720,6 +2003,13 @@
     if (!panel) return;
     const tips = (brew.dialInTips || []).map(tip => `<li>${html(tip)}</li>`).join("");
     const qaSignal = brew.confidence >= 88 ? "High confidence" : brew.confidence >= 74 ? "Ready to test" : "Needs validation";
+    const sources = [
+      ["Varietas", brew.variety],
+      ["Pasca panen", brew.process],
+      ["Roast", brew.roast],
+      ["Dripper", brew.dripper],
+      ["Air", brew.water]
+    ].map(([label, row]) => sourceChip(label, row)).filter(Boolean).join("");
     panel.innerHTML = `
       <div class="insight-header">
         <span class="insight-kicker">Brew Intelligence</span>
@@ -1731,7 +2021,8 @@
         <article><span>Agitation</span><strong>${html(brew.risk >= 4 ? "Low" : brew.body >= 4 ? "Medium-soft" : "Medium")}</strong><small>Disesuaikan dengan proses dan body.</small></article>
         <article><span>Water Band</span><strong>${html(brew.mineralBand)}</strong><small>TDS ${html(brew.tds)} ppm.</small></article>
       </div>
-      <ul class="dial-tips">${tips}</ul>`;
+      <ul class="dial-tips">${tips}</ul>
+      ${sources ? `<div class="source-chip-row"><span>Source</span>${sources}</div>` : ""}`;
   }
 
   function renderBrew() {
@@ -1754,6 +2045,7 @@
     renderBrewInsight(brew);
     renderSteps(brew);
     renderRecipeOptions(brew);
+    renderBrewVisualizer(brew);
     toggleSwitchVisibility();
     toggleCustomGrinderFields();
     return brew;
@@ -1798,15 +2090,35 @@
     const approved = allBrewLogs()
       .filter(log => norm(log.RecipeKey) === norm(key) && Number(log.QA_Final) >= APPROVAL_THRESHOLD && norm(log.ManualApproval) === "yes" && norm(log.ApprovedForRecipe) === "yes")
       .sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0))
-      .slice(0, 3);
+      .slice(0, 2);
 
-    const baseGrinder = [getSelectedGrinderName(), brew.grinderSetting].filter(Boolean).join(" · ");
-    const baseCard = `<article class="recipe-card base"><span class="badge">Opsi 1 · Precision Engine</span><h3>${html(brew.intent?.label || "Rekomendasi Dasar")}</h3><p><strong>${html($("brewDripper").value)}</strong> · ${html(brew.mode)} · ${html(brew.switchMode)}</p><p>${html(baseGrinder)} · ${brew.temp}°C · 1:${fmt(brew.ratio, 1)}</p><p>Dosis ${fmt(brew.dose, 1)}g · Total ${brew.totalWater}ml · ${brew.pourCount} tuangan utama · Confidence ${brew.confidence}%</p><p>${html(brew.extractionMood)}. Dasar: varietas × proses × roast × dripper × air × grinder.</p></article>`;
+    const options = recipeOptionsFromBrew(brew);
+    const optionCards = options.map((opt, idx) => {
+      const waterText = opt.ice ? `Hot ${opt.hotWater}ml + es ${opt.ice}g` : `Total ${opt.totalWater}ml`;
+      const dripperSource = sourceLink(opt.dripper, "Source dripper");
+      const activeClass = idx === 0 ? " active" : "";
+      return `<article class="recipe-card recipe-option-card${activeClass}${idx === 0 ? " base" : ""}" role="button" tabindex="0" data-recipe-option="${html(opt.key)}" data-recipe-title="${html(opt.title)}">
+        <span class="badge">${html(opt.badge)}</span>
+        <h3>${html(opt.title)}</h3>
+        <p><strong>${html(opt.dripperName)}</strong> · ${html(opt.mode)} · ${html(opt.switchMode)}</p>
+        <p>${html(opt.grinderSetting)} · target ${html(opt.grindTarget)}µm · ${html(opt.temp)}°C · 1:${html(fmt(opt.ratio, 1))}</p>
+        <p>Dosis ${html(fmt(opt.dose, 1))}g · ${html(waterText)} · ${html(opt.pourCount)} tuangan utama · ${html(fmtTime(opt.brewTime))}</p>
+        <div class="recipe-focus-list">
+          <span>${html(opt.agitation)} agitation</span>
+          <span>${html(opt.fit)}</span>
+        </div>
+        <p class="recipe-why">${html(opt.why)}</p>
+        <div class="recipe-source-line">${dripperSource}</div>
+      </article>`;
+    }).join("");
+
     const approvedCards = approved.map((log, idx) => {
       const grinderText = [log.Grinder, log.GrindSetting].filter(Boolean).join(" · ") || "-";
-      return `<article class="recipe-card"><span class="badge">Opsi ${idx + 2} · QA ${fmt(log.QA_Final, 2)}</span><h3>${html(log.BrewID)}</h3><p><strong>${html(log.Dripper)}</strong> · ${html(log.Method)} · ${html(log.SwitchValveMode || "N/A")}</p><p>${html(grinderText)} · ${html(log.Temp_C)}°C · 1:${html(log.Ratio)}</p><p>Dosis ${html(log.Dose_g)}g · Total ${html(log.TotalWater_ml)}ml · Air panas ${html(log.HotWater_ml)}ml${Number(log.Ice_g) ? ` · Es ${html(log.Ice_g)}g` : ""}</p><p>${html(log.PrimaryVariableChanged || "Resep terverifikasi dari brew log")}</p></article>`;
-    });
-    $("recipeOptions").innerHTML = baseCard + (approvedCards.join("") || `<article class="recipe-card"><span class="badge">Belum ada opsi terverifikasi</span><h3>Belum ada opsi dari Brew Log</h3><p>Resep dengan QA ≥ 6.5 dan persetujuan manual akan muncul di sini jika key varietas × proses × profil sangrai cocok.</p></article>`);
+      return `<article class="recipe-card verified-recipe-card"><span class="badge">Terverifikasi ${idx + 1} · QA ${fmt(log.QA_Final, 2)}</span><h3>${html(log.BrewID)}</h3><p><strong>${html(log.Dripper)}</strong> · ${html(log.Method)} · ${html(log.SwitchValveMode || "N/A")}</p><p>${html(grinderText)} · ${html(log.Temp_C)}°C · 1:${html(log.Ratio)}</p><p>Dosis ${html(log.Dose_g)}g · Total ${html(log.TotalWater_ml)}ml · Air panas ${html(log.HotWater_ml)}ml${Number(log.Ice_g) ? ` · Es ${html(log.Ice_g)}g` : ""}</p><p>${html(log.PrimaryVariableChanged || "Resep terverifikasi dari brew log")}</p></article>`;
+    }).join("");
+
+    const verifiedEmpty = approvedCards ? "" : `<article class="recipe-card verified-recipe-card muted"><span class="badge">Brew Log</span><h3>Belum ada resep terverifikasi</h3><p>Resep dengan QA ≥ 6.5 dan persetujuan manual akan muncul di sini jika key varietas × proses × profil sangrai cocok.</p></article>`;
+    $("recipeOptions").innerHTML = optionCards + approvedCards + verifiedEmpty;
   }
 
   function toggleSwitchVisibility() {
@@ -3801,28 +4113,33 @@
   function renderLibrary() {
     const dataset = $("libraryDataset").value;
     const search = norm($("librarySearch").value);
-    const rows = (DATA[dataset] || []).filter(row => !search || Object.values(row).some(v => norm(v).includes(search)));
+    const rows = (DATA[dataset] || []).filter(row => !search || Object.values(row).some(v => norm(v).includes(search)) || norm(sourceUrl(row)).includes(search));
     const columnsByDataset = {
-      varieties: ["Variety", "Species", "Genetic_Market_Group", "Typical_Regions", "Acidity_Base", "Sweetness_Base", "Body_Base", "Notes"],
-      drippers: ["DripperName", "Brand", "Material", "BrewFamily", "Geometry", "FlowSpeed_1slow_5fast", "HeatRetention_1low_5high", "RecommendedFor"],
-      processes: ["Process", "Category", "Stage", "FermentRisk_1low_5high", "TempMod_C", "GrindMod_coarser", "RatioMod_ml_per_g", "BrewingCue"],
-      roasts: ["RoastVisual", "RoastProfile", "Level", "AgtronApprox", "EndTempC", "DTR", "Solubility", "BestUse", "Notes"],
-      waters: ["Water", "Type", "TDS_ppm", "pH", "MineralProfile", "BrewImpact", "RecommendedUse"],
-      grinders: ["Grinder", "Type", "Unit", "V60_Min", "V60_Max", "Japanese_Min", "Japanese_Max", "Immersion_Min", "Immersion_Max", "Notes"]
+      varieties: ["Variety", "Species", "Genetic_Market_Group", "Typical_Regions", "Acidity_Base", "Sweetness_Base", "Body_Base", "Notes", "Source"],
+      drippers: ["DripperName", "Brand", "Material", "BrewFamily", "Geometry", "FlowSpeed_1slow_5fast", "HeatRetention_1low_5high", "RecommendedFor", "Source"],
+      processes: ["Process", "Category", "Stage", "FermentRisk_1low_5high", "TempMod_C", "GrindMod_coarser", "RatioMod_ml_per_g", "BrewingCue", "Source"],
+      roasts: ["RoastVisual", "RoastProfile", "Level", "AgtronApprox", "EndTempC", "DTR", "Solubility", "BestUse", "Notes", "Source"],
+      waters: ["Water", "Type", "TDS_ppm", "pH", "MineralProfile", "BrewImpact", "RecommendedUse", "Source"],
+      grinders: ["Grinder", "Type", "Unit", "V60_Min", "V60_Max", "Japanese_Min", "Japanese_Max", "Immersion_Min", "Immersion_Max", "Notes", "Source"]
     };
     const labelMap = {
-      Variety: "Nama Varietas", Species: "Spesies", Genetic_Market_Group: "Kelompok Genetik", Typical_Regions: "Wilayah Umum", Acidity_Base: "Acidity", Sweetness_Base: "Sweetness", Body_Base: "Body", Notes: "Catatan",
+      Variety: "Nama Varietas", Species: "Spesies", Genetic_Market_Group: "Kelompok Genetik", Typical_Regions: "Wilayah Umum", Acidity_Base: "Acidity", Sweetness_Base: "Sweetness", Body_Base: "Body", Notes: "Catatan", Source: "Source",
       DripperName: "Nama Dripper", Brand: "Brand", Material: "Material", BrewFamily: "Keluarga Seduh", Geometry: "Geometri", FlowSpeed_1slow_5fast: "Kecepatan Flow", HeatRetention_1low_5high: "Retensi Panas", RecommendedFor: "Direkomendasikan Untuk",
       Process: "Pasca Panen", Category: "Kategori", Stage: "Tahap Proses", FermentRisk_1low_5high: "Risiko Fermentasi", TempMod_C: "Koreksi Suhu", GrindMod_coarser: "Koreksi Gilingan", RatioMod_ml_per_g: "Koreksi Rasio", BrewingCue: "Arahan Seduh",
       RoastVisual: "Warna Biji", RoastProfile: "Roast Profile", Level: "Level", AgtronApprox: "Agtron", EndTempC: "Suhu Akhir", DTR: "Development Ratio", Solubility: "Solubility", BestUse: "Penggunaan Terbaik",
       Water: "Nama Air", Type: "Jenis", TDS_ppm: "TDS", pH: "pH", MineralProfile: "Profil Mineral", BrewImpact: "Dampak Rasa", RecommendedUse: "Saran Pakai",
       Grinder: "Nama Grinder", Unit: "Satuan Setting", V60_Min: "V60 Min", V60_Max: "V60 Max", Japanese_Min: "Japanese Min", Japanese_Max: "Japanese Max", Immersion_Min: "Immersion Min", Immersion_Max: "Immersion Max"
     };
-    const cols = columnsByDataset[dataset] || Object.keys(rows[0] || {}).slice(0, 8);
+    const cols = columnsByDataset[dataset] || [...Object.keys(rows[0] || {}).slice(0, 8), "Source"];
+    const cell = (row, c) => {
+      if (c === "RoastVisual") return roastVisual(row);
+      if (c === "Source") return sourceLink(row);
+      return html(row[c]);
+    };
     const table = $("libraryTable");
     table.querySelector("thead").innerHTML = `<tr>${cols.map(c => `<th>${html(labelMap[c] || c)}</th>`).join("")}</tr>`;
     table.querySelector("tbody").innerHTML = rows.length
-      ? rows.slice(0, 200).map(row => `<tr>${cols.map(c => `<td>${c === "RoastVisual" ? roastVisual(row) : html(row[c])}</td>`).join("")}</tr>`).join("")
+      ? rows.slice(0, 200).map(row => `<tr>${cols.map(c => `<td>${cell(row, c)}</td>`).join("")}</tr>`).join("")
       : emptyRow(cols.length || 1, "Data tidak ditemukan", "Coba kata kunci lain atau pilih dataset berbeda.", "⌕");
   }
 
@@ -4000,6 +4317,19 @@
     ["targetSweet", "targetAcid", "targetBody", "minStock"].forEach(id => $(id).addEventListener("input", renderBeansTable));
     $("saveCurrentBrew")?.addEventListener("click", saveCurrentBrewDraft);
     $("applyBeanToBrew")?.addEventListener("click", applyTopBeanToBrew);
+    $("recipeOptions")?.addEventListener("click", e => {
+      const card = e.target.closest(".recipe-option-card[data-recipe-option]");
+      if (!card) return;
+      document.querySelectorAll(".recipe-option-card").forEach(item => item.classList.toggle("active", item === card));
+      showMessage(`Opsi aktif: ${card.dataset.recipeTitle || "rekomendasi seduh"}. Gunakan sebagai pembanding saat tasting.`, "info");
+    });
+    $("recipeOptions")?.addEventListener("keydown", e => {
+      if (!["Enter", " "].includes(e.key)) return;
+      const card = e.target.closest(".recipe-option-card[data-recipe-option]");
+      if (!card) return;
+      e.preventDefault();
+      card.click();
+    });
     $("stockForm")?.addEventListener("submit", saveStock);
     $("stockSubmitBtn")?.addEventListener("click", saveStock);
     $("stockCancelEditBtn")?.addEventListener("click", resetStockForm);

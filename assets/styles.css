@@ -4613,3 +4613,397 @@ main,
     justify-content: initial;
   }
 }
+
+/* Brew AI V4: source-aware library, interactive recipe options, and 3D brew motion */
+.brew-output-showcase {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.brew-output-showcase::after {
+  content: "";
+  position: absolute;
+  inset: auto -18% -32% 30%;
+  height: 220px;
+  background: radial-gradient(circle, rgba(208,161,111,.18), transparent 68%);
+  transform: rotate(-8deg);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.brew-visualizer {
+  position: relative;
+  min-height: 178px;
+  margin: 4px 0 18px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255,248,232,.74), transparent 22%),
+    radial-gradient(circle at 20% 15%, rgba(216,176,116,.24), transparent 28%),
+    linear-gradient(135deg, rgba(58,32,20,.96), rgba(75,46,43,.94) 58%, rgba(140,90,60,.88));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 22px 60px rgba(47,25,14,.18);
+  overflow: hidden;
+  perspective: 760px;
+}
+
+.brew-visualizer::before,
+.brew-visualizer::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(.1px);
+  opacity: .64;
+}
+
+.brew-visualizer::before {
+  width: 132px;
+  height: 132px;
+  left: 8%;
+  top: 12%;
+  background: radial-gradient(circle, rgba(255,222,168,.22), transparent 66%);
+  animation: brewFloat 6.8s ease-in-out infinite;
+}
+
+.brew-visualizer::after {
+  width: 190px;
+  height: 190px;
+  right: -42px;
+  bottom: -62px;
+  background: radial-gradient(circle, rgba(255,248,235,.18), transparent 66%);
+  animation: brewFloat 7.4s ease-in-out infinite reverse;
+}
+
+.brew-orbit {
+  position: absolute;
+  inset: 24px 22%;
+  border: 1px solid rgba(255,248,235,.18);
+  border-radius: 50%;
+  transform: rotateX(68deg) rotateZ(0deg);
+  animation: brewOrbit 12s linear infinite;
+}
+
+.brew-orbit-two {
+  inset: 42px 16%;
+  opacity: .45;
+  animation-duration: 16s;
+  animation-direction: reverse;
+}
+
+.brew-dripper-3d {
+  position: absolute;
+  left: 50%;
+  top: 24px;
+  width: 112px;
+  height: 74px;
+  transform: translateX(-50%) rotateX(58deg) rotateZ(-1deg);
+  transform-style: preserve-3d;
+  border-radius: 26px 26px 46px 46px;
+  background: linear-gradient(145deg, rgba(255,250,239,.96), rgba(213,170,111,.72));
+  box-shadow: 0 18px 34px rgba(0,0,0,.24), inset 0 -10px 18px rgba(75,46,43,.12);
+  animation: dripperHover 4.8s ease-in-out infinite;
+}
+
+.brew-dripper-3d::before {
+  content: "";
+  position: absolute;
+  inset: 10px 16px auto;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(75,46,43,.16);
+  box-shadow: inset 0 2px 5px rgba(75,46,43,.16);
+}
+
+.brew-dripper-3d::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -17px;
+  width: 36px;
+  height: 30px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(255,250,239,.9), rgba(208,161,111,.72));
+  clip-path: polygon(12% 0, 88% 0, 50% 100%);
+}
+
+.brew-dripper-3d span {
+  position: absolute;
+  right: -24px;
+  top: 18px;
+  width: 44px;
+  height: 16px;
+  border: 8px solid rgba(255,250,239,.72);
+  border-left: 0;
+  border-radius: 0 24px 24px 0;
+}
+
+.brew-stream-3d {
+  position: absolute;
+  left: 50%;
+  top: 96px;
+  width: 6px;
+  height: 48px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255,227,181,.2), rgba(255,227,181,.98), rgba(182,102,47,.64));
+  opacity: calc(.42 + (var(--brew-flow, .6) * .58));
+  animation: brewStream 1.38s ease-in-out infinite;
+}
+
+.brew-cup-3d {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  width: 128px;
+  height: 62px;
+  transform: translateX(-50%) rotateX(56deg);
+  border-radius: 0 0 48px 48px;
+  background: linear-gradient(160deg, rgba(255,252,244,.96), rgba(224,189,136,.88));
+  box-shadow: 0 24px 34px rgba(0,0,0,.28), inset 0 -12px 20px rgba(75,46,43,.12);
+}
+
+.brew-cup-3d::before {
+  content: "";
+  position: absolute;
+  inset: -15px 12px auto;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 45% 40%, rgba(214,151,75,.86), rgba(90,48,27,.94) 67%);
+  box-shadow: inset 0 2px 9px rgba(255,244,214,.28);
+}
+
+.brew-cup-3d::after {
+  content: "";
+  position: absolute;
+  right: -22px;
+  top: 10px;
+  width: 42px;
+  height: 28px;
+  border: 9px solid rgba(255,250,239,.82);
+  border-left: 0;
+  border-radius: 0 30px 30px 0;
+}
+
+.brew-cup-3d span {
+  position: absolute;
+  inset: auto 18px -15px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(22,12,9,.22);
+  filter: blur(7px);
+}
+
+.brew-steam-3d {
+  position: absolute;
+  left: 50%;
+  bottom: 84px;
+  width: 18px;
+  height: 54px;
+  border-left: 3px solid rgba(255,248,235,.42);
+  border-radius: 50%;
+  opacity: calc(.35 + (var(--brew-temp, .55) * .45));
+  animation: steamRise 3.2s ease-in-out infinite;
+}
+
+.steam-one { transform: translateX(-42px) rotate(-16deg); animation-delay: 0s; }
+.steam-two { transform: translateX(-10px) rotate(8deg); animation-delay: .45s; }
+.steam-three { transform: translateX(28px) rotate(18deg); animation-delay: .9s; }
+
+.brew-visualizer[data-mood="clarity"] .brew-stream-3d { box-shadow: 0 0 22px rgba(255,248,235,.36); }
+.brew-visualizer[data-mood="ferment"] .brew-stream-3d { height: 38px; }
+.brew-visualizer[data-mood="body"] .brew-cup-3d::before { filter: saturate(1.08); }
+
+.recipe-lab-hint { margin-top: -4px; margin-bottom: 16px; }
+.recipe-option-card {
+  cursor: pointer;
+  outline: none;
+  transform-style: preserve-3d;
+}
+
+.recipe-option-card::after {
+  content: "Klik untuk aktifkan";
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .22s ease, transform .22s ease;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: rgba(75,46,43,.56);
+}
+
+.recipe-option-card:hover::after,
+.recipe-option-card:focus-visible::after { opacity: 1; transform: translateY(0); }
+.recipe-option-card.active {
+  border-color: rgba(75,46,43,.55);
+  box-shadow: 0 24px 64px rgba(75,46,43,.18), inset 0 1px 0 rgba(255,255,255,.7);
+  transform: translateY(-4px) rotateX(1.5deg);
+}
+
+.recipe-option-card.base.active {
+  box-shadow: 0 28px 70px rgba(75,46,43,.26), inset 0 1px 0 rgba(255,255,255,.15);
+}
+
+.recipe-focus-list {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0;
+}
+
+.recipe-focus-list span {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(75,46,43,.06);
+  color: rgba(58,32,20,.82);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 800;
+}
+
+.recipe-card.base .recipe-focus-list span {
+  background: rgba(255,248,235,.12);
+  color: rgba(255,248,235,.86);
+}
+
+.recipe-why {
+  padding-top: 4px;
+  color: rgba(75,46,43,.72);
+}
+
+.recipe-card.base .recipe-why { color: rgba(255,248,235,.82); }
+
+.verified-recipe-card {
+  border-style: dashed;
+}
+
+.verified-recipe-card.muted {
+  opacity: .84;
+}
+
+.source-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+
+.source-chip-row > span {
+  display: inline-flex;
+  align-items: center;
+  color: rgba(255,248,235,.68);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+.source-chip,
+.source-link {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 220px;
+  gap: 6px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.source-chip {
+  padding: 6px 9px;
+  background: rgba(255,255,255,.09);
+  color: #fff8eb;
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+.source-chip span {
+  color: rgba(255,248,235,.62);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.source-chip strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.source-link {
+  padding: 6px 9px;
+  background: rgba(75,46,43,.07);
+  color: var(--espresso);
+  border: 1px solid rgba(75,46,43,.12);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recipe-source-line {
+  margin-top: 12px;
+}
+
+.recipe-card.base .source-link {
+  background: rgba(255,255,255,.12);
+  color: #fff8eb;
+  border-color: rgba(255,255,255,.16);
+}
+
+.source-link:hover,
+.source-chip:hover {
+  transform: translateY(-1px);
+}
+
+.source-missing {
+  color: var(--muted);
+}
+
+@keyframes brewFloat {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -10px, 0) scale(1.04); }
+}
+
+@keyframes brewOrbit {
+  from { transform: rotateX(68deg) rotateZ(0deg); }
+  to { transform: rotateX(68deg) rotateZ(360deg); }
+}
+
+@keyframes dripperHover {
+  0%, 100% { transform: translateX(-50%) rotateX(58deg) rotateZ(-1deg) translateY(0); }
+  50% { transform: translateX(-50%) rotateX(58deg) rotateZ(1deg) translateY(-5px); }
+}
+
+@keyframes brewStream {
+  0%, 100% { transform: translateX(-50%) scaleY(.74); opacity: .55; }
+  48% { transform: translateX(-50%) scaleY(1.06); opacity: .96; }
+}
+
+@keyframes steamRise {
+  0% { opacity: 0; transform: translateY(12px) scale(.88); }
+  28% { opacity: calc(.35 + (var(--brew-temp, .55) * .48)); }
+  100% { opacity: 0; transform: translateY(-24px) scale(1.18); }
+}
+
+@media (max-width: 760px) {
+  .brew-visualizer { min-height: 146px; border-radius: 24px; }
+  .brew-dripper-3d { width: 92px; height: 58px; }
+  .brew-cup-3d { width: 106px; height: 52px; }
+  .recipe-option-card::after { display: none; }
+  .source-chip-row { gap: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brew-visualizer *,
+  .brew-visualizer::before,
+  .brew-visualizer::after {
+    animation: none !important;
+  }
+  .recipe-option-card.active { transform: none; }
+}

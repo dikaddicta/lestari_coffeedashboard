@@ -6,7 +6,7 @@
   <title>Lestari Coffee Dashboard — Personal Brew Companion</title>
   <meta name="description" content="Dashboard kopi gratis untuk penggunaan pribadi, eksplorasi resep, stok, brew log, QA, dan rekomendasi seduh." />
   <meta name="theme-color" content="#4B2E2B" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260602-visual-restore-2" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260602-brew-ai-v4" />
 </head>
 <body>
   <div class="app-shell">
@@ -368,10 +368,20 @@
             </div>
           </section>
 
-          <section class="panel output-panel">
+          <section class="panel output-panel brew-output-showcase">
             <div class="section-title">
               <span>Output</span>
               <h2>Rekomendasi Seduh Dasar</h2>
+            </div>
+            <div class="brew-visualizer" aria-hidden="true">
+              <div class="brew-orbit brew-orbit-one"></div>
+              <div class="brew-orbit brew-orbit-two"></div>
+              <div class="brew-dripper-3d"><span></span></div>
+              <div class="brew-stream-3d"></div>
+              <div class="brew-cup-3d"><span></span></div>
+              <div class="brew-steam-3d steam-one"></div>
+              <div class="brew-steam-3d steam-two"></div>
+              <div class="brew-steam-3d steam-three"></div>
             </div>
             <div class="output-grid" id="brewOutputs"></div>
             <div class="callout" id="waterNote"></div>
@@ -395,11 +405,12 @@
           <p class="hint" id="pourCheck"></p>
         </section>
 
-        <section class="panel wide">
+        <section class="panel wide brew-recipe-lab-panel">
           <div class="section-title">
             <span>Pilihan Resep</span>
-            <h2>Rekomendasi Dasar + Brew Log Terverifikasi</h2>
+            <h2>2–3 Opsi Rekomendasi Seduh</h2>
           </div>
+          <p class="hint recipe-lab-hint">Klik kartu opsi untuk melihat fokus dial-in. Opsi disusun dari kombinasi varietas, pasca panen, roast, karakter dripper, air, dan grinder; brew log terverifikasi tetap muncul sebagai referensi tambahan jika tersedia.</p>
           <div class="recipe-grid" id="recipeOptions"></div>
         </section>
       </section>
@@ -965,8 +976,8 @@
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/supabase-config.js?v=20260602-visual-restore-2"></script>
-  <script src="assets/data.js?v=20260602-visual-restore-2"></script>
-  <script src="assets/app.js?v=20260602-visual-restore-2"></script>
+  <script src="assets/supabase-config.js?v=20260602-brew-ai-v4"></script>
+  <script src="assets/data.js?v=20260602-brew-ai-v4"></script>
+  <script src="assets/app.js?v=20260602-brew-ai-v4"></script>
 </body>
 </html>
