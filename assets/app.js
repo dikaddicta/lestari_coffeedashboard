@@ -1987,35 +1987,76 @@
     return recipeOptionSpecs(brew).slice(0, 3).map((spec, idx) => buildRecipeOption(brew, spec, idx + 1));
   }
 
-  function renderBrewVisualizer(brew) {
-    const visual = $("brewVisualizer") || document.querySelector(".brew-visualizer");
-    if (!visual || !brew) return;
-    const mood = brew.risk >= 4 ? "ferment" : brew.intent?.primary === "clarity" ? "clarity" : brew.body >= 4 ? "body" : "balanced";
-    visual.dataset.mood = mood;
-    visual.style.setProperty("--brew-temp", `${clamp((brew.temp - 86) / 12, 0, 1)}`);
-    visual.style.setProperty("--brew-flow", `${clamp(brew.flow / 5, .2, 1)}`);
+  function mascotFeedbackProfile(brew) {
+    const flowText = brew.flow >= 4 ? "Fast flow" : brew.flow <= 2 ? "Slow flow" : "Stable flow";
+    if (brew.risk >= 4) {
+      return {
+        tone: "risk",
+        label: "Too Risky",
+        title: "Low agitation / aroma control",
+        copy: `${flowText} + ferment tinggi. Kurangi agitasi, hindari swirl agresif, dan pertimbangkan grind sedikit lebih kasar agar cup tetap rapi.`
+      };
+    }
+    if (brew.intent?.primary === "clarity" || brew.acidity >= 4 || brew.floral >= 4) {
+      return {
+        tone: "clarity",
+        label: "Clarity Mode",
+        title: "Bright lift / aromatic focus",
+        copy: `${flowText} dengan fokus clarity. Pertahankan rasio sedikit lebih panjang dan agitation terkontrol untuk memaksimalkan floral lift.`
+      };
+    }
+    if (brew.sweetness >= 4 && brew.risk <= 2) {
+      return {
+        tone: "sweet",
+        label: "Sweet Spot",
+        title: "Sweet spot / comfort brew",
+        copy: `${flowText} dan sweetness tinggi. Jadikan ini baseline; ubah hanya satu variabel bila ingin menggeser body atau brightness.`
+      };
+    }
+    if (brew.body >= 4) {
+      return {
+        tone: "body",
+        label: "Body Comfort",
+        title: "Round body / cozy finish",
+        copy: `${flowText} dengan body dominan. Jaga suhu stabil dan flow tetap bersih supaya tekstur padat tidak berubah jadi berat.`
+      };
+    }
+    return {
+      tone: "balanced",
+      label: "Balanced Brew",
+      title: "Balanced daily / clean sweetness",
+      copy: `${flowText} dan profil seduh masih aman. Gunakan ini sebagai starting point profesional untuk dial-in berikutnya.`
+    };
+  }
 
-    const moodLabel = mood === "ferment"
-      ? "Low agitation / aroma control"
-      : mood === "clarity"
-        ? "Clarity seeker / bright lift"
-        : mood === "body"
-          ? "Body comfort / sweet depth"
-          : "Balanced daily / clean sweetness";
-    const metaText = mood === "ferment"
-      ? "Agitasi dijaga lembut, mascot menenangkan brew agar karakter ferment tidak berlebihan."
-      : mood === "clarity"
-        ? "Mascot bergerak lebih ringan untuk mendorong clarity, floral lift, dan aftertaste yang bersih."
-        : mood === "body"
-          ? "Gerak lebih grounded untuk cup yang round, sweet, dan body-forward tanpa terasa berat."
-          : "Setelan serbaguna untuk daily dial-in: clean, stable, dan nyaman dijadikan titik awal.";
-    const badgeText = `${brew.dripper?.DripperName || "Filter brewer"} · 1:${fmt(brew.ratio, 1)}`;
-    const statRows = [
-      ["Temp", `${brew.temp}°C`, "Thermal target"],
-      ["Dripper", brew.dripper?.DripperName || "-", "Brew geometry"],
-      ["Grind", `${brew.grindTarget} µm`, brew.grinderSetting || "Calibrate by taste"],
-      ["Water", `${brew.totalWater} ml`, `${brew.mineralBand} · ${brew.tds} ppm`]
-    ].map(([label, value, desc]) => `
+  function updateMascotScene(scene, brew) {
+    if (!scene || !brew) return;
+    const variant = scene.dataset.variant || "brew";
+    const mood = brew.risk >= 4 ? "ferment" : brew.intent?.primary === "clarity" ? "clarity" : brew.body >= 4 ? "body" : "balanced";
+    const feedback = mascotFeedbackProfile(brew);
+    const focusLabel = brew.intent?.label || "Balanced";
+    const flowLabel = brew.flow >= 4 ? "Fast" : brew.flow <= 2 ? "Slow" : "Stable";
+    const riskLabel = brew.risk >= 4 ? "High" : brew.risk >= 3 ? "Medium" : "Controlled";
+    const sourceCount = [brew.variety, brew.process, brew.roast, brew.dripper, brew.water].filter(Boolean).filter(row => sourceUrl(row)).length;
+    scene.dataset.mood = mood;
+    scene.dataset.feedback = feedback.tone;
+    scene.style.setProperty("--brew-temp", `${clamp((brew.temp - 86) / 12, 0, 1)}`);
+    scene.style.setProperty("--brew-flow", `${clamp(brew.flow / 5, .2, 1)}`);
+
+    const statRows = (variant === "hero"
+      ? [
+          ["Feedback", feedback.label, brew.extractionMood],
+          ["Confidence", `${brew.confidence}%`, "Recommendation readiness"],
+          ["Source", `${sourceCount}/5 aktif`, "Source-backed references"],
+          ["Focus", focusLabel, `${brew.mineralBand} water`]
+        ]
+      : [
+          ["Temp", `${brew.temp}°C`, "Thermal target"],
+          ["Dripper", brew.dripper?.DripperName || "-", "Brew geometry"],
+          ["Grind", `${brew.grindTarget} µm`, brew.grinderSetting || "Calibrate by taste"],
+          ["Water", `${brew.totalWater} ml`, `${brew.mineralBand} · ${brew.tds} ppm`]
+        ]
+    ).map(([label, value, desc]) => `
       <article class="mascot-stat-card">
         <span>${html(label)}</span>
         <strong>${html(value)}</strong>
@@ -2023,14 +2064,34 @@
       </article>
     `).join("");
 
-    const moodEl = $("brewMascotMood");
-    const metaEl = $("brewMascotMeta");
-    const badgeEl = $("brewMascotBadge");
-    const statsEl = $("brewMascotStats");
-    if (moodEl) moodEl.textContent = moodLabel;
-    if (metaEl) metaEl.textContent = `${brew.intent?.label || "Balanced"} · ${metaText}`;
-    if (badgeEl) badgeEl.textContent = badgeText;
+    const signalMarkup = [
+      `Focus · ${focusLabel}`,
+      `Flow · ${flowLabel}`,
+      `Risk · ${riskLabel}`
+    ].map(text => `<span>${html(text)}</span>`).join("");
+
+    const moodEl = scene.querySelector(".mascot-mood");
+    const metaEl = scene.querySelector(".mascot-meta");
+    const badgeEl = scene.querySelector(".mascot-badge");
+    const statsEl = scene.querySelector(".mascot-stats");
+    const feedbackPill = scene.querySelector(".mascot-feedback-pill");
+    const feedbackCopy = scene.querySelector(".mascot-feedback-copy");
+    const signalList = scene.querySelector(".mascot-signal-list");
+    if (moodEl) moodEl.textContent = feedback.title;
+    if (metaEl) metaEl.textContent = `${focusLabel} · ${feedback.copy}`;
+    if (badgeEl) badgeEl.textContent = `${brew.dripper?.DripperName || "Filter brewer"} · 1:${fmt(brew.ratio, 1)}`;
     if (statsEl) statsEl.innerHTML = statRows;
+    if (feedbackPill) feedbackPill.textContent = feedback.label;
+    if (feedbackCopy) feedbackCopy.textContent = variant === "hero"
+      ? `Hero mascot membaca rekomendasi: ${feedback.copy}`
+      : `Feedback mascot: ${feedback.copy}`;
+    if (signalList) signalList.innerHTML = signalMarkup;
+  }
+
+  function renderBrewVisualizer(brew) {
+    const scenes = [...document.querySelectorAll(".coffee-mascot-scene")];
+    if (!scenes.length || !brew) return;
+    scenes.forEach(scene => updateMascotScene(scene, brew));
   }
 
   function waterNote(brew) {
@@ -4564,41 +4625,45 @@
 
 
   function initCoffeeMascotInteractions() {
-    const visual = $("brewVisualizer");
-    if (!visual || visual.dataset.interactiveReady === "true") return;
-    visual.dataset.interactiveReady = "true";
+    const scenes = [...document.querySelectorAll(".coffee-mascot-scene")];
+    if (!scenes.length) return;
 
-    let pourTimer = null;
-    const setVars = (x = 0, y = 0) => {
-      visual.style.setProperty("--mx", `${x.toFixed(3)}`);
-      visual.style.setProperty("--my", `${y.toFixed(3)}`);
-      visual.style.setProperty("--tilt-x", `${(-y * 7).toFixed(2)}deg`);
-      visual.style.setProperty("--tilt-y", `${(x * 11).toFixed(2)}deg`);
-      visual.style.setProperty("--eye-x", `${(x * 6).toFixed(2)}px`);
-      visual.style.setProperty("--eye-y", `${(y * 4).toFixed(2)}px`);
-    };
+    scenes.forEach(scene => {
+      if (scene.dataset.interactiveReady === "true") return;
+      scene.dataset.interactiveReady = "true";
+      let pourTimer = null;
 
-    const updateFromPointer = event => {
-      const rect = visual.getBoundingClientRect();
-      const relX = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 2 - 1;
-      const relY = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 2 - 1;
-      visual.classList.add("is-awake");
-      setVars(clamp(relX, -1, 1), clamp(relY, -1, 1));
-    };
+      const setVars = (x = 0, y = 0) => {
+        scene.style.setProperty("--mx", `${x.toFixed(3)}`);
+        scene.style.setProperty("--my", `${y.toFixed(3)}`);
+        scene.style.setProperty("--tilt-x", `${(-y * 7).toFixed(2)}deg`);
+        scene.style.setProperty("--tilt-y", `${(x * 11).toFixed(2)}deg`);
+        scene.style.setProperty("--eye-x", `${(x * 6).toFixed(2)}px`);
+        scene.style.setProperty("--eye-y", `${(y * 4).toFixed(2)}px`);
+      };
 
-    visual.addEventListener("pointermove", updateFromPointer);
-    visual.addEventListener("pointerenter", updateFromPointer);
-    visual.addEventListener("pointerleave", () => {
-      visual.classList.remove("is-awake");
+      const updateFromPointer = event => {
+        const rect = scene.getBoundingClientRect();
+        const relX = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 2 - 1;
+        const relY = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 2 - 1;
+        scene.classList.add("is-awake");
+        setVars(clamp(relX, -1, 1), clamp(relY, -1, 1));
+      };
+
+      scene.addEventListener("pointermove", updateFromPointer);
+      scene.addEventListener("pointerenter", updateFromPointer);
+      scene.addEventListener("pointerleave", () => {
+        scene.classList.remove("is-awake");
+        setVars(0, 0);
+      });
+      scene.addEventListener("pointerdown", () => {
+        scene.classList.add("is-pouring");
+        clearTimeout(pourTimer);
+        pourTimer = setTimeout(() => scene.classList.remove("is-pouring"), 1100);
+        showMessage("Coffee mascot aktif: preview pouring dimulai ☕", "info");
+      });
       setVars(0, 0);
     });
-    visual.addEventListener("pointerdown", () => {
-      visual.classList.add("is-pouring");
-      clearTimeout(pourTimer);
-      pourTimer = setTimeout(() => visual.classList.remove("is-pouring"), 1100);
-      showMessage("Coffee mascot aktif: preview pouring dimulai ☕", "info");
-    });
-    setVars(0, 0);
   }
 
   function initPremiumUIInteractions() {
