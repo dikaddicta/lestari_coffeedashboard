@@ -6,7 +6,7 @@
   <title>Lestari Coffee Dashboard — Personal Brew Companion</title>
   <meta name="description" content="Dashboard kopi gratis untuk penggunaan pribadi, eksplorasi resep, stok, brew log, QA, dan rekomendasi seduh." />
   <meta name="theme-color" content="#4B2E2B" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260602-coffee-mascot-v7" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260602-brew-ai-v5" />
 </head>
 <body>
   <div class="app-shell">
@@ -18,70 +18,14 @@
           <span class="hero-icon hero-icon-image" aria-hidden="true"><img src="assets/latte-art-icon.png" alt="" /></span>
           <h1>Coffee Brew OS</h1>
         </div>
-        <div class="hero-showcase-shell">
-          <div class="hero-copy-block">
-            <div class="hero-text">
-              <p class="hero-lead">Dashboard yang disusun untuk penggunaan pribadi berdasarkan kebutuhan dan keresahan pribadi.</p>
-              <p class="hero-copy">Gunakan secara gratis. Jadikan ini sebagai dasar untuk teman-teman bisa explore lebih jauh lagi. Semoga bisa bermanfaat baik untuk homebrewer, barista maupun coffeeshop owner.</p>
-              <p class="hero-footnote">Mulai dari rekomendasi seduh, stok, brew log, QA, sampai pustaka data. Kalau ada data dripper, varietas, proses, roast profile, air, atau grinder yang perlu dilengkapi, kirim melalui <button class="hero-inline-link" type="button" data-jump-tab="suggestion">kotak saran</button>.</p>
-            </div>
-            <div class="premium-badge-row" aria-label="Fitur utama">
-              <span>Gratis Digunakan</span>
-              <span>Personal Workflow</span>
-              <span>Explore Lebih Jauh</span>
-            </div>
-          </div>
-          <div class="hero-mascot-dock">
-            <div class="coffee-mascot-scene premium-scene hero-mascot-scene" id="heroMascotScene" data-scene="hero" data-variant="hero" data-mood="balanced">
-              <div class="mascot-backdrop-glow" aria-hidden="true"></div>
-              <div class="mascot-grid-overlay" aria-hidden="true"></div>
-              <div class="mascot-status-panel">
-                <span class="mascot-kicker">Brew Signal</span>
-                <div class="mascot-feedback-row">
-                  <span class="mascot-feedback-pill">Balanced Brew</span>
-                  <small class="mascot-feedback-copy">Coffee mascot siap membantu membaca arah rekomendasi seduh.</small>
-                </div>
-                <strong class="mascot-mood">Coffee mascot, now on standby</strong>
-                <small class="mascot-meta">Mascot di hero akan ikut memperlihatkan mood rekomendasi dari brew terbaru.</small>
-                <div class="mascot-signal-list">
-                  <span>Focus · Balanced</span>
-                  <span>Flow · Stable</span>
-                  <span>Risk · Controlled</span>
-                </div>
-              </div>
-              <div class="mascot-stage" aria-hidden="true">
-                <div class="mascot-orbit orbit-a"></div>
-                <div class="mascot-orbit orbit-b"></div>
-                <div class="coffee-mascot">
-                  <div class="mascot-aura-ring"></div>
-                  <div class="mascot-pedestal"></div>
-                  <div class="mascot-shadow"></div>
-                  <div class="mascot-arm mascot-arm-left"></div>
-                  <div class="mascot-arm mascot-arm-right"></div>
-                  <div class="mascot-kettle"></div>
-                  <div class="mascot-head">
-                    <div class="mascot-head-ring"></div>
-                    <div class="mascot-face">
-                      <span class="mascot-eye eye-left"><i></i></span>
-                      <span class="mascot-eye eye-right"><i></i></span>
-                      <span class="mascot-mouth"></span>
-                    </div>
-                  </div>
-                  <div class="mascot-body">
-                    <div class="mascot-badge">Ready to brew</div>
-                    <div class="mascot-coffee-surface"></div>
-                    <div class="mascot-body-glow"></div>
-                  </div>
-                  <div class="mascot-steam steam-a"></div>
-                  <div class="mascot-steam steam-b"></div>
-                  <div class="mascot-steam steam-c"></div>
-                  <div class="mascot-bean bean-a"></div>
-                  <div class="mascot-bean bean-b"></div>
-                  <div class="mascot-bean bean-c"></div>
-                </div>
-              </div>
-              <div class="mascot-data-rail mascot-stats" aria-live="polite"></div>
-            </div>
+        <div class="hero-text">
+          <p class="hero-lead">Dashboard yang disusun untuk penggunaan pribadi berdasarkan kebutuhan dan keresahan pribadi.</p>
+          <p class="hero-copy">Gunakan secara gratis. Jadikan ini sebagai dasar untuk teman-teman bisa explore lebih jauh lagi. Semoga bisa bermanfaat baik untuk homebrewer, barista maupun coffeeshop owner.</p>
+          <p class="hero-footnote">Mulai dari rekomendasi seduh, stok, brew log, QA, sampai pustaka data. Kalau ada data dripper, varietas, proses, roast profile, air, atau grinder yang perlu dilengkapi, kirim melalui <button class="hero-inline-link" type="button" data-jump-tab="suggestion">kotak saran</button>.</p>
+          <div class="premium-badge-row" aria-label="Fitur utama">
+            <span>Gratis Digunakan</span>
+            <span>Personal Workflow</span>
+            <span>Explore Lebih Jauh</span>
           </div>
         </div>
       </div>
@@ -351,7 +295,7 @@
 
 
       <section id="tab-brew" class="tab-panel">
-        <div class="grid two-col top-align brew-layout">
+        <div class="grid two-col top-align">
           <section class="panel input-panel">
             <div class="section-title">
               <span>1.1</span>
@@ -430,55 +374,15 @@
               <span>Output</span>
               <h2>Rekomendasi Seduh Dasar</h2>
             </div>
-            <div class="brew-visualizer coffee-mascot-scene premium-scene" id="brewVisualizer" data-scene="brew" data-variant="brew" data-mood="balanced">
-              <div class="mascot-backdrop-glow" aria-hidden="true"></div>
-              <div class="mascot-grid-overlay" aria-hidden="true"></div>
-              <div class="mascot-status-panel">
-                <span class="mascot-kicker">Coffee Mascot</span>
-                <div class="mascot-feedback-row">
-                  <span class="mascot-feedback-pill">Balanced Brew</span>
-                  <small class="mascot-feedback-copy">Dial-in assistant aktif dan siap membaca rekomendasi seduh.</small>
-                </div>
-                <strong class="mascot-mood">Balanced brew companion</strong>
-                <small class="mascot-meta">Arahkan cursor ke area ini — mascot akan mengikuti gerakanmu dan memberi feedback berdasarkan hasil rekomendasi seduh.</small>
-                <div class="mascot-signal-list">
-                  <span>Focus · Balanced</span>
-                  <span>Flow · Stable</span>
-                  <span>Risk · Controlled</span>
-                </div>
-              </div>
-              <div class="mascot-stage" aria-hidden="true">
-                <div class="mascot-orbit orbit-a"></div>
-                <div class="mascot-orbit orbit-b"></div>
-                <div class="coffee-mascot">
-                  <div class="mascot-aura-ring"></div>
-                  <div class="mascot-pedestal"></div>
-                  <div class="mascot-shadow"></div>
-                  <div class="mascot-arm mascot-arm-left"></div>
-                  <div class="mascot-arm mascot-arm-right"></div>
-                  <div class="mascot-kettle"></div>
-                  <div class="mascot-head">
-                    <div class="mascot-head-ring"></div>
-                    <div class="mascot-face">
-                      <span class="mascot-eye eye-left"><i></i></span>
-                      <span class="mascot-eye eye-right"><i></i></span>
-                      <span class="mascot-mouth"></span>
-                    </div>
-                  </div>
-                  <div class="mascot-body">
-                    <div class="mascot-badge">Ready to brew</div>
-                    <div class="mascot-coffee-surface"></div>
-                    <div class="mascot-body-glow"></div>
-                  </div>
-                  <div class="mascot-steam steam-a"></div>
-                  <div class="mascot-steam steam-b"></div>
-                  <div class="mascot-steam steam-c"></div>
-                  <div class="mascot-bean bean-a"></div>
-                  <div class="mascot-bean bean-b"></div>
-                  <div class="mascot-bean bean-c"></div>
-                </div>
-              </div>
-              <div class="mascot-data-rail mascot-stats" aria-live="polite"></div>
+            <div class="brew-visualizer" aria-hidden="true">
+              <div class="brew-orbit brew-orbit-one"></div>
+              <div class="brew-orbit brew-orbit-two"></div>
+              <div class="brew-dripper-3d"><span></span></div>
+              <div class="brew-stream-3d"></div>
+              <div class="brew-cup-3d"><span></span></div>
+              <div class="brew-steam-3d steam-one"></div>
+              <div class="brew-steam-3d steam-two"></div>
+              <div class="brew-steam-3d steam-three"></div>
             </div>
             <div class="output-grid" id="brewOutputs"></div>
             <div class="callout" id="waterNote"></div>
@@ -1073,8 +977,8 @@
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/supabase-config.js?v=20260602-coffee-mascot-v7"></script>
-  <script src="assets/data.js?v=20260602-coffee-mascot-v7"></script>
-  <script src="assets/app.js?v=20260602-coffee-mascot-v7"></script>
+  <script src="assets/supabase-config.js?v=20260602-brew-ai-v5"></script>
+  <script src="assets/data.js?v=20260602-brew-ai-v5"></script>
+  <script src="assets/app.js?v=20260602-brew-ai-v5"></script>
 </body>
 </html>
