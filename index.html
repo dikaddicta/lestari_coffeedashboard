@@ -6,11 +6,36 @@
   <title>Lestari Coffee Dashboard — Personal Brew Companion</title>
   <meta name="description" content="Dashboard kopi gratis untuk penggunaan pribadi, eksplorasi resep, stok, brew log, QA, dan rekomendasi seduh." />
   <meta name="theme-color" content="#4B2E2B" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260602-brew-ai-v5" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260603-stable-v8" />
 </head>
 <body>
   <div class="app-shell">
     <div id="appToast" class="app-toast hidden" role="status" aria-live="polite"></div>
+    <div id="floatingMascot" class="floating-mascot" data-mood="balanced" role="button" tabindex="0" aria-label="Coffee mascot assistant">
+      <div class="floating-mascot-bubble" id="floatingMascotBubble">
+        <strong id="floatingMascotStatus">Balanced Brew</strong>
+        <span id="floatingMascotText">Mascot siap memberi feedback seduh.</span>
+      </div>
+      <div class="floating-mascot-character" aria-hidden="true">
+        <span class="fm-orbit fm-orbit-a"></span>
+        <span class="fm-orbit fm-orbit-b"></span>
+        <span class="fm-shadow"></span>
+        <span class="fm-arm fm-arm-left"></span>
+        <span class="fm-arm fm-arm-right"></span>
+        <span class="fm-kettle"></span>
+        <span class="fm-head">
+          <span class="fm-face">
+            <i class="fm-eye fm-eye-left"><b></b></i>
+            <i class="fm-eye fm-eye-right"><b></b></i>
+            <i class="fm-mouth"></i>
+          </span>
+        </span>
+        <span class="fm-body"><i></i></span>
+        <span class="fm-steam fm-steam-a"></span>
+        <span class="fm-steam fm-steam-b"></span>
+        <span class="fm-steam fm-steam-c"></span>
+      </div>
+    </div>
     <header class="hero">
       <div class="hero-main">
         <p class="eyebrow">Lestari Coffee Dashboard</p>
@@ -977,8 +1002,8 @@
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/supabase-config.js?v=20260602-brew-ai-v5"></script>
-  <script src="assets/data.js?v=20260602-brew-ai-v5"></script>
-  <script src="assets/app.js?v=20260602-brew-ai-v5"></script>
+  <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
+  <script src="assets/data.js?v=20260603-stable-v8"></script>
+  <script src="assets/app.js?v=20260603-stable-v8"></script>
 </body>
 </html>

@@ -33,9 +33,11 @@
   let dashboardUserCountSource = "local";
   const LAST_WORKSPACE_KEY = "coffeeDashboardActiveWorkspace";
   const DEFAULT_PUBLIC_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001";
-  const CLOUD_WRITE_TIMEOUT_MS = 30000;
+  const CLOUD_WRITE_TIMEOUT_MS = 45000;
   const CLOUD_READ_TIMEOUT_MS = 60000;
-  const SESSION_REFRESH_BUFFER_MS = 5 * 60 * 1000;
+  const SESSION_REFRESH_BUFFER_MS = 10 * 60 * 1000;
+  const SESSION_KEEPALIVE_MS = 4 * 60 * 1000;
+  let sessionKeepAliveTimer = null;
 
   const $ = (id) => document.getElementById(id);
   const fmt = (n, d = 0) => Number.isFinite(Number(n)) ? Number(n).toFixed(d).replace(/\.0$/, "") : "-";
@@ -394,6 +396,7 @@
       await ensureRequestedMembership().catch(console.warn);
     }
     await loadWorkspaces();
+    scheduleSessionKeepAlive();
     supabaseClient.auth.onAuthStateChange(async (_event, session) => {
       currentSession = session || null;
       currentUser = currentSession?.user || null;
@@ -408,6 +411,7 @@
         currentRole = "guest";
       }
       await loadWorkspaces();
+      scheduleSessionKeepAlive();
       await syncFromCloud(true).catch(console.warn);
     });
     renderAuthUI();
@@ -559,6 +563,65 @@
       await loadWorkspaces().catch(console.warn);
     }
     return session;
+  }
+
+  function explainCloudError(err) {
+    const raw = `${err?.message || ""} ${err?.details || ""} ${err?.hint || ""}`.trim();
+    const lower = raw.toLowerCase();
+    if (lower.includes("jwt") || lower.includes("expired") || lower.includes("refresh") || lower.includes("session")) {
+      return "Sesi login Supabase kedaluwarsa atau gagal refresh. Data form tetap aman di browser; masuk ulang lalu klik simpan lagi.";
+    }
+    if (lower.includes("row-level security") || lower.includes("rls") || lower.includes("permission denied") || lower.includes("not allowed")) {
+      return "Data ditolak oleh RLS/policy Supabase. Pastikan akun masih anggota workspace aktif dan policy database sudah memakai versi repair terbaru.";
+    }
+    if (lower.includes("network") || lower.includes("failed to fetch") || lower.includes("timeout") || lower.includes("belum memberi respons")) {
+      return "Koneksi ke Supabase timeout/terputus. Data form tetap aman; coba simpan ulang setelah koneksi stabil.";
+    }
+    return raw || "Supabase menolak request tanpa detail error.";
+  }
+
+  function isRetryableCloudError(err) {
+    const lower = `${err?.message || ""} ${err?.details || ""} ${err?.hint || ""}`.toLowerCase();
+    return lower.includes("jwt") || lower.includes("expired") || lower.includes("refresh") || lower.includes("network") || lower.includes("failed to fetch") || lower.includes("timeout") || lower.includes("belum memberi respons");
+  }
+
+  function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+  function scheduleSessionKeepAlive() {
+    clearInterval(sessionKeepAliveTimer);
+    if (!currentUser || !supabaseClient) return;
+    sessionKeepAliveTimer = setInterval(() => {
+      refreshCurrentSession("Jaga sesi Supabase")
+        .then(session => {
+          if (!session) clearInterval(sessionKeepAliveTimer);
+        })
+        .catch(err => console.warn("Supabase session keepalive failed", err));
+    }, SESSION_KEEPALIVE_MS);
+  }
+
+  async function runCloudMutation(label, operation) {
+    let lastError;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        await prepareCloudWrite(label);
+        const result = await withTimeout(operation(), CLOUD_WRITE_TIMEOUT_MS, label);
+        if (result?.error) throw result.error;
+        return result;
+      } catch (err) {
+        lastError = err;
+        if (attempt === 0 && isRetryableCloudError(err)) {
+          await refreshCurrentSession(`Retry ${label}`).catch(console.warn);
+          await loadWorkspaces().catch(console.warn);
+          await sleep(700);
+          continue;
+        }
+        const friendly = explainCloudError(err);
+        const wrapped = new Error(friendly);
+        wrapped.originalError = err;
+        throw wrapped;
+      }
+    }
+    throw lastError;
   }
 
   async function prepareCloudWrite(label = "Simpan data") {
@@ -963,7 +1026,17 @@
       updateDbStatus("syncing", "Menghubungkan ke Supabase...", "Membaca sesi pengguna, workspace, dan data publik yang sudah disetujui.");
       const projectUrl = getSupabaseProjectUrl();
       const anonKey = getSupabaseAnonKey();
-      supabaseClient = window.supabase.createClient(projectUrl, anonKey);
+      supabaseClient = window.supabase.createClient(projectUrl, anonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          storage: window.localStorage
+        },
+        global: {
+          headers: { "x-coffee-dashboard-client": "stable-v8" }
+        }
+      });
       clientCreated = true;
       cloudReady = true;
       await initAuth();
@@ -1065,23 +1138,17 @@
   }
 
   async function insertCloud(table, payload, mapper) {
-    await prepareCloudWrite(`Simpan ${table}`);
-    const { data, error } = await withTimeout(supabaseClient.from(table).insert(payload).select().single(), CLOUD_WRITE_TIMEOUT_MS, `Simpan ${table}`);
-    if (error) throw error;
+    const { data } = await runCloudMutation(`Simpan ${table}`, () => supabaseClient.from(table).insert(payload).select().single());
     return mapper(data);
   }
 
   async function updateCloud(table, id, payload, mapper) {
-    await prepareCloudWrite(`Update ${table}`);
-    const { data, error } = await withTimeout(supabaseClient.from(table).update(payload).eq("id", id).select().single(), CLOUD_WRITE_TIMEOUT_MS, `Update ${table}`);
-    if (error) throw error;
+    const { data } = await runCloudMutation(`Update ${table}`, () => supabaseClient.from(table).update(payload).eq("id", id).select().single());
     return mapper(data);
   }
 
   async function updateCloudNoReturn(table, id, payload, label = "Update data") {
-    await prepareCloudWrite(label);
-    const { error } = await withTimeout(supabaseClient.from(table).update(payload).eq("id", id), CLOUD_WRITE_TIMEOUT_MS, label);
-    if (error) throw error;
+    await runCloudMutation(label, () => supabaseClient.from(table).update(payload).eq("id", id));
     return true;
   }
 
@@ -1987,7 +2054,28 @@
     return recipeOptionSpecs(brew).slice(0, 3).map((spec, idx) => buildRecipeOption(brew, spec, idx + 1));
   }
 
+  function floatingMascotFeedback(brew) {
+    if (!brew) return { mood: "balanced", label: "Balanced Brew", text: "Mascot siap memberi feedback seduh." };
+    if (brew.risk >= 4) return { mood: "risk", label: "Too Risky", text: "Ferment tinggi: kurangi agitasi, hindari swirl agresif, dan coba grind sedikit lebih kasar." };
+    if (brew.intent?.primary === "clarity" || brew.acidity >= 4 || brew.floral >= 4) return { mood: "clarity", label: "Clarity Mode", text: "Fokus clarity: jaga flow stabil, rasio sedikit panjang, dan pouring tetap bersih." };
+    if (brew.sweetness >= 4 && brew.risk <= 2) return { mood: "sweet", label: "Sweet Spot", text: "Sweetness sudah kuat. Jadikan ini baseline dan ubah satu variabel saja." };
+    if (brew.body >= 4) return { mood: "body", label: "Body Comfort", text: "Body dominan: jaga suhu dan flow agar tekstur tidak berubah berat." };
+    return { mood: "balanced", label: "Balanced Brew", text: "Profil aman untuk starting point. Validasi lewat drawdown dan taste." };
+  }
+
+  function updateFloatingMascot(brew) {
+    const mascot = $("floatingMascot");
+    if (!mascot) return;
+    const feedback = floatingMascotFeedback(brew);
+    mascot.dataset.mood = feedback.mood;
+    const status = $("floatingMascotStatus");
+    const text = $("floatingMascotText");
+    if (status) status.textContent = feedback.label;
+    if (text) text.textContent = feedback.text;
+  }
+
   function renderBrewVisualizer(brew) {
+    updateFloatingMascot(brew);
     const visual = document.querySelector(".brew-visualizer");
     if (!visual || !brew) return;
     visual.dataset.mood = brew.risk >= 4 ? "ferment" : brew.intent?.primary === "clarity" ? "clarity" : brew.body >= 4 ? "body" : "balanced";
@@ -4525,9 +4613,41 @@
   }
 
 
+  function initFloatingMascot() {
+    const mascot = $("floatingMascot");
+    if (!mascot || mascot.dataset.ready === "true") return;
+    mascot.dataset.ready = "true";
+    const setVars = (x = 0, y = 0) => {
+      mascot.style.setProperty("--fm-x", `${x.toFixed(3)}`);
+      mascot.style.setProperty("--fm-y", `${y.toFixed(3)}`);
+      mascot.style.setProperty("--fm-eye-x", `${(x * 4).toFixed(2)}px`);
+      mascot.style.setProperty("--fm-eye-y", `${(y * 3).toFixed(2)}px`);
+    };
+    const move = event => {
+      const rect = mascot.getBoundingClientRect();
+      const x = clamp(((event.clientX - rect.left) / Math.max(rect.width, 1)) * 2 - 1, -1, 1);
+      const y = clamp(((event.clientY - rect.top) / Math.max(rect.height, 1)) * 2 - 1, -1, 1);
+      mascot.classList.add("is-awake");
+      setVars(x, y);
+    };
+    const tap = () => {
+      mascot.classList.toggle("is-open");
+      mascot.classList.add("is-pouring");
+      setTimeout(() => mascot.classList.remove("is-pouring"), 900);
+    };
+    mascot.addEventListener("pointermove", move);
+    mascot.addEventListener("pointerenter", move);
+    mascot.addEventListener("pointerleave", () => { mascot.classList.remove("is-awake"); setVars(0, 0); });
+    mascot.addEventListener("click", tap);
+    mascot.addEventListener("keydown", event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); tap(); } });
+    setVars(0, 0);
+  }
+
   function initPremiumUIInteractions() {
     if (document.body?.dataset.premiumUiReady === "true") return;
     if (document.body) document.body.dataset.premiumUiReady = "true";
+
+    initFloatingMascot();
 
     const hero = document.querySelector(".hero");
     if (hero) {
@@ -4597,6 +4717,12 @@
     saveManualBrew,
     sync: () => syncFromCloud(true)
   };
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && currentUser && supabaseClient) {
+      refreshCurrentSession("Refresh sesi setelah tab aktif").catch(console.warn);
+    }
+  });
 
   document.addEventListener("DOMContentLoaded", async () => {
     hydrateSelects();
