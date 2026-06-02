@@ -6,14 +6,20 @@
   <title>Lestari Coffee Dashboard — Personal Brew Companion</title>
   <meta name="description" content="Dashboard kopi gratis untuk penggunaan pribadi, eksplorasi resep, stok, brew log, QA, dan rekomendasi seduh." />
   <meta name="theme-color" content="#4B2E2B" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260603-stable-v10" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260603-stable-v11" />
 </head>
 <body>
   <div class="app-shell">
     <div id="appToast" class="app-toast hidden" role="status" aria-live="polite"></div>
     <div id="floatingMascot" class="floating-mascot" data-mood="balanced" role="button" tabindex="0" aria-label="Coffee mascot assistant">
       <div class="floating-mascot-bubble" id="floatingMascotBubble">
-        <strong id="floatingMascotStatus">Balanced Brew</strong>
+        <div class="floating-mascot-bubble-head">
+          <strong id="floatingMascotStatus">Balanced Brew</strong>
+          <div class="floating-mascot-controls">
+            <button type="button" class="mascot-control-btn" id="floatingMascotMinimize" aria-label="Minimize mascot">–</button>
+            <button type="button" class="mascot-control-btn" id="floatingMascotClose" aria-label="Close mascot">×</button>
+          </div>
+        </div>
         <span id="floatingMascotText">Mascot siap memberi feedback seduh.</span>
       </div>
       <div class="floating-mascot-stage" aria-hidden="true">
@@ -21,6 +27,7 @@
         <img class="floating-mascot-image" src="assets/barista-mascot.png" alt="" />
       </div>
     </div>
+    <button type="button" id="floatingMascotLauncher" class="floating-mascot-launcher hidden" aria-label="Show coffee mascot">☕ Mascot</button>
     <header class="hero">
       <div class="hero-main">
         <p class="eyebrow">Lestari Coffee Dashboard</p>

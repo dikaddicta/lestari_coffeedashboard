@@ -1439,18 +1439,13 @@
   }
 
   function renderMetrics() {
-    const totalReferences = ["varieties", "drippers", "processes", "roasts", "waters", "grinders"].reduce((sum, key) => sum + (DATA[key]?.length || 0), 0);
-    const sourceCovered = ["varieties", "drippers", "processes", "roasts", "waters", "grinders"].reduce((sum, key) => sum + ((DATA[key] || []).filter(row => sourceUrl(row)).length), 0);
-    const sourceCoverage = totalReferences ? Math.round((sourceCovered / totalReferences) * 100) : 0;
     const metrics = [
-      { value: totalReferences, label: "Total Referensi", hint: "Akumulasi varietas, dripper, proses, roast profile, air, dan grinder. Angka tidak diduplikasi bila data terbaru berisi record yang sama." },
       { value: DATA.varieties?.length || 0, label: "Varietas", hint: "Jumlah varietas/kultivar di pustaka data lokal dashboard." },
-      { value: DATA.processes?.length || 0, label: "Proses", hint: "Jumlah metode pasca panen di pustaka data lokal dashboard." },
       { value: DATA.drippers?.length || 0, label: "Dripper", hint: "Jumlah dripper di pustaka data lokal dashboard." },
-      { value: DATA.waters?.length || 0, label: "Water", hint: "Jumlah profil air/mineral di pustaka data lokal dashboard." },
-      { value: DATA.grinders?.length || 0, label: "Grinder", hint: "Jumlah grinder/manual grinder yang dipakai untuk estimasi setting." },
+      { value: DATA.processes?.length || 0, label: "Proses", hint: "Jumlah metode pasca panen di pustaka data lokal dashboard." },
       { value: DATA.roasts?.length || 0, label: "Roast Profile", hint: "Jumlah profil roasting di pustaka data lokal dashboard." },
-      { value: `${sourceCoverage}%`, label: "Source Coverage", hint: "Persentase referensi yang memiliki SourceURL aktif." }
+      { value: DATA.waters?.length || 0, label: "Water", hint: "Jumlah profil air/mineral di pustaka data lokal dashboard." },
+      { value: DATA.grinders?.length || 0, label: "Grinder", hint: "Jumlah grinder/manual grinder yang dipakai untuk estimasi setting." }
     ];
     $("libraryMetrics").innerHTML = metrics.map(item => `<div class="metric" title="${html(item.hint)}"><strong>${html(item.value)}</strong><span>${html(item.label)}</span></div>`).join("");
   }
@@ -4669,13 +4664,31 @@
 
   function initFloatingMascot() {
     const mascot = $("floatingMascot");
+    const launcher = $("floatingMascotLauncher");
+    const minimizeBtn = $("floatingMascotMinimize");
+    const closeBtn = $("floatingMascotClose");
     if (!mascot || mascot.dataset.ready === "true") return;
     mascot.dataset.ready = "true";
+
+    const stateKey = "coffee_dashboard_mascot_state_v11";
+    const readState = () => {
+      try { return JSON.parse(localStorage.getItem(stateKey) || '{}'); } catch { return {}; }
+    };
+    const writeState = next => {
+      try { localStorage.setItem(stateKey, JSON.stringify(next)); } catch {}
+    };
+    const applyVisibility = state => {
+      const minimized = Boolean(state.minimized);
+      const closed = Boolean(state.closed);
+      mascot.classList.toggle("is-minimized", minimized);
+      mascot.classList.toggle("hidden", closed);
+      if (launcher) launcher.classList.toggle("hidden", !closed);
+    };
+    const currentState = () => readState();
+
     const setVars = (x = 0, y = 0) => {
       mascot.style.setProperty("--fm-x", `${x.toFixed(3)}`);
       mascot.style.setProperty("--fm-y", `${y.toFixed(3)}`);
-      mascot.style.setProperty("--fm-eye-x", `${(x * 4).toFixed(2)}px`);
-      mascot.style.setProperty("--fm-eye-y", `${(y * 3).toFixed(2)}px`);
     };
     const move = event => {
       const rect = mascot.getBoundingClientRect();
@@ -4685,7 +4698,13 @@
       setVars(x, y);
     };
     const tap = () => {
-      mascot.classList.toggle("is-open");
+      if (mascot.classList.contains("is-minimized")) {
+        const next = { ...currentState(), minimized: false, closed: false };
+        writeState(next);
+        applyVisibility(next);
+      } else {
+        mascot.classList.toggle("is-open");
+      }
       mascot.classList.add("is-pouring");
       setTimeout(() => mascot.classList.remove("is-pouring"), 900);
     };
@@ -4694,6 +4713,26 @@
     mascot.addEventListener("pointerleave", () => { mascot.classList.remove("is-awake"); setVars(0, 0); });
     mascot.addEventListener("click", tap);
     mascot.addEventListener("keydown", event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); tap(); } });
+    minimizeBtn?.addEventListener("click", event => {
+      event.stopPropagation();
+      const next = { ...currentState(), minimized: !mascot.classList.contains("is-minimized"), closed: false };
+      writeState(next);
+      applyVisibility(next);
+      mascot.classList.remove("is-open");
+    });
+    closeBtn?.addEventListener("click", event => {
+      event.stopPropagation();
+      const next = { ...currentState(), closed: true, minimized: false };
+      writeState(next);
+      applyVisibility(next);
+    });
+    launcher?.addEventListener("click", () => {
+      const next = { ...currentState(), closed: false, minimized: false };
+      writeState(next);
+      applyVisibility(next);
+      mascot.classList.add("is-open");
+    });
+    applyVisibility(readState());
     setVars(0, 0);
   }
 
