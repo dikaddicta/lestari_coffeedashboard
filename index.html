@@ -6,7 +6,7 @@
   <title>Lestari Coffee Dashboard — Personal Brew Companion</title>
   <meta name="description" content="Dashboard kopi gratis untuk penggunaan pribadi, eksplorasi resep, stok, brew log, QA, dan rekomendasi seduh." />
   <meta name="theme-color" content="#4B2E2B" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260602-brew-ai-v5" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260602-coffee-mascot-v6" />
 </head>
 <body>
   <div class="app-shell">
@@ -374,15 +374,44 @@
               <span>Output</span>
               <h2>Rekomendasi Seduh Dasar</h2>
             </div>
-            <div class="brew-visualizer" aria-hidden="true">
-              <div class="brew-orbit brew-orbit-one"></div>
-              <div class="brew-orbit brew-orbit-two"></div>
-              <div class="brew-dripper-3d"><span></span></div>
-              <div class="brew-stream-3d"></div>
-              <div class="brew-cup-3d"><span></span></div>
-              <div class="brew-steam-3d steam-one"></div>
-              <div class="brew-steam-3d steam-two"></div>
-              <div class="brew-steam-3d steam-three"></div>
+            <div class="brew-visualizer coffee-mascot-scene" id="brewVisualizer" data-mood="balanced">
+              <div class="mascot-backdrop-glow" aria-hidden="true"></div>
+              <div class="mascot-grid-overlay" aria-hidden="true"></div>
+              <div class="mascot-status-panel">
+                <span class="mascot-kicker">Coffee Mascot</span>
+                <strong id="brewMascotMood">Balanced brew companion</strong>
+                <small id="brewMascotMeta">Arahkan cursor ke area ini — mascot akan mengikuti gerakanmu untuk preview dial-in.</small>
+              </div>
+              <div class="mascot-stage" aria-hidden="true">
+                <div class="mascot-orbit orbit-a"></div>
+                <div class="mascot-orbit orbit-b"></div>
+                <div class="coffee-mascot" id="coffeeMascot">
+                  <div class="mascot-shadow"></div>
+                  <div class="mascot-arm mascot-arm-left"></div>
+                  <div class="mascot-arm mascot-arm-right"></div>
+                  <div class="mascot-kettle"></div>
+                  <div class="mascot-head">
+                    <div class="mascot-head-ring"></div>
+                    <div class="mascot-face">
+                      <span class="mascot-eye eye-left"><i></i></span>
+                      <span class="mascot-eye eye-right"><i></i></span>
+                      <span class="mascot-mouth"></span>
+                    </div>
+                  </div>
+                  <div class="mascot-body">
+                    <div class="mascot-badge" id="brewMascotBadge">Ready to brew</div>
+                    <div class="mascot-coffee-surface"></div>
+                    <div class="mascot-body-glow"></div>
+                  </div>
+                  <div class="mascot-steam steam-a"></div>
+                  <div class="mascot-steam steam-b"></div>
+                  <div class="mascot-steam steam-c"></div>
+                  <div class="mascot-bean bean-a"></div>
+                  <div class="mascot-bean bean-b"></div>
+                  <div class="mascot-bean bean-c"></div>
+                </div>
+              </div>
+              <div class="mascot-data-rail" id="brewMascotStats" aria-live="polite"></div>
             </div>
             <div class="output-grid" id="brewOutputs"></div>
             <div class="callout" id="waterNote"></div>
@@ -977,8 +1006,8 @@
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/supabase-config.js?v=20260602-brew-ai-v5"></script>
-  <script src="assets/data.js?v=20260602-brew-ai-v5"></script>
-  <script src="assets/app.js?v=20260602-brew-ai-v5"></script>
+  <script src="assets/supabase-config.js?v=20260602-coffee-mascot-v6"></script>
+  <script src="assets/data.js?v=20260602-coffee-mascot-v6"></script>
+  <script src="assets/app.js?v=20260602-coffee-mascot-v6"></script>
 </body>
 </html>
