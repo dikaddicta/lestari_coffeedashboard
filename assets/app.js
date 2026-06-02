@@ -1372,14 +1372,18 @@
   }
 
   function renderMetrics() {
-    const users = dashboardUserMetric();
+    const totalReferences = ["varieties", "drippers", "processes", "roasts", "waters", "grinders"].reduce((sum, key) => sum + (DATA[key]?.length || 0), 0);
+    const sourceCovered = ["varieties", "drippers", "processes", "roasts", "waters", "grinders"].reduce((sum, key) => sum + ((DATA[key] || []).filter(row => sourceUrl(row)).length), 0);
+    const sourceCoverage = totalReferences ? Math.round((sourceCovered / totalReferences) * 100) : 0;
     const metrics = [
+      { value: totalReferences, label: "Total Referensi", hint: "Akumulasi varietas, dripper, proses, roast profile, air, dan grinder. Angka tidak diduplikasi bila data terbaru berisi record yang sama." },
       { value: DATA.varieties?.length || 0, label: "Varietas", hint: "Jumlah varietas/kultivar di pustaka data lokal dashboard." },
-      { value: DATA.drippers?.length || 0, label: "Dripper", hint: "Jumlah dripper di pustaka data lokal dashboard." },
       { value: DATA.processes?.length || 0, label: "Proses", hint: "Jumlah metode pasca panen di pustaka data lokal dashboard." },
-      { value: DATA.roasts?.length || 0, label: "Roast Profile", hint: "Jumlah profil roasting di pustaka data lokal dashboard." },
+      { value: DATA.drippers?.length || 0, label: "Dripper", hint: "Jumlah dripper di pustaka data lokal dashboard." },
       { value: DATA.waters?.length || 0, label: "Water", hint: "Jumlah profil air/mineral di pustaka data lokal dashboard." },
-      { value: users.value, label: "Pengguna Tercatat", hint: users.hint }
+      { value: DATA.grinders?.length || 0, label: "Grinder", hint: "Jumlah grinder/manual grinder yang dipakai untuk estimasi setting." },
+      { value: DATA.roasts?.length || 0, label: "Roast Profile", hint: "Jumlah profil roasting di pustaka data lokal dashboard." },
+      { value: `${sourceCoverage}%`, label: "Source Coverage", hint: "Persentase referensi yang memiliki SourceURL aktif." }
     ];
     $("libraryMetrics").innerHTML = metrics.map(item => `<div class="metric" title="${html(item.hint)}"><strong>${html(item.value)}</strong><span>${html(item.label)}</span></div>`).join("");
   }
@@ -2025,6 +2029,32 @@
       ${sources ? `<div class="source-chip-row"><span>Source</span>${sources}</div>` : ""}`;
   }
 
+  function renderBrewInputCompass(brew) {
+    const panel = $("brewInputCompass");
+    if (!panel || !brew) return;
+    const focus = brew.intent?.label || "Balanced";
+    const sourceRows = [brew.variety, brew.process, brew.roast, brew.dripper, brew.water].filter(Boolean);
+    const sourceCount = sourceRows.filter(row => sourceUrl(row)).length;
+    const flowText = brew.flow >= 4 ? "Fast flow" : brew.flow <= 2 ? "Slow flow" : "Medium flow";
+    const riskText = brew.risk >= 4 ? "High ferment" : brew.risk >= 3 ? "Medium ferment" : "Clean process";
+    const mineralText = brew.mineralBand === "balanced" ? "Balanced water" : brew.mineralBand === "soft" ? "Soft water" : brew.mineralBand === "hard" ? "Hard water" : "Usable water";
+    const sourceStatus = sourceCount >= 5 ? "Source lengkap" : `${sourceCount}/5 source aktif`;
+    const bars = [
+      ["Clarity", clamp((brew.acidity + brew.fruity + brew.floral) / 15, .08, 1)],
+      ["Sweetness", clamp(brew.sweetness / 5, .08, 1)],
+      ["Body", clamp(brew.body / 5, .08, 1)],
+      ["Risk", clamp(brew.risk / 5, .08, 1)]
+    ].map(([label, value]) => `<span><em>${html(label)}</em><i style="--bar:${Number(value).toFixed(2)}"></i></span>`).join("");
+    panel.innerHTML = `
+      <div class="compass-copy">
+        <span class="compass-kicker">Live Dial-In Compass</span>
+        <strong>${html(focus)} · ${html(brew.extractionMood)}</strong>
+        <small>${html(flowText)} · ${html(riskText)} · ${html(mineralText)} · ${html(sourceStatus)}</small>
+      </div>
+      <div class="compass-bars" aria-label="Profil dial in">${bars}</div>
+    `;
+  }
+
   function renderBrew() {
     renderBrewStockOptions();
     syncBrewStockUI({ apply: true });
@@ -2042,6 +2072,7 @@
     ];
     $("brewOutputs").innerHTML = cards.map(([label, value, desc, icon]) => `<div class="output-card" data-output="${html(icon)}"><span>${html(label)}</span><strong>${html(value)}</strong><small>${html(desc)}</small></div>`).join("");
     $("waterNote").textContent = waterNote(brew);
+    renderBrewInputCompass(brew);
     renderBrewInsight(brew);
     renderSteps(brew);
     renderRecipeOptions(brew);
@@ -2100,9 +2131,9 @@
       return `<article class="recipe-card recipe-option-card${activeClass}${idx === 0 ? " base" : ""}" role="button" tabindex="0" data-recipe-option="${html(opt.key)}" data-recipe-title="${html(opt.title)}">
         <span class="badge">${html(opt.badge)}</span>
         <h3>${html(opt.title)}</h3>
-        <p><strong>${html(opt.dripperName)}</strong> · ${html(opt.mode)} · ${html(opt.switchMode)}</p>
-        <p>${html(opt.grinderSetting)} · target ${html(opt.grindTarget)}µm · ${html(opt.temp)}°C · 1:${html(fmt(opt.ratio, 1))}</p>
-        <p>Dosis ${html(fmt(opt.dose, 1))}g · ${html(waterText)} · ${html(opt.pourCount)} tuangan utama · ${html(fmtTime(opt.brewTime))}</p>
+        <p class="recipe-line"><strong>${html(opt.dripperName)}</strong><span>${html(opt.mode)}</span><span>${html(opt.switchMode)}</span></p>
+        <p class="recipe-line"><strong>${html(opt.grinderSetting)}</strong><span>target ${html(opt.grindTarget)}µm</span><span>${html(opt.temp)}°C</span><span>1:${html(fmt(opt.ratio, 1))}</span></p>
+        <p class="recipe-line"><strong>Dosis ${html(fmt(opt.dose, 1))}g</strong><span>${html(waterText)}</span><span>${html(opt.pourCount)} tuangan utama</span><span>${html(fmtTime(opt.brewTime))}</span></p>
         <div class="recipe-focus-list">
           <span>${html(opt.agitation)} agitation</span>
           <span>${html(opt.fit)}</span>
@@ -4123,12 +4154,12 @@
       grinders: ["Grinder", "Type", "Unit", "V60_Min", "V60_Max", "Japanese_Min", "Japanese_Max", "Immersion_Min", "Immersion_Max", "Notes", "Source"]
     };
     const labelMap = {
-      Variety: "Nama Varietas", Species: "Spesies", Genetic_Market_Group: "Kelompok Genetik", Typical_Regions: "Wilayah Umum", Acidity_Base: "Acidity", Sweetness_Base: "Sweetness", Body_Base: "Body", Notes: "Catatan", Source: "Source",
-      DripperName: "Nama Dripper", Brand: "Brand", Material: "Material", BrewFamily: "Keluarga Seduh", Geometry: "Geometri", FlowSpeed_1slow_5fast: "Kecepatan Flow", HeatRetention_1low_5high: "Retensi Panas", RecommendedFor: "Direkomendasikan Untuk",
-      Process: "Pasca Panen", Category: "Kategori", Stage: "Tahap Proses", FermentRisk_1low_5high: "Risiko Fermentasi", TempMod_C: "Koreksi Suhu", GrindMod_coarser: "Koreksi Gilingan", RatioMod_ml_per_g: "Koreksi Rasio", BrewingCue: "Arahan Seduh",
-      RoastVisual: "Warna Biji", RoastProfile: "Roast Profile", Level: "Level", AgtronApprox: "Agtron", EndTempC: "Suhu Akhir", DTR: "Development Ratio", Solubility: "Solubility", BestUse: "Penggunaan Terbaik",
-      Water: "Nama Air", Type: "Jenis", TDS_ppm: "TDS", pH: "pH", MineralProfile: "Profil Mineral", BrewImpact: "Dampak Rasa", RecommendedUse: "Saran Pakai",
-      Grinder: "Nama Grinder", Unit: "Satuan Setting", V60_Min: "V60 Min", V60_Max: "V60 Max", Japanese_Min: "Japanese Min", Japanese_Max: "Japanese Max", Immersion_Min: "Immersion Min", Immersion_Max: "Immersion Max"
+      Variety: "Nama Varietas", Species: "Spesies", Genetic_Market_Group: "Genetik", Typical_Regions: "Wilayah", Acidity_Base: "Acid", Sweetness_Base: "Sweet", Body_Base: "Body", Notes: "Catatan", Source: "Source",
+      DripperName: "Dripper", Brand: "Brand", Material: "Material", BrewFamily: "Family", Geometry: "Geometri", FlowSpeed_1slow_5fast: "Flow", HeatRetention_1low_5high: "Heat", RecommendedFor: "Best For",
+      Process: "Proses", Category: "Kategori", Stage: "Tahap Proses", FermentRisk_1low_5high: "Risk", TempMod_C: "Temp Δ", GrindMod_coarser: "Grind Δ", RatioMod_ml_per_g: "Ratio Δ", BrewingCue: "Brew Cue",
+      RoastVisual: "Visual", RoastProfile: "Roast", Level: "Level", AgtronApprox: "Agtron", EndTempC: "End °C", DTR: "Development Ratio", Solubility: "Solubility", BestUse: "Best Use",
+      Water: "Nama Air", Type: "Jenis", TDS_ppm: "TDS", pH: "pH", MineralProfile: "Mineral", BrewImpact: "Impact", RecommendedUse: "Use",
+      Grinder: "Nama Grinder", Unit: "Satuan Setting", V60_Min: "V60 Min", V60_Max: "V60 Max", Japanese_Min: "JP Min", Japanese_Max: "JP Max", Immersion_Min: "Imm Min", Immersion_Max: "Imm Max"
     };
     const cols = columnsByDataset[dataset] || [...Object.keys(rows[0] || {}).slice(0, 8), "Source"];
     const cell = (row, c) => {
@@ -4137,9 +4168,9 @@
       return html(row[c]);
     };
     const table = $("libraryTable");
-    table.querySelector("thead").innerHTML = `<tr>${cols.map(c => `<th>${html(labelMap[c] || c)}</th>`).join("")}</tr>`;
+    table.querySelector("thead").innerHTML = `<tr>${cols.map(c => `<th><span>${html(labelMap[c] || c)}</span></th>`).join("")}</tr>`;
     table.querySelector("tbody").innerHTML = rows.length
-      ? rows.slice(0, 200).map(row => `<tr>${cols.map(c => `<td>${cell(row, c)}</td>`).join("")}</tr>`).join("")
+      ? rows.slice(0, 200).map(row => `<tr>${cols.map(c => `<td data-col="${html(c)}">${cell(row, c)}</td>`).join("")}</tr>`).join("")
       : emptyRow(cols.length || 1, "Data tidak ditemukan", "Coba kata kunci lain atau pilih dataset berbeda.", "⌕");
   }
 

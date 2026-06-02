@@ -6,7 +6,7 @@
   <title>Lestari Coffee Dashboard — Personal Brew Companion</title>
   <meta name="description" content="Dashboard kopi gratis untuk penggunaan pribadi, eksplorasi resep, stok, brew log, QA, dan rekomendasi seduh." />
   <meta name="theme-color" content="#4B2E2B" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260602-brew-ai-v4" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260602-brew-ai-v5" />
 </head>
 <body>
   <div class="app-shell">
@@ -366,6 +366,7 @@
               <button id="saveCurrentBrew" class="secondary" type="button" data-action="save-brew-draft">Simpan draft ke Brew Log</button>
               <button id="applyBeanToBrew" class="ghost" type="button">Gunakan biji kopi ranking #1</button>
             </div>
+            <div class="brew-input-compass" id="brewInputCompass" aria-live="polite"></div>
           </section>
 
           <section class="panel output-panel brew-output-showcase">
@@ -976,8 +977,8 @@
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/supabase-config.js?v=20260602-brew-ai-v4"></script>
-  <script src="assets/data.js?v=20260602-brew-ai-v4"></script>
-  <script src="assets/app.js?v=20260602-brew-ai-v4"></script>
+  <script src="assets/supabase-config.js?v=20260602-brew-ai-v5"></script>
+  <script src="assets/data.js?v=20260602-brew-ai-v5"></script>
+  <script src="assets/app.js?v=20260602-brew-ai-v5"></script>
 </body>
 </html>

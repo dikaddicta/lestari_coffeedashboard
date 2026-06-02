@@ -5007,3 +5007,205 @@ main,
   }
   .recipe-option-card.active { transform: none; }
 }
+
+/* v5 polish: accurate data metrics, premium left-column fill, cleaner library table text */
+.hero-card .metric-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.hero-card .metric {
+  min-height: 82px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-card .metric:first-child {
+  grid-column: 1 / -1;
+  min-height: 92px;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(255,248,235,.22), transparent 42%),
+    linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.07));
+}
+.hero-card .metric:first-child strong {
+  font-size: 34px;
+}
+.hero-card .metric:first-child span::after {
+  content: " · data aktif";
+  opacity: .72;
+}
+.brew-layout .panel:first-child {
+  display: flex;
+  flex-direction: column;
+}
+.brew-layout .panel:first-child .form-grid {
+  flex: 0 0 auto;
+}
+.brew-input-compass {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 26px;
+  border: 1px solid rgba(75,46,43,.14);
+  background:
+    radial-gradient(circle at 92% 6%, rgba(214,155,97,.22), transparent 32%),
+    linear-gradient(135deg, rgba(75,46,43,.96), rgba(98,61,43,.88));
+  color: #fff8eb;
+  box-shadow: 0 24px 60px rgba(75,46,43,.16), inset 0 1px 0 rgba(255,255,255,.14);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 16px;
+  align-items: center;
+  min-height: 126px;
+  isolation: isolate;
+  position: relative;
+  overflow: hidden;
+}
+.brew-input-compass::before {
+  content: "";
+  position: absolute;
+  inset: -42% auto auto -20%;
+  width: 280px;
+  height: 280px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255,248,235,.18), transparent 62%);
+  z-index: -1;
+}
+.compass-copy {
+  display: grid;
+  gap: 5px;
+}
+.compass-kicker {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.12);
+  color: rgba(255,248,235,.8);
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .11em;
+}
+.compass-copy strong {
+  font-size: clamp(17px, 1.4vw, 24px);
+  line-height: 1.15;
+  color: #fffaf1;
+}
+.compass-copy small {
+  color: rgba(255,248,235,.72);
+  line-height: 1.45;
+  font-weight: 750;
+}
+.compass-bars {
+  display: grid;
+  gap: 8px;
+}
+.compass-bars span {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+.compass-bars em {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(255,248,235,.68);
+}
+.compass-bars i {
+  height: 8px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(255,248,235,.92) calc(var(--bar, .5) * 100%), rgba(255,255,255,.12) 0);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+}
+.recipe-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  line-height: 1.45;
+}
+.recipe-line strong,
+.recipe-line span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(75,46,43,.055);
+  border: 1px solid rgba(75,46,43,.07);
+}
+.recipe-card.base .recipe-line strong,
+.recipe-card.base .recipe-line span {
+  background: rgba(255,248,235,.105);
+  border-color: rgba(255,248,235,.12);
+  color: rgba(255,248,235,.86);
+}
+#tab-library .table-wrap.tall {
+  max-height: 620px;
+}
+#libraryTable {
+  min-width: 1380px;
+  table-layout: auto;
+}
+#libraryTable th {
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  vertical-align: middle;
+  padding: 14px 16px;
+}
+#libraryTable th span {
+  display: inline-flex;
+  align-items: center;
+  min-width: max-content;
+  line-height: 1.12;
+}
+#libraryTable td {
+  word-break: normal;
+  overflow-wrap: anywhere;
+  hyphens: none;
+}
+#libraryTable td[data-col="Acidity_Base"],
+#libraryTable td[data-col="Sweetness_Base"],
+#libraryTable td[data-col="Body_Base"],
+#libraryTable td[data-col="FlowSpeed_1slow_5fast"],
+#libraryTable td[data-col="HeatRetention_1low_5high"],
+#libraryTable td[data-col="FermentRisk_1low_5high"],
+#libraryTable td[data-col="TempMod_C"],
+#libraryTable td[data-col="GrindMod_coarser"],
+#libraryTable td[data-col="RatioMod_ml_per_g"],
+#libraryTable td[data-col="TDS_ppm"],
+#libraryTable td[data-col="pH"] {
+  white-space: nowrap;
+  text-align: center;
+  font-weight: 900;
+  color: var(--espresso);
+}
+#libraryTable td[data-col="Notes"],
+#libraryTable td[data-col="BrewingCue"],
+#libraryTable td[data-col="RecommendedFor"],
+#libraryTable td[data-col="BrewImpact"],
+#libraryTable td[data-col="RecommendedUse"] {
+  min-width: 260px;
+  max-width: 420px;
+  line-height: 1.5;
+}
+#libraryTable td[data-col="Source"] {
+  min-width: 170px;
+  white-space: nowrap;
+}
+#libraryTable .source-link {
+  max-width: 180px;
+}
+@media (max-width: 980px) {
+  .brew-input-compass {
+    grid-template-columns: 1fr;
+  }
+  .compass-bars span {
+    grid-template-columns: 86px minmax(0, 1fr);
+  }
+  #libraryTable {
+    min-width: 1220px;
+  }
+}
