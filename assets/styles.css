@@ -6243,3 +6243,244 @@ main,
     align-content: start !important;
   }
 }
+
+
+/* ===== v15: lock hero text layout + flatter hero pills + separated brew assistant row ===== */
+.hero {
+  grid-template-columns: minmax(0, 1fr) 360px !important;
+  align-items: stretch !important;
+  padding: 34px 36px !important;
+}
+
+.hero-main {
+  min-height: 500px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.hero-text {
+  max-width: 930px !important;
+}
+
+.hero-lead {
+  max-width: 56ch !important;
+  line-height: 1.28 !important;
+}
+
+.hero-copy,
+.hero-footnote {
+  max-width: 76ch !important;
+  line-height: 1.68 !important;
+}
+
+.hero-footnote {
+  padding-top: 18px !important;
+  border-top: 1px solid rgba(255,255,255,.10) !important;
+}
+
+.hero .premium-badge-row {
+  margin-top: 18px !important;
+  gap: 10px !important;
+}
+
+.hero .premium-badge-row span {
+  min-height: 34px !important;
+  padding: 6px 16px !important;
+  border-radius: 14px !important;
+  line-height: 1.1 !important;
+  font-size: 12px !important;
+  letter-spacing: .01em !important;
+}
+
+.brew-layout .brew-input-compass,
+.brew-layout .brew-preflight-panel,
+.input-panel .brew-input-compass,
+.input-panel .brew-preflight-panel {
+  display: none !important;
+}
+
+.brew-assistant-wide-panel {
+  margin-top: 22px !important;
+}
+
+.brew-assistant-wide-panel .section-title {
+  margin-bottom: 14px !important;
+}
+
+.brew-assistant-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.brew-assistant-grid .brew-input-compass,
+.brew-assistant-grid .brew-preflight-panel {
+  margin: 0 !important;
+  min-height: 178px;
+  height: 100%;
+}
+
+.brew-assistant-grid .brew-input-compass {
+  grid-template-columns: minmax(0, .92fr) minmax(220px, .72fr);
+  align-items: center;
+}
+
+.brew-assistant-grid .brew-preflight-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.brew-assistant-grid .preflight-header {
+  margin-bottom: 14px;
+}
+
+.brew-assistant-grid .preflight-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.brew-assistant-grid .preflight-card {
+  min-height: 112px;
+}
+
+@media (max-width: 1180px) {
+  .hero {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hero-main {
+    min-height: 0 !important;
+  }
+
+  .brew-assistant-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .brew-assistant-grid .brew-input-compass {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero .premium-badge-row span {
+    min-height: 32px !important;
+    padding: 6px 13px !important;
+    font-size: 11px !important;
+  }
+
+  .brew-assistant-grid .preflight-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ===== v16: solve hero text width to match approved reference ===== */
+.hero {
+  grid-template-columns: minmax(0, 1fr) 340px !important;
+  padding: 34px 36px !important;
+}
+
+.hero-main {
+  min-height: 500px !important;
+}
+
+.hero-title-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 18px !important;
+  margin-bottom: 18px !important;
+}
+
+.hero-text {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.hero-lead {
+  width: 100% !important;
+  max-width: none !important;
+  font-size: 24px !important;
+  line-height: 1.34 !important;
+  margin: 0 0 18px 0 !important;
+}
+
+.hero-copy {
+  width: 100% !important;
+  max-width: none !important;
+  font-size: 15px !important;
+  line-height: 1.75 !important;
+  margin: 0 0 26px 0 !important;
+}
+
+.hero-footnote {
+  width: 100% !important;
+  max-width: none !important;
+  font-size: 15px !important;
+  line-height: 1.72 !important;
+  margin: 0 !important;
+  padding-top: 18px !important;
+}
+
+.hero .premium-badge-row {
+  margin-top: 16px !important;
+}
+
+.hero .premium-badge-row span {
+  min-height: 32px !important;
+  padding: 6px 16px !important;
+}
+
+@media (max-width: 1280px) {
+  .hero {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* ===== v17: exact hero text spacing per approved markup ===== */
+.hero-main {
+  min-height: 510px !important;
+}
+
+.hero-text {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.hero-lead {
+  width: 100% !important;
+  max-width: 920px !important;
+  margin: 0 0 10px 0 !important;
+  font-size: 24px !important;
+  line-height: 1.34 !important;
+}
+
+.hero-copy {
+  width: 100% !important;
+  max-width: 960px !important;
+  margin: 0 !important;
+  font-size: 15px !important;
+  line-height: 1.72 !important;
+}
+
+.hero-footnote {
+  width: 100% !important;
+  max-width: 960px !important;
+  margin-top: 52px !important;
+  margin-bottom: 0 !important;
+  padding-top: 18px !important;
+  line-height: 1.72 !important;
+}
+
+.hero .premium-badge-row {
+  margin-top: 12px !important;
+  gap: 10px !important;
+}
+
+@media (max-width: 1280px) {
+  .hero-footnote {
+    margin-top: 36px !important;
+  }
+}

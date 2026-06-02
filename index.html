@@ -6,7 +6,7 @@
   <title>Lestari Coffee Dashboard — Personal Brew Companion</title>
   <meta name="description" content="Dashboard kopi gratis untuk penggunaan pribadi, eksplorasi resep, stok, brew log, QA, dan rekomendasi seduh." />
   <meta name="theme-color" content="#4B2E2B" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260603-baseline-v13" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260603-herospacing-v17" />
 </head>
 <body>
   <div class="app-shell">
@@ -383,8 +383,6 @@
               <button id="saveCurrentBrew" class="secondary" type="button" data-action="save-brew-draft">Simpan draft ke Brew Log</button>
               <button id="applyBeanToBrew" class="ghost" type="button">Gunakan biji kopi ranking #1</button>
             </div>
-            <div class="brew-input-compass" id="brewInputCompass" aria-live="polite"></div>
-            <div class="brew-preflight-panel" id="brewPreflightPanel" aria-live="polite"></div>
           </section>
 
           <section class="panel output-panel brew-output-showcase">
@@ -407,6 +405,17 @@
             <div class="callout" id="waterNote"></div>
           </section>
         </div>
+
+        <section class="panel wide brew-assistant-wide-panel">
+          <div class="section-title compact-title">
+            <span>Dial-In</span>
+            <h2>Live Compass + Brew Preflight</h2>
+          </div>
+          <div class="brew-assistant-grid">
+            <div class="brew-input-compass" id="brewInputCompass" aria-live="polite"></div>
+            <div class="brew-preflight-panel" id="brewPreflightPanel" aria-live="polite"></div>
+          </div>
+        </section>
 
         <section class="panel wide brew-insight-wide-panel">
           <div class="section-title compact-title">

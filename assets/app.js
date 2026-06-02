@@ -351,11 +351,15 @@
     const roleStatusClass = roleCtx.status === "active" ? "approved" : roleCtx.status === "rejected" ? "rejected" : roleCtx.status === "pending" ? "pending" : roleCtx.status === "disabled" ? "disabled" : "";
     const roleStatusText = roleCtx.status === "pending" ? "Menunggu approval" : roleCtx.status === "rejected" ? "Ditolak" : roleCtx.status === "disabled" ? "Akses disuspend" : roleCtx.status === "active" ? "Aktif" : "Belum ada workspace";
 
+    const lockHeroSummaryToGuest = true;
+
     if (title) title.textContent = isLoggedIn ? "Akun Pengguna" : "Login Pengguna";
-    if (userLabel) userLabel.textContent = isLoggedIn ? (userProfile?.display_name || currentUser.email) : "Mode Tamu";
-    if (roleLabel) roleLabel.textContent = isLoggedIn
-      ? `${currentUser.email} · ${roleCtx.workspace || "-"} · ${roleCtx.role}`
-      : "Masuk untuk menyimpan dan membagikan data.";
+    if (userLabel) userLabel.textContent = lockHeroSummaryToGuest ? "Mode Tamu" : (isLoggedIn ? (userProfile?.display_name || currentUser.email) : "Mode Tamu");
+    if (roleLabel) roleLabel.textContent = lockHeroSummaryToGuest
+      ? "Masuk untuk menyimpan dan membagikan data."
+      : (isLoggedIn
+        ? `${currentUser.email} · ${roleCtx.workspace || "-"} · ${roleCtx.role}`
+        : "Masuk untuk menyimpan dan membagikan data.");
 
     if (accountBox) {
       accountBox.innerHTML = isLoggedIn
@@ -368,7 +372,7 @@
 
     setElementHidden(loggedOutArea, isLoggedIn);
     setElementHidden(loggedInArea, !isLoggedIn);
-    setElementHidden(authJumpLink, isLoggedIn);
+    setElementHidden(authJumpLink, lockHeroSummaryToGuest ? false : isLoggedIn);
   }
 
   async function ensureRequestedMembership() {
