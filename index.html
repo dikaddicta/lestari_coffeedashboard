@@ -6,7 +6,7 @@
   <title>Lestari Coffee Dashboard — Personal Brew Companion</title>
   <meta name="description" content="Dashboard kopi gratis untuk penggunaan pribadi, eksplorasi resep, stok, brew log, QA, dan rekomendasi seduh." />
   <meta name="theme-color" content="#4B2E2B" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260603-v26-1-ui-role-chart" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260603-v27-1-auth-summary-fix" />
 </head>
 <body>
   <div class="app-shell">
@@ -80,6 +80,7 @@
           <option value="public-brews">Hasil Seduhan Publik</option>
           <option value="analytics">Analytics</option>
           <option value="quality">Data Quality</option>
+          <option value="reports">Export / Report</option>
           <option value="suggestion">Kotak Saran</option>
           <option value="admin">Akun &amp; Admin</option>
           <option value="library">Pustaka Data</option>
@@ -105,6 +106,7 @@
       <button class="tab-btn" data-tab="public-brews">Hasil Seduhan Publik</button>
       <button class="tab-btn" data-tab="analytics">Analytics</button>
       <button class="tab-btn" data-tab="quality">Data Quality</button>
+      <button class="tab-btn" data-tab="reports">Export / Report</button>
       <button class="tab-btn" data-tab="suggestion">Kotak Saran</button>
       <button class="tab-btn" data-tab="admin">Akun & Admin</button>
       <button class="tab-btn" data-tab="library">Pustaka Data</button>
@@ -1026,6 +1028,89 @@
               </table>
             </div>
           </section>
+        </section>
+      </section>
+
+
+      <section id="tab-reports" class="tab-panel">
+        <section class="panel wide report-premium-panel">
+          <div class="section-title">
+            <span>Export</span>
+            <h2>Export / Report Center</h2>
+          </div>
+          <p class="hint">Download data penting sebagai CSV/JSON atau buat report HTML siap print. Modul ini membaca data workspace aktif dan data publik yang sudah disetujui.</p>
+
+          <div class="report-toolbar">
+            <select id="reportScope">
+              <option value="workspace">Workspace aktif</option>
+              <option value="public">Publik disetujui</option>
+              <option value="all">Semua data terbaca</option>
+            </select>
+            <select id="reportLibraryDataset">
+              <option value="varieties">Library: Varietas</option>
+              <option value="drippers">Library: Dripper</option>
+              <option value="processes">Library: Proses</option>
+              <option value="roasts">Library: Roast Profile</option>
+              <option value="waters">Library: Air</option>
+              <option value="grinders">Library: Grinder</option>
+            </select>
+            <button class="secondary" id="refreshReports" type="button">Refresh Preview</button>
+          </div>
+
+          <div class="report-preview-grid" id="reportPreviewGrid" aria-live="polite"></div>
+
+          <div class="report-action-grid">
+            <article class="report-action-card">
+              <span class="mini-label">CSV</span>
+              <strong>Brew Log</strong>
+              <p>Export seluruh brew log yang terbaca sesuai scope report.</p>
+              <button class="primary" type="button" data-report-action="brew-csv">Download Brew CSV</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">CSV</span>
+              <strong>QA Scores</strong>
+              <p>Export nilai QA untuk audit, analisis, atau backup.</p>
+              <button class="primary" type="button" data-report-action="qa-csv">Download QA CSV</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">CSV</span>
+              <strong>Stock Beans</strong>
+              <p>Export stok kopi workspace aktif dengan profil kopi.</p>
+              <button class="primary" type="button" data-report-action="stock-csv">Download Stock CSV</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">CSV</span>
+              <strong>Public Brew</strong>
+              <p>Export resep publik yang sudah approved dan lolos threshold.</p>
+              <button class="secondary" type="button" data-report-action="public-csv">Download Public CSV</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">CSV</span>
+              <strong>Library Dataset</strong>
+              <p>Export dataset referensi aktif, termasuk SourceURL bila tersedia.</p>
+              <button class="secondary" type="button" data-report-action="library-csv">Download Library CSV</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">HTML</span>
+              <strong>Analytics Report</strong>
+              <p>Buat ringkasan performa QA, top recipe, dan insight otomatis.</p>
+              <button class="secondary" type="button" data-report-action="analytics-html">Download HTML Report</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">PRINT</span>
+              <strong>Current Recipe Card</strong>
+              <p>Cetak rekomendasi seduh aktif sebagai kartu resep.</p>
+              <button class="ghost" type="button" data-report-action="recipe-print">Print Recipe Card</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">JSON</span>
+              <strong>Full Local Backup</strong>
+              <p>Export backup lokal lengkap untuk arsip pribadi.</p>
+              <button class="ghost" type="button" data-report-action="json-backup">Download JSON Backup</button>
+            </article>
+          </div>
+
+          <section class="report-sample-card" id="reportSampleCard" aria-live="polite"></section>
         </section>
       </section>
 

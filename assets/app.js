@@ -553,15 +553,11 @@
     const roleStatusClass = roleCtx.status === "active" ? "approved" : roleCtx.status === "rejected" ? "rejected" : roleCtx.status === "pending" ? "pending" : roleCtx.status === "disabled" ? "disabled" : "";
     const roleStatusText = roleCtx.status === "pending" ? "Menunggu approval" : roleCtx.status === "rejected" ? "Ditolak" : roleCtx.status === "disabled" ? "Akses disuspend" : roleCtx.status === "active" ? "Aktif" : "Belum ada workspace";
 
-    const lockHeroSummaryToGuest = true;
-
     if (title) title.textContent = isLoggedIn ? "Akun Pengguna" : "Login Pengguna";
-    if (userLabel) userLabel.textContent = lockHeroSummaryToGuest ? "Mode Tamu" : (isLoggedIn ? (userProfile?.display_name || currentUser.email) : "Mode Tamu");
-    if (roleLabel) roleLabel.textContent = lockHeroSummaryToGuest
-      ? "Masuk untuk menyimpan dan membagikan data."
-      : (isLoggedIn
-        ? `${currentUser.email} · ${roleCtx.workspace || "-"} · ${roleCtx.role}`
-        : "Masuk untuk menyimpan dan membagikan data.");
+    if (userLabel) userLabel.textContent = isLoggedIn ? (userProfile?.display_name || currentUser.email || "Akun Pengguna") : "Mode Tamu";
+    if (roleLabel) roleLabel.textContent = isLoggedIn
+      ? `${currentUser.email || "-"} · ${roleCtx.workspace || "-"} · ${roleCtx.role || "user"}`
+      : "Masuk untuk menyimpan dan membagikan data.";
 
     if (accountBox) {
       accountBox.innerHTML = isLoggedIn
@@ -574,7 +570,7 @@
 
     setElementHidden(loggedOutArea, isLoggedIn);
     setElementHidden(loggedInArea, !isLoggedIn);
-    setElementHidden(authJumpLink, lockHeroSummaryToGuest ? false : isLoggedIn);
+    setElementHidden(authJumpLink, isLoggedIn);
   }
 
   async function ensureRequestedMembership() {
@@ -4976,7 +4972,7 @@
     if (select && select.value !== name) select.value = name;
   }
 
-  const GUEST_PRIVATE_TABS = ["stock", "qa", "analytics", "quality"];
+  const GUEST_PRIVATE_TABS = ["stock", "qa", "analytics", "quality", "reports"];
 
   function isGuestPrivateTab(name) {
     return !currentUser && GUEST_PRIVATE_TABS.includes(String(name || ""));
@@ -5006,7 +5002,7 @@
 
   function showTab(name) {
     if (isGuestPrivateTab(name)) {
-      showMessage("Login untuk membuka Stock Kopi, Brew Log & QA, Analytics, dan Data Quality.", "info");
+      showMessage("Login untuk membuka Stock Kopi, Brew Log & QA, Analytics, Data Quality, dan Export / Report.", "info");
       name = "admin";
     }
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
@@ -5267,6 +5263,16 @@
     $("refreshQuality")?.addEventListener("click", () => {
       renderDataQuality();
       showMessage("Data Quality Checker diperbarui.", "success");
+    });
+    ["reportScope", "reportLibraryDataset"].forEach(id => $(id)?.addEventListener("change", renderReportPreview));
+    $("refreshReports")?.addEventListener("click", () => {
+      renderReportPreview();
+      showMessage("Preview report diperbarui.", "success");
+    });
+    document.addEventListener("click", e => {
+      const btn = e.target.closest?.("[data-report-action]");
+      if (!btn) return;
+      handleReportAction(btn.dataset.reportAction);
     });
     $("mobileQuickBrew")?.addEventListener("click", () => {
       showTab("brew");
@@ -6045,6 +6051,175 @@
     }
   }
 
+  function reportRows(scope = $("reportScope")?.value || "workspace") {
+    const publicRows = typeof publicApprovedRows === "function" ? publicApprovedRows() : [];
+    const workspaceRows = allBrewLogs() || [];
+    const qaRows = allQA() || [];
+    const stockRows = workspaceStock() || [];
+    if (scope === "public") return { brew: publicRows, qa: [], stock: [], public: publicRows };
+    if (scope === "all") {
+      const seen = new Set();
+      const brew = [...workspaceRows, ...publicRows].filter(row => {
+        const key = String(row.CloudID || row.BrewID || `${row.BeanName}|${row.Date}|${row.BrewerName}`);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      return { brew, qa: qaRows, stock: stockRows, public: publicRows };
+    }
+    return { brew: workspaceRows, qa: qaRows, stock: stockRows, public: publicRows };
+  }
+
+  function csvEscape(value) {
+    if (value === null || value === undefined) return "";
+    const str = String(value).replace(/\r?\n/g, " ");
+    return /[",;\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  }
+
+  function rowsToCsv(rows = [], preferredColumns = []) {
+    const columns = preferredColumns.length
+      ? preferredColumns
+      : uniq(rows.flatMap(row => Object.keys(row || {}))).filter(key => !key.startsWith("__"));
+    const header = columns.map(csvEscape).join(",");
+    const body = rows.map(row => columns.map(col => csvEscape(row?.[col])).join(",")).join("\n");
+    return `${header}\n${body}`;
+  }
+
+  function downloadTextFile(filename, content, mime = "text/plain;charset=utf-8") {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportRowsCsv(filename, rows, preferredColumns = []) {
+    if (!rows?.length) return showMessage("Tidak ada data untuk diexport.", "info");
+    downloadTextFile(filename, rowsToCsv(rows, preferredColumns), "text/csv;charset=utf-8");
+    showMessage(`${filename} berhasil dibuat.`, "success");
+  }
+
+  function libraryExportRows() {
+    const dataset = $("reportLibraryDataset")?.value || "varieties";
+    return { dataset, rows: DATA[dataset] || [] };
+  }
+
+  function reportMetricData() {
+    const scope = $("reportScope")?.value || "workspace";
+    const rows = reportRows(scope);
+    const qaValues = rows.brew.map(row => Number(row.QA_Final || 0)).filter(Boolean);
+    const avgQA = qaValues.length ? avg(qaValues) : 0;
+    const best = rows.brew.slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0))[0];
+    return { scope, rows, avgQA, best };
+  }
+
+  function renderReportPreview() {
+    const grid = $("reportPreviewGrid");
+    const sample = $("reportSampleCard");
+    if (!grid || !sample) return;
+    const { scope, rows, avgQA, best } = reportMetricData();
+    const lib = libraryExportRows();
+    const cards = [
+      ["Scope", scope === "all" ? "Semua data" : scope === "public" ? "Publik" : "Workspace", "Data yang dipakai untuk report."],
+      ["Brew Rows", rows.brew.length, "Jumlah brew log yang siap diexport."],
+      ["QA Rows", rows.qa.length, "Jumlah QA score di workspace aktif."],
+      ["Stock Rows", rows.stock.length, "Jumlah stok kopi workspace aktif."],
+      ["Avg QA", avgQA ? fmt(avgQA, 2) : "-", "Rata-rata QA pada scope aktif."],
+      ["Library", `${lib.rows.length} rows`, `Dataset: ${libraryDatasetLabel ? libraryDatasetLabel(lib.dataset) : lib.dataset}`]
+    ];
+    grid.innerHTML = cards.map(([label, value, desc], idx) => `
+      <article class="report-preview-card cinematic-reveal" style="--stagger:${idx}">
+        <span>${html(label)}</span>
+        <strong>${html(value)}</strong>
+        <small>${html(desc)}</small>
+      </article>
+    `).join("");
+    sample.innerHTML = `
+      <div>
+        <span class="mini-label">Report Preview</span>
+        <h3>${html(best ? `Best Cup: ${best.BeanName || best.BrewID || "Tanpa nama"}` : "Belum ada best cup")}</h3>
+        <p>${html(best ? `QA ${fmt(best.QA_Final, 2)} · ${[best.Variety, best.Process, best.RoastProfile].filter(Boolean).join(" · ") || "profil belum lengkap"} · ${best.Method || "-"} · ${best.Dripper || "-"}` : "Tambahkan brew log dan QA untuk membuat report analytics yang lebih lengkap.")}</p>
+      </div>
+      <button class="secondary" type="button" data-report-action="analytics-html">Download Analytics Report</button>
+    `;
+  }
+
+  function reportHtmlDocument() {
+    const { scope, rows, avgQA, best } = reportMetricData();
+    const top = rows.brew.slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0)).slice(0, 12);
+    const drippers = groupAnalytics ? groupAnalytics(rows.brew, "Dripper").slice(0, 6) : [];
+    const processes = groupAnalytics ? groupAnalytics(rows.brew, "Process").slice(0, 6) : [];
+    const insightRows = analyticsInsights ? analyticsInsights(rows.brew) : [];
+    const tr = arr => arr.map(item => `<tr>${item.map(value => `<td>${String(value ?? "").replace(/[<>&]/g, c => ({ "<":"&lt;", ">":"&gt;", "&":"&amp;" }[c]))}</td>`).join("")}</tr>`).join("");
+    return `<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Coffee Brew OS Analytics Report</title>
+<style>
+body{font-family:Inter,Arial,sans-serif;margin:40px;color:#3d2a24;background:#fffaf4}h1{font-size:44px;margin:0 0 6px}h2{margin-top:34px}.meta{color:#7a655c}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}.card{padding:16px;border:1px solid #eadbd0;border-radius:18px;background:#fff}strong{display:block;font-size:22px}table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden}td,th{padding:10px;border-bottom:1px solid #eee0d5;text-align:left;font-size:13px}th{background:#4b2e2b;color:#fff}.insight{padding:14px;border:1px solid #eadbd0;border-radius:16px;background:#fff;margin:10px 0}@media print{body{margin:20px}.no-print{display:none}}
+</style>
+</head>
+<body>
+<h1>Coffee Brew OS Report</h1>
+<p class="meta">Generated ${new Date().toLocaleString()} · Scope: ${scope}</p>
+<div class="cards">
+<div class="card"><span>Total Brew</span><strong>${rows.brew.length}</strong></div>
+<div class="card"><span>Avg QA</span><strong>${avgQA ? fmt(avgQA,2) : "-"}</strong></div>
+<div class="card"><span>Best Cup</span><strong>${best ? (best.BeanName || best.BrewID || "-") : "-"}</strong></div>
+<div class="card"><span>Stock Rows</span><strong>${rows.stock.length}</strong></div>
+</div>
+<h2>Insights</h2>
+${insightRows.map(i => `<div class="insight"><strong>${i.title}</strong><p>${i.text}</p></div>`).join("") || "<p>Belum ada insight.</p>"}
+<h2>Top Recipes</h2>
+<table><thead><tr><th>Kopi</th><th>Profil</th><th>Metode</th><th>Resep</th><th>QA</th></tr></thead><tbody>${tr(top.map(log => [log.BeanName || log.BrewID || "-", [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · "), log.Method || "-", [log.Dripper, log.Grinder, log.GrindSetting, log.Temp_C ? `${log.Temp_C}°C` : "", log.Ratio ? `1:${log.Ratio}` : ""].filter(Boolean).join(" · "), fmt(log.QA_Final,2)]))}</tbody></table>
+<h2>Top Dripper</h2>
+<table><thead><tr><th>Dripper</th><th>Avg QA</th><th>Count</th><th>Best</th></tr></thead><tbody>${tr(drippers.map(g => [g.key, fmt(g.avgQA,2), g.count, fmt(g.bestQA,2)]))}</tbody></table>
+<h2>Top Process</h2>
+<table><thead><tr><th>Process</th><th>Avg QA</th><th>Count</th><th>Best</th></tr></thead><tbody>${tr(processes.map(g => [g.key, fmt(g.avgQA,2), g.count, fmt(g.bestQA,2)]))}</tbody></table>
+</body>
+</html>`;
+  }
+
+  function printRecipeCard() {
+    const brew = computeBrew();
+    if (!brew) return showMessage("Rekomendasi seduh belum siap.", "error");
+    const htmlDoc = `<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Recipe Card</title><style>
+body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:0;padding:40px}.card{max-width:720px;margin:auto;padding:34px;border-radius:32px;background:#fffaf4;border:1px solid #e7d5c5;box-shadow:0 22px 60px rgba(61,42,36,.16)}h1{font-size:40px;margin:0 0 8px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}.box{padding:16px;border-radius:18px;background:#f2e5d8}.box span{font-size:11px;text-transform:uppercase;font-weight:900;color:#8a7165}.box strong{display:block;margin-top:8px;font-size:22px}.note{line-height:1.65}@media print{body{background:#fff}.card{box-shadow:none}}</style></head><body><div class="card">
+<p><b>Coffee Brew OS · Recipe Card</b></p><h1>${brew.intent?.label || "Recommended Brew"}</h1>
+<p>${brew.variety?.Variety || $("brewVariety")?.value || "-"} · ${brew.process?.Process || $("brewProcess")?.value || "-"} · ${brew.roast?.RoastProfile || $("brewRoast")?.value || "-"}</p>
+<div class="grid">
+<div class="box"><span>Temp</span><strong>${brew.temp}°C</strong></div><div class="box"><span>Ratio</span><strong>1:${fmt(brew.ratio,1)}</strong></div><div class="box"><span>Water</span><strong>${brew.totalWater}ml</strong></div>
+<div class="box"><span>Grind</span><strong>${brew.grindTarget}µm</strong></div><div class="box"><span>Time</span><strong>${fmtTime(brew.brewTime)}</strong></div><div class="box"><span>Dripper</span><strong>${brew.dripper?.DripperName || "-"}</strong></div>
+</div><p class="note">${brew.risk >= 4 ? "Ferment tinggi: gunakan agitasi rendah dan hindari swirl agresif." : "Gunakan sebagai baseline dan ubah satu variabel per eksperimen."}</p>
+</div><script>window.print()</script></body></html>`;
+    const win = window.open("", "_blank");
+    if (!win) return showMessage("Popup diblokir browser. Izinkan popup untuk print recipe card.", "error");
+    win.document.write(htmlDoc);
+    win.document.close();
+  }
+
+  function handleReportAction(action) {
+    const { rows } = reportMetricData();
+    const date = todayISO();
+    if (action === "brew-csv") return exportRowsCsv(`coffee-brew-log-${date}.csv`, rows.brew);
+    if (action === "qa-csv") return exportRowsCsv(`coffee-qa-scores-${date}.csv`, rows.qa);
+    if (action === "stock-csv") return exportRowsCsv(`coffee-stock-beans-${date}.csv`, rows.stock);
+    if (action === "public-csv") return exportRowsCsv(`coffee-public-brews-${date}.csv`, rows.public);
+    if (action === "library-csv") {
+      const lib = libraryExportRows();
+      return exportRowsCsv(`coffee-library-${lib.dataset}-${date}.csv`, lib.rows);
+    }
+    if (action === "analytics-html") {
+      downloadTextFile(`coffee-analytics-report-${date}.html`, reportHtmlDocument(), "text/html;charset=utf-8");
+      return showMessage("Analytics HTML report berhasil dibuat.", "success");
+    }
+    if (action === "recipe-print") return printRecipeCard();
+    if (action === "json-backup") return exportJson();
+  }
+
   function renderAll() {
     renderMetrics();
     renderAccessUI();
@@ -6058,6 +6233,7 @@
     renderPublicBrewTable();
     renderAnalytics();
     renderDataQuality();
+    renderReportPreview();
     renderLibrary();
     renderWorkspaceUI();
     renderAdminProDashboard();
