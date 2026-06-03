@@ -6,7 +6,7 @@
   <title>Lestari Coffee Dashboard — Personal Brew Companion</title>
   <meta name="description" content="Dashboard kopi gratis untuk penggunaan pribadi, eksplorasi resep, stok, brew log, QA, dan rekomendasi seduh." />
   <meta name="theme-color" content="#4B2E2B" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260603-herospacing-v17" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260603-v26-1-ui-role-chart" />
 </head>
 <body>
   <div class="app-shell">
@@ -28,6 +28,14 @@
       </div>
     </div>
     <button type="button" id="floatingMascotLauncher" class="floating-mascot-launcher hidden" aria-label="Show coffee mascot">☕ Mascot</button>
+    <div id="syncGuardWidget" class="sync-guard-widget" data-state="idle" role="status" aria-live="polite">
+      <span class="sync-guard-dot" aria-hidden="true"></span>
+      <div class="sync-guard-copy">
+        <strong id="syncGuardTitle">Draft aman</strong>
+        <small id="syncGuardText">Autosave lokal aktif.</small>
+      </div>
+      <button id="syncRetryBtn" class="sync-retry-btn hidden" type="button">Sync ulang</button>
+    </div>
     <header class="hero">
       <div class="hero-main">
         <p class="eyebrow">Lestari Coffee Dashboard</p>
@@ -70,12 +78,21 @@
           <option value="stock">Stok Kopi</option>
           <option value="qa">Brew Log &amp; QA</option>
           <option value="public-brews">Hasil Seduhan Publik</option>
+          <option value="analytics">Analytics</option>
+          <option value="quality">Data Quality</option>
           <option value="suggestion">Kotak Saran</option>
           <option value="admin">Akun &amp; Admin</option>
           <option value="library">Pustaka Data</option>
         </select>
       </label>
       <small>Gunakan dropdown ini untuk navigasi cepat di layar HP.</small>
+    </div>
+
+    <div class="mobile-quick-actions" id="mobileQuickActions" aria-label="Aksi cepat mobile">
+      <button type="button" id="mobileQuickBrew">Seduh</button>
+      <button type="button" id="mobileQuickSave" data-action="save-brew-draft">Save Draft</button>
+      <button type="button" id="mobileQuickSync">Sync</button>
+      <button type="button" id="mobileQuickTop">Top</button>
     </div>
 
     <nav class="tabs" aria-label="Main navigation">
@@ -86,10 +103,21 @@
       <button class="tab-btn" data-tab="stock">Stok Kopi</button>
       <button class="tab-btn" data-tab="qa">Brew Log & QA</button>
       <button class="tab-btn" data-tab="public-brews">Hasil Seduhan Publik</button>
+      <button class="tab-btn" data-tab="analytics">Analytics</button>
+      <button class="tab-btn" data-tab="quality">Data Quality</button>
       <button class="tab-btn" data-tab="suggestion">Kotak Saran</button>
       <button class="tab-btn" data-tab="admin">Akun & Admin</button>
       <button class="tab-btn" data-tab="library">Pustaka Data</button>
     </nav>
+
+    <div id="guestPrivateNotice" class="guest-private-notice hidden" role="status" aria-live="polite">
+      <div>
+        <span class="mini-label">Mode Tamu</span>
+        <strong>Login untuk membuka modul personal</strong>
+        <p>Stock Kopi, Brew Log &amp; QA, Analytics, dan Data Quality akan aktif setelah kamu masuk dan memiliki akses workspace.</p>
+      </div>
+      <button class="secondary" type="button" data-jump-tab="admin">Masuk / Daftar</button>
+    </div>
 
     <main>
       <section id="tab-guide" class="tab-panel active">
@@ -423,6 +451,16 @@
             <h2>Insight Seduh + Source Evidence</h2>
           </div>
           <div class="brew-insight-panel wide-mode" id="brewInsightPanel" aria-live="polite"></div>
+          <div class="brew-decision-grid" id="brewDecisionGrid" aria-live="polite"></div>
+        </section>
+
+        <section class="panel wide dial-timeline-panel">
+          <div class="section-title compact-title">
+            <span>Timeline</span>
+            <h2>Dial-In Timeline</h2>
+          </div>
+          <p class="hint">Timeline ini membaca brew log yang cocok. Kalau belum ada histori, dashboard membuat rencana eksperimen bertahap agar perubahan variabel tetap terkontrol.</p>
+          <div class="dial-timeline" id="dialInTimeline" aria-live="polite"></div>
         </section>
 
         <section class="panel wide">
@@ -447,6 +485,7 @@
             <h2>2–3 Opsi Rekomendasi Seduh</h2>
           </div>
           <p class="hint recipe-lab-hint">Klik kartu opsi untuk melihat fokus dial-in. Opsi disusun dari kombinasi varietas, pasca panen, roast, karakter dripper, air, dan grinder; brew log terverifikasi tetap muncul sebagai referensi tambahan jika tersedia.</p>
+          <div class="recipe-active-summary" id="recipeActiveSummary" aria-live="polite"></div>
           <div class="recipe-grid" id="recipeOptions"></div>
         </section>
       </section>
@@ -821,11 +860,24 @@
         <section class="panel wide">
           <div class="section-title"><span>Publik</span><h2>Hasil Seduhan dari Komunitas</h2></div>
           <p class="hint">Halaman ini menampilkan brew log yang sudah disetujui. Data stok kopi tetap privat di akun/workspace masing-masing.</p>
-          <div class="public-feed-toolbar">
+          <div class="public-feed-toolbar public-explorer-toolbar">
             <input id="publicBrewSearch" placeholder="Cari kopi, brewer, metode, detail seduhan..." />
             <select id="publicBrewMethod"><option value="all">Semua metode</option><option>Hot V60</option><option>Japanese Iced</option></select>
+            <select id="publicBrewDripper"><option value="all">Semua dripper</option></select>
+            <select id="publicBrewProcess"><option value="all">Semua proses</option></select>
+            <select id="publicBrewRoast"><option value="all">Semua roast</option></select>
             <select id="publicBrewMinQA"><option value="0">Semua nilai QA</option><option value="6.5">QA ≥ 6.5</option><option value="7">QA ≥ 7.0</option><option value="8">QA ≥ 8.0</option></select>
+            <select id="publicBrewSort"><option value="newest">Terbaru</option><option value="qa">QA tertinggi</option><option value="recipe">Resep paling lengkap</option></select>
             <button id="refreshPublicBrews" class="secondary" type="button">Muat Ulang</button>
+          </div>
+          <div class="public-explorer-summary" id="publicExplorerSummary" aria-live="polite"></div>
+          <div class="public-brew-card-grid" id="publicBrewCards" aria-live="polite"></div>
+          <div class="public-table-heading">
+            <div>
+              <span class="mini-label">Table View</span>
+              <strong>Semua hasil yang cocok</strong>
+            </div>
+            <small>Gunakan kartu di atas untuk eksplorasi cepat, atau tabel ini untuk tampilan ringkas.</small>
           </div>
           <div class="table-wrap tall">
             <table id="publicBrewTable">
@@ -838,7 +890,146 @@
         </section>
       </section>
 
-      <section id="tab-suggestion" class="tab-panel">
+      
+      <section id="tab-analytics" class="tab-panel">
+        <section class="panel wide analytics-premium-panel">
+          <div class="section-title">
+            <span>Analytics</span>
+            <h2>Coffee Analytics &amp; QA Insight</h2>
+          </div>
+          <p class="hint">Baca performa seduhan dari Brew Log workspace dan hasil publik yang sudah disetujui. Gunakan insight ini untuk menemukan pola dripper, proses, roast, dan resep yang paling konsisten.</p>
+          <div class="analytics-toolbar">
+            <select id="analyticsScope">
+              <option value="all">Semua data terbaca</option>
+              <option value="workspace">Workspace aktif</option>
+              <option value="public">Publik disetujui</option>
+            </select>
+            <select id="analyticsMinQA">
+              <option value="0">Semua QA</option>
+              <option value="6.5">QA ≥ 6.5</option>
+              <option value="7">QA ≥ 7.0</option>
+              <option value="8">QA ≥ 8.0</option>
+            </select>
+            <button id="refreshAnalytics" class="secondary" type="button">Refresh Analytics</button>
+          </div>
+
+          <div class="analytics-hero-grid" id="analyticsMetricGrid" aria-live="polite"></div>
+
+          <div class="analytics-layout">
+            <section class="analytics-card analytics-trend-card">
+              <div class="analytics-card-head">
+                <span class="mini-label">QA Trend</span>
+                <strong>Performa dari waktu ke waktu</strong>
+              </div>
+              <div class="analytics-chart" id="analyticsTrendChart"></div>
+            </section>
+            <section class="analytics-card analytics-insight-card">
+              <div class="analytics-card-head">
+                <span class="mini-label">Insight Otomatis</span>
+                <strong>Hal yang perlu diperhatikan</strong>
+              </div>
+              <div class="analytics-insight-list" id="analyticsInsightList"></div>
+            </section>
+          </div>
+
+          <div class="analytics-split-grid">
+            <section class="analytics-card">
+              <div class="analytics-card-head">
+                <span class="mini-label">Dripper Performance</span>
+                <strong>Dripper dengan QA terbaik</strong>
+              </div>
+              <div class="analytics-rank-list" id="analyticsDripperRank"></div>
+            </section>
+            <section class="analytics-card">
+              <div class="analytics-card-head">
+                <span class="mini-label">Process Performance</span>
+                <strong>Pasca panen paling konsisten</strong>
+              </div>
+              <div class="analytics-rank-list" id="analyticsProcessRank"></div>
+            </section>
+          </div>
+
+          <section class="analytics-card analytics-table-card">
+            <div class="analytics-card-head">
+              <span class="mini-label">Top Recipes</span>
+              <strong>Resep dengan QA tertinggi</strong>
+            </div>
+            <div class="table-wrap">
+              <table id="analyticsTopTable">
+                <thead><tr><th>Kopi</th><th>Profil</th><th>Metode</th><th>Resep</th><th>QA</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </section>
+
+
+      <section id="tab-quality" class="tab-panel">
+        <section class="panel wide quality-premium-panel">
+          <div class="section-title">
+            <span>Quality</span>
+            <h2>Data Quality Checker</h2>
+          </div>
+          <p class="hint">Cek kelengkapan Brew Log, QA, resep publik, stok, dan pustaka data. Tujuannya agar rekomendasi, analytics, dan publikasi resep tetap terpercaya.</p>
+
+          <div class="quality-toolbar">
+            <select id="qualityScope">
+              <option value="all">Semua modul</option>
+              <option value="brew">Brew Log</option>
+              <option value="qa">QA</option>
+              <option value="stock">Stok</option>
+              <option value="public">Publik</option>
+              <option value="library">Pustaka</option>
+            </select>
+            <select id="qualitySeverity">
+              <option value="all">Semua severity</option>
+              <option value="critical">Critical</option>
+              <option value="warning">Warning</option>
+              <option value="info">Info</option>
+            </select>
+            <button id="refreshQuality" class="secondary" type="button">Refresh Check</button>
+          </div>
+
+          <div class="quality-hero-grid">
+            <div class="quality-score-card" id="qualityScoreCard" aria-live="polite"></div>
+            <div class="quality-metric-grid" id="qualityMetricGrid" aria-live="polite"></div>
+          </div>
+
+          <div class="quality-layout">
+            <section class="quality-card">
+              <div class="quality-card-head">
+                <span class="mini-label">Issue List</span>
+                <strong>Hal yang perlu dibenahi</strong>
+              </div>
+              <div class="quality-issue-list" id="qualityIssueList" aria-live="polite"></div>
+            </section>
+
+            <section class="quality-card">
+              <div class="quality-card-head">
+                <span class="mini-label">Checklist</span>
+                <strong>Standar data siap pakai</strong>
+              </div>
+              <div class="quality-checklist" id="qualityChecklist" aria-live="polite"></div>
+            </section>
+          </div>
+
+          <section class="quality-card quality-table-card">
+            <div class="quality-card-head">
+              <span class="mini-label">Detailed Audit</span>
+              <strong>Audit item per modul</strong>
+            </div>
+            <div class="table-wrap">
+              <table id="qualityIssueTable">
+                <thead><tr><th>Severity</th><th>Modul</th><th>Item</th><th>Masalah</th><th>Aksi</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </section>
+
+<section id="tab-suggestion" class="tab-panel">
         <div class="grid two-col top-align">
           <section class="panel">
             <div class="section-title"><span>Saran</span><h2>Kotak Saran</h2></div>
@@ -946,10 +1137,23 @@
           </section>
         </div>
 
+        <section class="panel wide admin-pro-dashboard" id="adminProDashboard">
+          <div class="section-title">
+            <span>Admin Pro</span>
+            <h2>Workspace Control Center</h2>
+          </div>
+          <p class="hint">Ringkasan akses, pengguna, moderasi, dan masukan untuk workspace aktif. Panel ini membantu admin melihat antrean pekerjaan tanpa harus membuka setiap tabel satu per satu.</p>
+          <div class="admin-pro-grid" id="adminProMetricGrid" aria-live="polite"></div>
+          <div class="admin-workflow-grid" id="adminWorkflowGrid" aria-live="polite"></div>
+        </section>
+
         <section class="panel wide" id="memberApprovalPanel">
           <div class="section-title"><span>Approval</span><h2>Request Akses Workspace</h2></div>
           <p class="hint">Admin Workspace menyetujui atau menolak pendaftar Brewer/QA di company yang sama. Setelah disetujui, user bisa mengakses rekomendasi biji kopi, stok kopi, Brew Log & QA, dan fitur workspace terkait.</p>
-          <div class="admin-toolbar"><button id="refreshMemberRequests" class="secondary" type="button">Muat Ulang Request</button></div>
+          <div class="admin-toolbar">
+            <button id="refreshMemberRequests" class="secondary" type="button">Muat Ulang Request</button>
+            <button id="bulkApproveMembers" class="secondary" type="button">Setujui Semua Pending</button>
+          </div>
           <div class="table-wrap tall"><table id="memberRequestTable"><thead><tr><th>Nama / Email</th><th>Role Diminta</th><th>Status</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
         </section>
 
@@ -963,7 +1167,11 @@
         <section class="panel wide" id="suggestionInboxPanel">
           <div class="section-title"><span>Masukan</span><h2>Kotak Saran Masuk</h2></div>
           <p class="hint">Admin Workspace dapat membaca masukan yang dikirim dari menu Kotak Saran. Data cloud disimpan di tabel Supabase <code>suggestions</code>; jika Supabase tidak aktif, salinan lokal hanya ada di browser pengirim.</p>
-          <div class="admin-toolbar"><button id="refreshSuggestions" class="secondary" type="button">Muat Ulang Masukan</button></div>
+          <div class="admin-toolbar">
+            <button id="refreshSuggestions" class="secondary" type="button">Muat Ulang Masukan</button>
+            <button id="bulkReviewSuggestions" class="secondary" type="button">Tandai Semua Reviewed</button>
+            <button id="bulkCloseSuggestions" class="ghost" type="button">Tutup Semua Reviewed</button>
+          </div>
           <div class="table-wrap tall"><table id="suggestionInboxTable"><thead><tr><th>Status</th><th>Kategori</th><th>Masukan</th><th>Pengirim</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
         </section>
 
@@ -982,6 +1190,8 @@
             <select id="moderationDataset"><option value="brew_logs">Brew Log</option><option value="qa_scores">Nilai QA</option></select>
             <select id="moderationStatus"><option value="pending">Menunggu review</option><option value="approved">Disetujui</option><option value="rejected">Ditolak</option><option value="all">Semua</option></select>
             <button id="refreshModeration" class="secondary" type="button">Muat Ulang</button>
+            <button id="bulkApproveModeration" class="secondary" type="button">Setujui Tampilan</button>
+            <button id="bulkRejectModeration" class="danger" type="button">Tolak Tampilan</button>
           </div>
           <div class="table-wrap tall"><table id="moderationTable"><thead></thead><tbody></tbody></table></div>
           <p class="hint small-note">Setujui/Tolak tersedia untuk QA dan Admin. Hapus data hanya tersedia untuk Admin Workspace dan akan benar-benar menghapus row dari Supabase jika policy database sudah sesuai.</p>
@@ -989,13 +1199,32 @@
       </section>
 
       <section id="tab-library" class="tab-panel">
-        <section class="panel wide">
+        <section class="panel wide library-premium-panel">
           <div class="section-title"><span>Pustaka</span><h2>Data Referensi</h2></div>
+          <div class="library-explorer-hero">
+            <div>
+              <span class="mini-label">Coffee Knowledge Base</span>
+              <strong id="libraryHeroTitle">Data referensi untuk keputusan seduh</strong>
+              <p id="libraryHeroCopy">Cari varietas, proses, dripper, roast profile, air, dan grinder. Gunakan kartu ringkas untuk membaca cue utama, lalu buka detail untuk source dan konteks lengkap.</p>
+            </div>
+            <div class="library-hero-signal" id="libraryHeroSignal"></div>
+          </div>
           <div class="library-controls">
             <select id="libraryDataset"><option value="varieties">Varietas</option><option value="drippers">Dripper</option><option value="processes">Proses</option><option value="roasts">Roast Profile</option><option value="waters">Air</option><option value="grinders">Grinder</option></select>
             <input id="librarySearch" placeholder="Search data library..." />
           </div>
-          <div class="table-wrap tall"><table id="libraryTable"><thead></thead><tbody></tbody></table></div>
+          <div class="library-overview-grid" id="libraryOverview"></div>
+          <div class="library-explorer-layout">
+            <div class="library-main-column">
+              <div class="library-card-grid" id="libraryCardGrid" aria-live="polite"></div>
+              <div class="library-table-heading">
+                <div><span class="mini-label">Table View</span><strong>Detail data referensi</strong></div>
+                <small>Klik baris atau kartu untuk melihat konteks lengkap dan source.</small>
+              </div>
+              <div class="table-wrap tall"><table id="libraryTable"><thead></thead><tbody></tbody></table></div>
+            </div>
+            <aside class="library-detail-panel" id="libraryDetailPanel" aria-live="polite"></aside>
+          </div>
         </section>
       </section>
     </main>

@@ -31,13 +31,20 @@
   let suggestionRows = [];
   let dashboardUserCount = null;
   let dashboardUserCountSource = "local";
+  let libraryCurrentRows = [];
+  let libraryCurrentDataset = "varieties";
   const LAST_WORKSPACE_KEY = "coffeeDashboardActiveWorkspace";
   const DEFAULT_PUBLIC_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001";
   const CLOUD_WRITE_TIMEOUT_MS = 45000;
   const CLOUD_READ_TIMEOUT_MS = 60000;
   const SESSION_REFRESH_BUFFER_MS = 10 * 60 * 1000;
   const SESSION_KEEPALIVE_MS = 4 * 60 * 1000;
+  const AUTOSAVE_KEY = "coffeeDashboardAutosaveV19";
+  const PENDING_SYNC_KEY = "coffeeDashboardPendingSyncV19";
+  const AUTOSAVE_DEBOUNCE_MS = 900;
   let sessionKeepAliveTimer = null;
+  let autosaveTimer = null;
+  let pendingSyncRunning = false;
 
   const $ = (id) => document.getElementById(id);
   const fmt = (n, d = 0) => Number.isFinite(Number(n)) ? Number(n).toFixed(d).replace(/\.0$/, "") : "-";
@@ -210,6 +217,201 @@
     toast.classList.remove("hidden");
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.add("hidden"), type === "error" ? 7000 : 4500);
+  }
+
+  function readJSONStorage(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (_err) {
+      return fallback;
+    }
+  }
+
+  function writeJSONStorage(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (err) {
+      console.warn("localStorage write failed", err);
+      return false;
+    }
+  }
+
+  function pendingSyncItems() {
+    return readJSONStorage(PENDING_SYNC_KEY, []);
+  }
+
+  function savePendingSyncItems(items) {
+    writeJSONStorage(PENDING_SYNC_KEY, Array.isArray(items) ? items : []);
+    updateSyncGuardStatus();
+  }
+
+  function autosaveDrafts() {
+    return readJSONStorage(AUTOSAVE_KEY, {});
+  }
+
+  function saveAutosaveDrafts(value) {
+    writeJSONStorage(AUTOSAVE_KEY, value || {});
+    updateSyncGuardStatus();
+  }
+
+  function collectFieldValues(root) {
+    const values = {};
+    if (!root) return values;
+    root.querySelectorAll("input[id], select[id], textarea[id]").forEach(el => {
+      if (el.type === "password") return;
+      if (el.type === "checkbox") values[el.id] = Boolean(el.checked);
+      else if (el.type === "radio") {
+        if (el.checked) values[el.id] = el.value;
+      } else {
+        values[el.id] = el.value;
+      }
+    });
+    return values;
+  }
+
+  function applyFieldValues(values = {}) {
+    Object.entries(values).forEach(([id, value]) => {
+      const el = $(id);
+      if (!el) return;
+      if (el.type === "checkbox") el.checked = Boolean(value);
+      else if (el.type === "radio") {
+        if (el.value === value) el.checked = true;
+      } else {
+        el.value = value;
+      }
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
+
+  function saveAutosaveScope(scope, root) {
+    const values = collectFieldValues(root);
+    const hasValue = Object.values(values).some(value => String(value ?? "").trim() !== "");
+    const drafts = autosaveDrafts();
+    if (hasValue) {
+      drafts[scope] = { updatedAt: new Date().toISOString(), values };
+    } else {
+      delete drafts[scope];
+    }
+    saveAutosaveDrafts(drafts);
+  }
+
+  function scheduleAutosaveScope(scope, root) {
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => saveAutosaveScope(scope, root), AUTOSAVE_DEBOUNCE_MS);
+  }
+
+  function clearAutosaveScope(scope) {
+    const drafts = autosaveDrafts();
+    delete drafts[scope];
+    saveAutosaveDrafts(drafts);
+  }
+
+  function restoreAutosaveDrafts() {
+    const drafts = autosaveDrafts();
+    let restored = 0;
+    ["brew", "manualBrew"].forEach(scope => {
+      const draft = drafts[scope];
+      if (!draft?.values) return;
+      applyFieldValues(draft.values);
+      restored += 1;
+    });
+    if (restored) {
+      updateSyncGuardStatus("draft", "Draft lokal dipulihkan", "Input sebelumnya dipulihkan dari autosave browser.");
+    }
+  }
+
+  function enqueuePendingSyncBatch(label, mutations = []) {
+    const cleanMutations = (mutations || []).filter(item => item?.table && item?.payload);
+    if (!cleanMutations.length) return;
+    const items = pendingSyncItems();
+    items.unshift({
+      id: `sync-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      label,
+      createdAt: new Date().toISOString(),
+      attempts: 0,
+      mutations: cleanMutations
+    });
+    savePendingSyncItems(items.slice(0, 25));
+    updateSyncGuardStatus("queued", "Disimpan lokal", `${label} masuk antrean sync. Klik Sync ulang saat koneksi stabil.`);
+  }
+
+  function updateSyncGuardStatus(state, title, text) {
+    const widget = $("syncGuardWidget");
+    if (!widget) return;
+    const pendingCount = pendingSyncItems().length;
+    const drafts = autosaveDrafts();
+    const draftCount = Object.keys(drafts || {}).length;
+    const finalState = state || (pendingCount ? "queued" : draftCount ? "draft" : "idle");
+    const finalTitle = title || (pendingCount ? `${pendingCount} antrean sync` : draftCount ? "Draft lokal aktif" : "Draft aman");
+    const finalText = text || (pendingCount ? "Ada data yang belum terkirim ke Supabase." : draftCount ? "Autosave aktif; data aman bila halaman tertutup." : "Autosave lokal aktif.");
+    widget.dataset.state = finalState;
+    const titleEl = $("syncGuardTitle");
+    const textEl = $("syncGuardText");
+    const retryBtn = $("syncRetryBtn");
+    if (titleEl) titleEl.textContent = finalTitle;
+    if (textEl) textEl.textContent = finalText;
+    setElementHidden(retryBtn, !pendingCount);
+  }
+
+  async function processPendingSyncQueue(showToast = false) {
+    if (pendingSyncRunning) return;
+    const queue = pendingSyncItems();
+    if (!queue.length) {
+      updateSyncGuardStatus();
+      if (showToast) showMessage("Tidak ada antrean sync.", "info");
+      return;
+    }
+    if (!supabaseClient || !cloudReady) {
+      updateSyncGuardStatus("queued", `${queue.length} antrean sync`, "Supabase belum siap. Coba lagi setelah status online.");
+      if (showToast) showMessage("Supabase belum siap untuk sync ulang.", "error");
+      return;
+    }
+    pendingSyncRunning = true;
+    updateSyncGuardStatus("syncing", "Sync berjalan", "Mengirim antrean lokal ke Supabase...");
+    const remaining = [];
+    try {
+      for (const item of queue.reverse()) {
+        try {
+          for (const mutation of item.mutations) {
+            await runCloudMutation(item.label || `Sync ${mutation.table}`, () => supabaseClient.from(mutation.table).insert(mutation.payload).select().single());
+          }
+        } catch (err) {
+          remaining.unshift({ ...item, attempts: Number(item.attempts || 0) + 1, lastError: err?.message || String(err), lastAttemptAt: new Date().toISOString() });
+        }
+      }
+      savePendingSyncItems(remaining);
+      if (remaining.length) {
+        updateSyncGuardStatus("queued", `${remaining.length} antrean tersisa`, "Sebagian data belum terkirim. Coba sync ulang.");
+        if (showToast) showMessage(`${remaining.length} antrean masih gagal terkirim.`, "error");
+      } else {
+        updateSyncGuardStatus("synced", "Semua tersinkron", "Antrean lokal berhasil dikirim ke Supabase.");
+        if (showToast) showMessage("Semua antrean lokal berhasil tersinkron.", "success");
+        syncFromCloud(false).then(renderAll).catch(console.warn);
+      }
+    } finally {
+      pendingSyncRunning = false;
+    }
+  }
+
+  function bindAutosaveDrafts() {
+    const brewRoot = $("tab-brew");
+    const manualRoot = $("manualBrewForm");
+    if (brewRoot && brewRoot.dataset.autosaveReady !== "true") {
+      brewRoot.dataset.autosaveReady = "true";
+      ["input", "change"].forEach(eventName => brewRoot.addEventListener(eventName, event => {
+        if (event.target?.matches?.("input,select,textarea")) scheduleAutosaveScope("brew", brewRoot);
+      }, true));
+    }
+    if (manualRoot && manualRoot.dataset.autosaveReady !== "true") {
+      manualRoot.dataset.autosaveReady = "true";
+      ["input", "change"].forEach(eventName => manualRoot.addEventListener(eventName, event => {
+        if (event.target?.matches?.("input,select,textarea")) scheduleAutosaveScope("manualBrew", manualRoot);
+      }, true));
+    }
+    $("syncRetryBtn")?.addEventListener("click", () => processPendingSyncQueue(true));
+    updateSyncGuardStatus();
   }
 
   function normalizeSlug(value) {
@@ -1045,6 +1247,7 @@
       cloudReady = true;
       await initAuth();
       await syncFromCloud(false);
+      processPendingSyncQueue(false).catch(console.warn);
       updateDbStatus("online", "Supabase online", `Data publik yang sudah disetujui tersinkron. Sinkron terakhir: ${new Date().toLocaleTimeString()}`);
     } catch (err) {
       cloudReady = false;
@@ -2189,6 +2392,126 @@
     visual.classList.add("is-cinematic");
   }
 
+  function decisionEngineItems(brew) {
+    const tempReason = brew.risk >= 4
+      ? "Ferment risk tinggi: suhu dibuat lebih konservatif agar aroma ferment tetap rapi."
+      : brew.mineralBand === "soft"
+        ? "Air soft butuh thermal support. Naikkan suhu bertahap bila cup terlalu tipis."
+        : brew.body >= 4
+          ? "Body tinggi: suhu stabil, jangan terlalu agresif agar finish tidak berat."
+          : "Suhu berada di rentang aman untuk validasi awal.";
+    const grindReason = brew.risk >= 4
+      ? "Mulai sedikit lebih kasar untuk menekan over-ferment note dan dryness."
+      : brew.flow >= 4
+        ? "Flow cepat: target gilingan menjaga kontak cukup tanpa memperlambat berlebihan."
+        : brew.flow <= 2
+          ? "Flow lambat: hindari terlalu halus supaya drawdown tidak panjang."
+          : "Target gilingan netral untuk baseline.";
+    const ratioReason = brew.intent?.primary === "clarity"
+      ? "Rasio sedikit panjang membantu clarity dan aftertaste bersih."
+      : brew.body >= 4
+        ? "Rasio dijaga agar body tidak terlalu heavy."
+        : brew.sweetness >= 4
+          ? "Rasio mendukung sweetness tanpa mengorbankan balance."
+          : "Rasio baseline aman untuk eksperimen pertama.";
+    const agitationReason = brew.risk >= 4
+      ? "Agitasi rendah: pouring lembut, minim swirl, hindari fines migration."
+      : brew.body >= 4
+        ? "Agitasi medium-soft agar body round tapi finish tetap clean."
+        : "Agitasi medium untuk ekstraksi seimbang.";
+    const waterReason = brew.mineralBand === "hard"
+      ? "Air cenderung hard: clarity bisa mute. Pertimbangkan blending dengan air mineral rendah."
+      : brew.mineralBand === "soft"
+        ? "Air cenderung soft: sweetness bisa kurang penuh. Pertimbangkan remineralisasi ringan."
+        : "Water band cukup aman. Prioritaskan grind/agitation sebelum mengganti air.";
+    const dripperReason = brew.flow >= 4
+      ? "Dripper cepat: kontrol lewat pouring, grind, dan pulse lebih stabil."
+      : brew.flow <= 2
+        ? "Dripper lambat: jaga bed tidak terlalu padat dan hindari agitasi berlebihan."
+        : "Dripper berada di flow tengah untuk baseline.";
+    return [
+      { label: "Grind", value: `${brew.grindTarget} µm`, action: brew.risk >= 4 || brew.body >= 4 ? "Coarser bias" : brew.flow <= 2 ? "Avoid too fine" : "Baseline", reason: grindReason },
+      { label: "Temperature", value: `${brew.temp}°C`, action: brew.risk >= 4 ? "Lower control" : brew.mineralBand === "soft" ? "Thermal support" : "Stable", reason: tempReason },
+      { label: "Ratio", value: `1:${fmt(brew.ratio, 1)}`, action: brew.intent?.primary === "clarity" ? "Clarity stretch" : "Balance", reason: ratioReason },
+      { label: "Agitation", value: brew.risk >= 4 ? "Low" : brew.body >= 4 ? "Medium-soft" : "Medium", action: "Pouring rule", reason: agitationReason },
+      { label: "Water", value: `${brew.mineralBand} · ${brew.tds}ppm`, action: "Water guardrail", reason: waterReason },
+      { label: "Dripper", value: brew.dripper?.DripperName || "-", action: brew.flow >= 4 ? "Fast-flow control" : brew.flow <= 2 ? "Slow-flow control" : "Flow stable", reason: dripperReason }
+    ];
+  }
+
+  function renderBrewDecisionGrid(brew) {
+    const grid = $("brewDecisionGrid");
+    if (!grid || !brew) return;
+    const items = decisionEngineItems(brew);
+    grid.classList.remove("is-live");
+    grid.innerHTML = items.map((item, idx) => `
+      <article class="decision-card cinematic-reveal" style="--stagger:${idx}">
+        <span>${html(item.label)}</span>
+        <strong>${html(item.value)}</strong>
+        <em>${html(item.action)}</em>
+        <p>${html(item.reason)}</p>
+      </article>
+    `).join("");
+    requestAnimationFrame(() => grid.classList.add("is-live"));
+  }
+
+  function matchingBrewHistory(brew) {
+    const currentKey = recipeKey($("brewVariety")?.value, $("brewProcess")?.value, $("brewRoast")?.value);
+    return allBrewLogs()
+      .filter(log => {
+        const key = recipeKey(log.Variety, log.Process, log.RoastProfile);
+        const sameRecipe = norm(key) === norm(currentKey);
+        const sameDripper = !brew.dripper?.DripperName || norm(log.Dripper) === norm(brew.dripper.DripperName);
+        return sameRecipe || sameDripper || Number(log.QA_Final || 0) >= APPROVAL_THRESHOLD;
+      })
+      .sort((a, b) => new Date(a.Date || a.CreatedAt || 0) - new Date(b.Date || b.CreatedAt || 0))
+      .slice(-5);
+  }
+
+  function syntheticTimelineSteps(brew) {
+    const issue = brew.risk >= 4 ? "ferment risk" : brew.body >= 4 ? "heavy body" : brew.intent?.primary === "clarity" ? "clarity target" : "baseline validation";
+    const adjustment = brew.risk >= 4
+      ? "Kurangi agitasi, grind +1–2 step kasar, validasi aroma ferment."
+      : brew.body >= 4
+        ? "Jika finish berat, grind sedikit lebih kasar atau turunkan suhu 1°C."
+        : brew.intent?.primary === "clarity"
+          ? "Jika acidity terlalu tajam, panjangkan rasio +0.2–0.3 atau turunkan agitasi."
+          : "Ubah satu variabel saja: grind, suhu, atau agitation.";
+    return [
+      { label: "Brew 1", title: "Safe start baseline", meta: `${brew.temp}°C · 1:${fmt(brew.ratio,1)} · ${brew.grindTarget}µm`, note: `Mulai dari resep rekomendasi untuk membaca ${issue}.` },
+      { label: "Taste check", title: "QA checkpoint", meta: "Aroma · sweetness · finish", note: "Catat drawdown, aftertaste, dan apakah cup clean/heavy/flat." },
+      { label: "Brew 2", title: "Controlled adjustment", meta: "1 variable only", note: adjustment },
+      { label: "Brew 3", title: "Lock winning recipe", meta: "QA ≥ 6.5", note: "Jika hasil lebih baik, simpan ke Brew Log dan jadikan baseline berikutnya." }
+    ];
+  }
+
+  function renderDialInTimeline(brew) {
+    const wrap = $("dialInTimeline");
+    if (!wrap || !brew) return;
+    const history = matchingBrewHistory(brew);
+    const steps = history.length >= 2
+      ? history.map((log, idx) => ({
+          label: log.BrewID || `Brew ${idx + 1}`,
+          title: `${log.Dripper || "Dripper"} · ${log.Method || "Method"}`,
+          meta: `QA ${log.QA_Final ? fmt(log.QA_Final, 2) : "-"} · ${log.Temp_C || "-"}°C · 1:${log.Ratio || "-"}`,
+          note: log.ResultNotes || log.PrimaryVariableChanged || log.Hypothesis || "Histori brew cocok dari database."
+        }))
+      : syntheticTimelineSteps(brew);
+    wrap.classList.remove("is-live");
+    wrap.innerHTML = steps.map((step, idx) => `
+      <article class="timeline-step cinematic-reveal" style="--stagger:${idx}">
+        <div class="timeline-index">${idx + 1}</div>
+        <div>
+          <span>${html(step.label)}</span>
+          <strong>${html(step.title)}</strong>
+          <em>${html(step.meta)}</em>
+          <p>${html(step.note)}</p>
+        </div>
+      </article>
+    `).join("");
+    requestAnimationFrame(() => wrap.classList.add("is-live"));
+  }
+
   function renderBrew() {
     renderBrewStockOptions();
     syncBrewStockUI({ apply: true });
@@ -2213,6 +2536,8 @@
     renderBrewPreflight(brew);
     renderHeroSignals(brew);
     renderBrewInsight(brew);
+    renderBrewDecisionGrid(brew);
+    renderDialInTimeline(brew);
     renderSteps(brew);
     renderRecipeOptions(brew);
     renderBrewVisualizer(brew);
@@ -2249,6 +2574,30 @@
     }
     if (Number(log.Ice_g)) pieces.push(`Ice: ${log.Ice_g}g`);
     return pieces.length ? pieces.join(" | ") : (log.ValvePlan || "Detail tahapan belum tersedia");
+  }
+
+  function renderActiveRecipeSummary(opt, index = 0) {
+    const wrap = $("recipeActiveSummary");
+    if (!wrap || !opt) return;
+    const waterText = opt.ice ? `Hot ${opt.hotWater}ml + es ${opt.ice}g` : `Total ${opt.totalWater}ml`;
+    const points = [
+      ["Dripper", opt.dripperName || "-"],
+      ["Grind", `${opt.grindTarget}µm · ${opt.grinderSetting || "calibrate"}`],
+      ["Thermal", `${opt.temp}°C · ${fmtTime(opt.brewTime)}`],
+      ["Recipe", `1:${fmt(opt.ratio, 1)} · ${waterText}`]
+    ];
+    wrap.innerHTML = `
+      <div class="active-recipe-copy">
+        <span class="mini-label">Opsi Aktif ${index + 1}</span>
+        <strong>${html(opt.title)}</strong>
+        <p>${html(opt.why || opt.fit || "Gunakan sebagai baseline pembanding saat tasting.")}</p>
+      </div>
+      <div class="active-recipe-metrics">
+        ${points.map(([label, value]) => `<article><span>${html(label)}</span><strong>${html(value)}</strong></article>`).join("")}
+      </div>
+    `;
+    wrap.classList.remove("is-live");
+    requestAnimationFrame(() => wrap.classList.add("is-live"));
   }
 
   function recipeKey(variety, process, roast) {
@@ -2291,6 +2640,7 @@
     const recipeWrap = $("recipeOptions");
     recipeWrap.classList.remove("is-live");
     recipeWrap.innerHTML = optionCards + approvedCards + verifiedEmpty;
+    renderActiveRecipeSummary(options[0], 0);
     requestAnimationFrame(() => recipeWrap.classList.add("is-live"));
   }
 
@@ -2609,6 +2959,7 @@
     }
 
     let watchdog;
+    let queuedDraftPayload = null;
     try {
       brewDraftSaving = true;
       if (btn) {
@@ -2621,6 +2972,7 @@
       const stockBean = selectedBrewStockBean();
       const log = currentBrewLogBase();
       const payload = toSnakeBrew(log);
+      queuedDraftPayload = payload;
       const saved = await insertCloud("brew_logs", payload, fromSnakeBrew);
 
       state.cloudBrewLogs.unshift(saved);
@@ -2647,11 +2999,15 @@
         renderPublicBrewTable();
       }).catch(console.warn);
 
+      clearAutosaveScope("brew");
+      updateSyncGuardStatus("synced", "Draft tersinkron", `Draft ${saved.BrewID} berhasil masuk Supabase.`);
       showMessage(`Draft ${saved.BrewID} berhasil tersimpan. Buka Brew Log & QA lalu pilih BrewID tersebut untuk verifikasi.${stockMessage}`, stockMessage.includes("belum berkurang") ? "error" : "success");
     } catch (err) {
       console.error("saveCurrentBrewDraft error", err);
       const detail = err?.message || err?.details || err?.hint || String(err);
-      showMessage(`Gagal menyimpan draft ke Supabase: ${detail}`, "error");
+      if (queuedDraftPayload) enqueuePendingSyncBatch("Draft Brew Log", [{ table: "brew_logs", payload: queuedDraftPayload }]);
+      saveAutosaveScope("brew", $("tab-brew"));
+      showMessage(`Gagal menyimpan draft ke Supabase: ${detail}. Data sudah diamankan lokal.`, "error");
       alert(`Gagal menyimpan draft ke Supabase. Detail: ${detail}`);
     } finally {
       if (watchdog) clearTimeout(watchdog);
@@ -3272,6 +3628,7 @@
     const btn = $("manualSubmitBtn");
     const originalText = btn?.textContent || "Simpan Hasil Seduhan Publik";
     let watchdog;
+    let queuedManualMutations = [];
     try {
       manualBrewSaving = true;
       if (btn) {
@@ -3299,6 +3656,10 @@
         };
       }
       const qa = manualQARecord(log);
+      queuedManualMutations = [
+        { table: "brew_logs", payload: toSnakeBrew(log) },
+        { table: "qa_scores", payload: toSnakeQA(qa) }
+      ];
       let savedLog;
       let savedQA;
       if (editing) {
@@ -3323,12 +3684,16 @@
       renderQABrewOptions();
       renderPublicBrewTable();
       renderRecipeOptions(computeBrew());
+      clearAutosaveScope("manualBrew");
+      updateSyncGuardStatus("synced", "Input tersinkron", editing ? "Perubahan hasil seduhan tersimpan." : "Hasil seduhan publik terkirim ke Supabase.");
       showMessage(editing ? "Perubahan hasil seduhan berhasil disimpan." : "Hasil seduhan berhasil disimpan dan masuk ke Hasil Seduhan Publik.", "success");
       showTab("public-brews");
     } catch (err) {
       console.error("saveManualBrew error", err);
       const detail = err?.message || err?.details || err?.hint || String(err);
-      showMessage(`Gagal menyimpan Input Seduhan: ${detail}`, "error");
+      if (!manualEditingBrewId && queuedManualMutations.length) enqueuePendingSyncBatch("Input Seduhan Publik", queuedManualMutations);
+      saveAutosaveScope("manualBrew", $("manualBrewForm"));
+      showMessage(`Gagal menyimpan Input Seduhan: ${detail}. Data sudah diamankan lokal.`, "error");
       alert(`Gagal menyimpan Input Seduhan. Detail: ${detail}`);
     } finally {
       if (watchdog) clearTimeout(watchdog);
@@ -3673,6 +4038,7 @@
     }
     moderationRows = data || [];
     renderModerationTable();
+    renderAdminProDashboard();
   }
 
   function renderModerationTable(message = "") {
@@ -3845,6 +4211,7 @@
     }
     pendingMemberRows = (data || []).map(row => ({ ...row, profile: profiles.find(p => p.id === row.user_id) || {} }));
     renderMemberRequests();
+    renderAdminProDashboard();
   }
 
   function renderMemberRequests(message = "") {
@@ -3923,6 +4290,7 @@
     }
     workspaceMemberRows = (data || []).map(row => ({ ...row, profile: profiles.find(p => p.id === row.user_id) || {} }));
     renderWorkspaceMembers();
+    renderAdminProDashboard();
   }
 
   function renderWorkspaceMembers(message = "") {
@@ -4084,6 +4452,7 @@
     }
     suggestionRows = data || [];
     renderSuggestionInbox(message);
+    renderAdminProDashboard();
   }
 
   function renderSuggestionInbox(message = "") {
@@ -4148,22 +4517,53 @@
     }
   }
 
-  function publicBrewRows() {
-    const search = norm($("publicBrewSearch")?.value || "");
-    const method = $("publicBrewMethod")?.value || "all";
-    const minQA = Number($("publicBrewMinQA")?.value || 0);
-    const filteredRows = (state.cloudBrewLogs || [])
+  function publicApprovedRows() {
+    return (state.cloudBrewLogs || [])
       .filter(log => log.Source === "Supabase")
       .filter(log => norm(log.ModerationStatus) === "approved")
       .filter(log => norm(log.Visibility || "public") === "public")
-      .filter(log => isApprovedRecipeLog(log))
+      .filter(log => isApprovedRecipeLog(log));
+  }
+
+  function refreshPublicFilterOptions() {
+    const rows = publicApprovedRows();
+    const fill = (id, values, label) => {
+      const select = $(id);
+      if (!select) return;
+      const current = select.value || "all";
+      const options = uniq(values.filter(Boolean)).sort((a, b) => String(a).localeCompare(String(b)));
+      select.innerHTML = `<option value="all">${html(label)}</option>${options.map(v => `<option value="${html(v)}">${html(v)}</option>`).join("")}`;
+      if (current === "all" || options.includes(current)) select.value = current;
+    };
+    fill("publicBrewDripper", rows.map(log => log.Dripper), "Semua dripper");
+    fill("publicBrewProcess", rows.map(log => log.Process), "Semua proses");
+    fill("publicBrewRoast", rows.map(log => log.RoastProfile), "Semua roast");
+  }
+
+  function publicBrewRows() {
+    const search = norm($("publicBrewSearch")?.value || "");
+    const method = $("publicBrewMethod")?.value || "all";
+    const dripper = $("publicBrewDripper")?.value || "all";
+    const process = $("publicBrewProcess")?.value || "all";
+    const roast = $("publicBrewRoast")?.value || "all";
+    const minQA = Number($("publicBrewMinQA")?.value || 0);
+    const sortMode = $("publicBrewSort")?.value || "newest";
+    const filteredRows = publicApprovedRows()
       .filter(log => method === "all" || norm(log.Method) === norm(method))
+      .filter(log => dripper === "all" || norm(log.Dripper) === norm(dripper))
+      .filter(log => process === "all" || norm(log.Process) === norm(process))
+      .filter(log => roast === "all" || norm(log.RoastProfile) === norm(roast))
       .filter(log => !minQA || Number(log.QA_Final || 0) >= minQA)
       .filter(log => {
         if (!search) return true;
-        return [log.BeanName, log.BrewerName, log.Variety, log.Process, log.RoastProfile, log.Method, log.Dripper, log.ResultNotes, log.PrimaryVariableChanged]
+        return [log.BeanName, log.BrewerName, log.Variety, log.Process, log.RoastProfile, log.Method, log.Dripper, log.ResultNotes, log.PrimaryVariableChanged, log.Grinder, log.Water]
           .some(v => norm(v).includes(search));
       });
+    if (sortMode === "qa") return filteredRows.sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0));
+    if (sortMode === "recipe") return filteredRows.sort((a, b) => {
+      const score = log => [log.Dripper, log.Grinder, log.GrindSetting, log.Temp_C, log.Ratio, log.Dose_g, log.TotalWater_ml, log.PourPlan, log.ResultNotes].filter(Boolean).length;
+      return score(b) - score(a) || Number(b.QA_Final || 0) - Number(a.QA_Final || 0);
+    });
     return sortBrewNewest(filteredRows);
   }
 
@@ -4249,10 +4649,117 @@
     document.body.classList.remove("modal-open");
   }
 
+  function publicExplorerStats(rows) {
+    const count = rows.length;
+    const qaValues = rows.map(log => Number(log.QA_Final || 0)).filter(Boolean);
+    const avgQA = qaValues.length ? qaValues.reduce((sum, value) => sum + value, 0) / qaValues.length : 0;
+    const best = rows.slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0))[0];
+    const complete = rows.filter(log => [log.Dripper, log.Grinder, log.GrindSetting, log.Temp_C, log.Ratio, log.Dose_g, log.TotalWater_ml].filter(Boolean).length >= 6).length;
+    return { count, avgQA, best, complete };
+  }
+
+  function renderPublicExplorerSummary(rows) {
+    const wrap = $("publicExplorerSummary");
+    if (!wrap) return;
+    const stats = publicExplorerStats(rows);
+    const bestLabel = stats.best ? `${stats.best.BeanName || "Tanpa nama"} · QA ${fmt(stats.best.QA_Final, 2)}` : "-";
+    wrap.innerHTML = [
+      ["Hasil cocok", stats.count, "Brew publik sesuai filter aktif."],
+      ["Rata-rata QA", stats.avgQA ? fmt(stats.avgQA, 2) : "-", "Rata-rata dari hasil yang tampil."],
+      ["Best cup", bestLabel, "QA tertinggi di hasil filter."],
+      ["Recipe-ready", stats.complete, "Data resep cukup lengkap untuk baseline."]
+    ].map(([label, value, desc], idx) => `
+      <article class="public-stat-card cinematic-reveal" style="--stagger:${idx}">
+        <span>${html(label)}</span>
+        <strong>${html(value)}</strong>
+        <small>${html(desc)}</small>
+      </article>
+    `).join("");
+  }
+
+  function recipeCompleteness(log) {
+    const keys = [log.Dripper, log.Method, log.Grinder, log.GrindSetting, log.Temp_C, log.Ratio, log.Dose_g, log.TotalWater_ml, log.BrewTime_sec, log.Water];
+    return Math.round((keys.filter(Boolean).length / keys.length) * 100);
+  }
+
+  function publicBrewCardHtml(log, idx) {
+    const key = html(publicBrewKey(log));
+    const profile = [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · ") || "Profil belum lengkap";
+    const recipe = [
+      log.Dripper || "Dripper -",
+      log.Temp_C ? `${log.Temp_C}°C` : "Temp -",
+      log.Ratio ? `1:${log.Ratio}` : "Ratio -",
+      log.GrindSetting || log.Grinder || "Grind -"
+    ].filter(Boolean).join(" · ");
+    const completeness = recipeCompleteness(log);
+    return `<article class="public-brew-card cinematic-reveal" style="--stagger:${idx}">
+      <div class="public-card-topline">
+        <span class="score-pill">QA ${html(log.QA_Final || "-")}</span>
+        <em>${html(completeness)}% lengkap</em>
+      </div>
+      <h3>${html(log.BeanName || "Tanpa nama")}</h3>
+      <p>${html(profile)}</p>
+      <div class="public-recipe-strip">
+        <span>${html(log.Method || "-")}</span>
+        <span>${html(recipe)}</span>
+      </div>
+      <div class="public-card-footer">
+        <small>${html(log.BrewerName || "Brewer")} · ${html(log.Date || "")}</small>
+        <div>
+          <button class="secondary small-action" type="button" data-public-brew-detail="${key}">Detail</button>
+          <button class="ghost small-action" type="button" data-public-brew-use="${key}">Gunakan Resep</button>
+          ${isPublicBrewOwner(log) ? `<button class="ghost small-action" type="button" data-public-brew-edit="${key}">Edit</button>` : ""}
+        </div>
+      </div>
+    </article>`;
+  }
+
+  function renderPublicBrewCards(rows) {
+    const wrap = $("publicBrewCards");
+    if (!wrap) return;
+    if (!rows.length) {
+      wrap.innerHTML = `<article class="public-empty-card"><strong>Belum ada hasil sesuai filter</strong><p>Coba ubah metode, QA minimum, dripper, proses, roast, atau kata kunci pencarian.</p></article>`;
+      return;
+    }
+    wrap.classList.remove("is-live");
+    wrap.innerHTML = rows.slice(0, 12).map(publicBrewCardHtml).join("");
+    requestAnimationFrame(() => wrap.classList.add("is-live"));
+  }
+
+  function setSelectIfPossible(id, value) {
+    const el = $(id);
+    if (!el || !value) return false;
+    const found = [...el.options].some(option => norm(option.value) === norm(value));
+    if (!found) return false;
+    el.value = [...el.options].find(option => norm(option.value) === norm(value))?.value || value;
+    return true;
+  }
+
+  function usePublicBrewAsBaseline(key) {
+    const log = findPublicBrewLog(key);
+    if (!log) return showMessage("Resep publik tidak ditemukan.", "error");
+    setSelectIfPossible("brewVariety", log.Variety);
+    setSelectIfPossible("brewProcess", log.Process);
+    setSelectIfPossible("brewRoast", log.RoastProfile);
+    setSelectIfPossible("brewDripper", log.Dripper);
+    setSelectIfPossible("brewMode", log.Method);
+    setSelectIfPossible("brewWater", log.Water);
+    setSelectIfPossible("brewGrinder", log.Grinder);
+    setSelectIfPossible("switchValveMode", log.SwitchValveMode);
+    if ($("brewDose") && Number(log.Dose_g)) $("brewDose").value = Number(log.Dose_g);
+    showTab("brew");
+    renderBrew();
+    document.querySelector("#tab-brew")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    showMessage(`Resep ${log.BeanName || log.BrewID || "publik"} dipakai sebagai baseline rekomendasi.`, "success");
+  }
+
   function renderPublicBrewTable() {
     const table = $("publicBrewTable");
     if (!table) return;
+    refreshPublicFilterOptions();
     const rows = publicBrewRows();
+    renderPublicExplorerSummary(rows);
+    renderPublicBrewCards(rows);
     const tbody = table.querySelector("tbody");
     if (!rows.length) {
       tbody.innerHTML = emptyRow(5, "Belum ada hasil seduhan publik", "Brew log akan tampil di sini setelah QA ≥ 6.5 dan disetujui.", "◎");
@@ -4261,11 +4768,11 @@
     tbody.innerHTML = rows.map(log => {
       const key = html(publicBrewKey(log));
       return `<tr>
-        <td data-label="Kopi"><strong>${html(log.BeanName || "Tanpa nama")}</strong></td>
+        <td data-label="Kopi"><strong>${html(log.BeanName || "Tanpa nama")}</strong><small>${html([log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · "))}</small></td>
         <td data-label="Brewer">${html(log.BrewerName || "Brewer")}</td>
-        <td data-label="Metode">${html(log.Method || "-")}</td>
+        <td data-label="Metode">${html(log.Method || "-")}<br><small>${html(log.Dripper || "")}</small></td>
         <td data-label="QA"><span class="score-pill">${html(log.QA_Final || "-")}</span></td>
-        <td data-label="Aksi"><div class="public-brew-actions"><button class="secondary small-action" type="button" data-public-brew-detail="${key}">Detail</button>${isPublicBrewOwner(log) ? `<button class="ghost small-action" type="button" data-public-brew-edit="${key}">Edit</button>` : ""}</div></td>
+        <td data-label="Aksi"><div class="public-brew-actions"><button class="secondary small-action" type="button" data-public-brew-detail="${key}">Detail</button><button class="ghost small-action" type="button" data-public-brew-use="${key}">Gunakan</button>${isPublicBrewOwner(log) ? `<button class="ghost small-action" type="button" data-public-brew-edit="${key}">Edit</button>` : ""}</div></td>
       </tr>`;
     }).join("");
   }
@@ -4283,10 +4790,7 @@
     return `<div class="roast-visual" aria-label="${html(row.RoastProfile || "Roast")}">${Array.from({ length: 6 }).map(() => `<span style="background:${color}"></span>`).join("")}</div>`;
   }
 
-  function renderLibrary() {
-    const dataset = $("libraryDataset").value;
-    const search = norm($("librarySearch").value);
-    const rows = (DATA[dataset] || []).filter(row => !search || Object.values(row).some(v => norm(v).includes(search)) || norm(sourceUrl(row)).includes(search));
+  function librarySchema() {
     const columnsByDataset = {
       varieties: ["Variety", "Species", "Genetic_Market_Group", "Typical_Regions", "Acidity_Base", "Sweetness_Base", "Body_Base", "Notes", "Source"],
       drippers: ["DripperName", "Brand", "Material", "BrewFamily", "Geometry", "FlowSpeed_1slow_5fast", "HeatRetention_1low_5high", "RecommendedFor", "Source"],
@@ -4303,16 +4807,138 @@
       Water: "Nama Air", Type: "Jenis", TDS_ppm: "TDS", pH: "pH", MineralProfile: "Mineral", BrewImpact: "Impact", RecommendedUse: "Use",
       Grinder: "Nama Grinder", Unit: "Satuan Setting", V60_Min: "V60 Min", V60_Max: "V60 Max", Japanese_Min: "JP Min", Japanese_Max: "JP Max", Immersion_Min: "Imm Min", Immersion_Max: "Imm Max"
     };
+    return { columnsByDataset, labelMap };
+  }
+
+  function libraryDatasetLabel(dataset) {
+    return {
+      varieties: "Varietas",
+      drippers: "Dripper",
+      processes: "Proses",
+      roasts: "Roast Profile",
+      waters: "Air",
+      grinders: "Grinder"
+    }[dataset] || "Data";
+  }
+
+  function libraryRowTitle(row, dataset = libraryCurrentDataset) {
+    return row.Variety || row.DripperName || row.Process || row.RoastProfile || row.Water || row.Grinder || row.Brand || libraryDatasetLabel(dataset);
+  }
+
+  function libraryRowSubtitle(row, dataset = libraryCurrentDataset) {
+    if (dataset === "varieties") return [row.Species, row.Genetic_Market_Group, row.Typical_Regions].filter(Boolean).join(" · ");
+    if (dataset === "drippers") return [row.Brand, row.Material, row.Geometry, row.BrewFamily].filter(Boolean).join(" · ");
+    if (dataset === "processes") return [row.Category, row.Stage].filter(Boolean).join(" · ");
+    if (dataset === "roasts") return [row.Level, row.AgtronApprox, row.BestUse].filter(Boolean).join(" · ");
+    if (dataset === "waters") return [row.Type, row.TDS_ppm ? `${row.TDS_ppm} ppm` : "", row.MineralProfile].filter(Boolean).join(" · ");
+    if (dataset === "grinders") return [row.Type, row.Unit, row.Notes].filter(Boolean).join(" · ");
+    return "";
+  }
+
+  function libraryCue(row, dataset = libraryCurrentDataset) {
+    if (dataset === "varieties") return row.Notes || `Acid ${row.Acidity_Base || "-"} · Sweet ${row.Sweetness_Base || "-"} · Body ${row.Body_Base || "-"}`;
+    if (dataset === "drippers") return row.RecommendedFor || `Flow ${row.FlowSpeed_1slow_5fast || "-"} · Heat ${row.HeatRetention_1low_5high || "-"}`;
+    if (dataset === "processes") return row.BrewingCue || `Risk ${row.FermentRisk_1low_5high || "-"} · Temp Δ ${row.TempMod_C || 0}`;
+    if (dataset === "roasts") return row.Notes || row.Solubility || row.BestUse || "-";
+    if (dataset === "waters") return row.BrewImpact || row.RecommendedUse || row.MineralProfile || "-";
+    if (dataset === "grinders") return row.Notes || `V60 ${row.V60_Min || "-"}–${row.V60_Max || "-"}`;
+    return "-";
+  }
+
+  function libraryFilteredRows(dataset, search) {
+    return (DATA[dataset] || []).filter(row => !search || Object.values(row).some(v => norm(v).includes(search)) || norm(sourceUrl(row)).includes(search));
+  }
+
+  function renderLibraryOverview(rows, dataset) {
+    const total = DATA[dataset]?.length || 0;
+    const shown = rows.length;
+    const sourceCount = rows.filter(row => sourceUrl(row)).length;
+    const first = rows[0] || {};
+    const cards = [
+      ["Dataset", libraryDatasetLabel(dataset), "Kategori referensi aktif."],
+      ["Tampil", `${shown}/${total}`, "Jumlah data sesuai filter."],
+      ["Source", sourceCount, "Record tampil yang punya SourceURL."],
+      ["Highlight", libraryRowTitle(first, dataset) || "-", "Record pertama dari hasil filter."]
+    ];
+    const overview = $("libraryOverview");
+    if (overview) overview.innerHTML = cards.map(([label, value, desc], idx) => `
+      <article class="library-overview-card cinematic-reveal" style="--stagger:${idx}">
+        <span>${html(label)}</span>
+        <strong>${html(value)}</strong>
+        <small>${html(desc)}</small>
+      </article>
+    `).join("");
+    const heroSignal = $("libraryHeroSignal");
+    if (heroSignal) heroSignal.innerHTML = `<span>${html(libraryDatasetLabel(dataset))}</span><strong>${html(shown)}</strong><small>hasil aktif</small>`;
+  }
+
+  function renderLibraryCards(rows, dataset) {
+    const grid = $("libraryCardGrid");
+    if (!grid) return;
+    if (!rows.length) {
+      grid.innerHTML = `<article class="library-empty-card"><strong>Data tidak ditemukan</strong><p>Coba kata kunci lain atau pilih dataset berbeda.</p></article>`;
+      return;
+    }
+    grid.classList.remove("is-live");
+    grid.innerHTML = rows.slice(0, 12).map((row, idx) => `
+      <article class="library-ref-card cinematic-reveal" style="--stagger:${idx}" role="button" tabindex="0" data-library-index="${idx}">
+        <div class="library-ref-topline">
+          <span>${html(libraryDatasetLabel(dataset))}</span>
+          <em>${sourceUrl(row) ? "Source ready" : "No source"}</em>
+        </div>
+        <h3>${html(libraryRowTitle(row, dataset))}</h3>
+        <p>${html(libraryRowSubtitle(row, dataset) || "Detail referensi tersedia pada panel.")}</p>
+        <div class="library-cue-box">${html(libraryCue(row, dataset))}</div>
+      </article>
+    `).join("");
+    requestAnimationFrame(() => grid.classList.add("is-live"));
+  }
+
+  function renderLibraryDetail(index = 0) {
+    const panel = $("libraryDetailPanel");
+    if (!panel) return;
+    const row = libraryCurrentRows[index] || libraryCurrentRows[0];
+    if (!row) {
+      panel.innerHTML = `<div class="library-detail-empty"><strong>Pilih data</strong><p>Klik kartu atau baris tabel untuk melihat detail referensi.</p></div>`;
+      return;
+    }
+    const { columnsByDataset, labelMap } = librarySchema();
+    const cols = columnsByDataset[libraryCurrentDataset] || Object.keys(row);
+    const details = cols.filter(col => col !== "Source" && row[col] !== undefined && row[col] !== "").map(col => `
+      <div class="library-detail-line">
+        <span>${html(labelMap[col] || col)}</span>
+        <strong>${col === "RoastVisual" ? roastVisual(row) : html(row[col])}</strong>
+      </div>
+    `).join("");
+    panel.innerHTML = `
+      <span class="mini-label">Detail Referensi</span>
+      <h3>${html(libraryRowTitle(row, libraryCurrentDataset))}</h3>
+      <p>${html(libraryCue(row, libraryCurrentDataset))}</p>
+      <div class="library-detail-lines">${details}</div>
+      <div class="library-detail-source">${sourceLink(row) || "<span>Source belum tersedia</span>"}</div>
+    `;
+  }
+
+  function renderLibrary() {
+    const dataset = $("libraryDataset").value;
+    const search = norm($("librarySearch").value);
+    const rows = libraryFilteredRows(dataset, search);
+    libraryCurrentDataset = dataset;
+    libraryCurrentRows = rows;
+    const { columnsByDataset, labelMap } = librarySchema();
     const cols = columnsByDataset[dataset] || [...Object.keys(rows[0] || {}).slice(0, 8), "Source"];
     const cell = (row, c) => {
       if (c === "RoastVisual") return roastVisual(row);
       if (c === "Source") return sourceLink(row);
       return html(row[c]);
     };
+    renderLibraryOverview(rows, dataset);
+    renderLibraryCards(rows, dataset);
+    renderLibraryDetail(0);
     const table = $("libraryTable");
     table.querySelector("thead").innerHTML = `<tr>${cols.map(c => `<th><span>${html(labelMap[c] || c)}</span></th>`).join("")}</tr>`;
     table.querySelector("tbody").innerHTML = rows.length
-      ? rows.slice(0, 200).map(row => `<tr>${cols.map(c => `<td data-col="${html(c)}">${cell(row, c)}</td>`).join("")}</tr>`).join("")
+      ? rows.slice(0, 200).map((row, idx) => `<tr data-library-index="${idx}">${cols.map(c => `<td data-col="${html(c)}">${cell(row, c)}</td>`).join("")}</tr>`).join("")
       : emptyRow(cols.length || 1, "Data tidak ditemukan", "Coba kata kunci lain atau pilih dataset berbeda.", "⌕");
   }
 
@@ -4350,10 +4976,43 @@
     if (select && select.value !== name) select.value = name;
   }
 
+  const GUEST_PRIVATE_TABS = ["stock", "qa", "analytics", "quality"];
+
+  function isGuestPrivateTab(name) {
+    return !currentUser && GUEST_PRIVATE_TABS.includes(String(name || ""));
+  }
+
+  function updateGuestPrivateNavigation() {
+    const isGuest = !currentUser;
+    GUEST_PRIVATE_TABS.forEach(tab => {
+      const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+      setElementHidden(btn, isGuest);
+      const opt = document.querySelector(`#mobileTabSelect option[value="${tab}"]`);
+      if (opt) {
+        opt.hidden = isGuest;
+        opt.disabled = isGuest;
+      }
+      const panel = $(`tab-${tab}`);
+      panel?.classList.toggle("guest-locked", isGuest);
+    });
+    setElementHidden($("guestPrivateNotice"), !isGuest);
+    if (isGuest && GUEST_PRIVATE_TABS.includes(document.querySelector(".tab-btn.active")?.dataset.tab || "")) {
+      showTab("guide");
+    }
+    if (isGuest && GUEST_PRIVATE_TABS.includes($("mobileTabSelect")?.value || "")) {
+      syncMobileTabSelect("guide");
+    }
+  }
+
   function showTab(name) {
+    if (isGuestPrivateTab(name)) {
+      showMessage("Login untuk membuka Stock Kopi, Brew Log & QA, Analytics, dan Data Quality.", "info");
+      name = "admin";
+    }
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
     document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.toggle("active", panel.id === `tab-${name}`));
     syncMobileTabSelect(name);
+    updateGuestPrivateNavigation();
     if (window.matchMedia?.("(max-width: 760px)").matches) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -4384,6 +5043,7 @@
 
   function renderAccessUI() {
     const privateReady = canUseWorkspaceModules();
+    updateGuestPrivateNavigation();
     setElementHidden($("saveCurrentBrew"), !privateReady);
     setElementHidden($("applyBeanToBrew"), !privateReady);
     setElementHidden(document.querySelector('[data-tab="beans"]'), !privateReady);
@@ -4403,6 +5063,9 @@
 
     if (!privateReady && document.querySelector(".tab-btn.active")?.dataset.tab === "beans") {
       showTab("brew");
+    }
+    if (!currentUser && GUEST_PRIVATE_TABS.includes(document.querySelector(".tab-btn.active")?.dataset.tab || "")) {
+      showTab("admin");
     }
     if (currentUser && currentRole !== "admin" && document.querySelector(".tab-btn.active")?.dataset.tab === "admin" && $("workspacePanel")?.hidden) {
       return;
@@ -4494,6 +5157,9 @@
       const card = e.target.closest(".recipe-option-card[data-recipe-option]");
       if (!card) return;
       document.querySelectorAll(".recipe-option-card").forEach(item => item.classList.toggle("active", item === card));
+      const options = recipeOptionsFromBrew(computeBrew());
+      const index = Math.max(0, options.findIndex(opt => opt.key === card.dataset.recipeOption));
+      renderActiveRecipeSummary(options[index] || options[0], index < 0 ? 0 : index);
       showMessage(`Opsi aktif: ${card.dataset.recipeTitle || "rekomendasi seduh"}. Gunakan sebagai pembanding saat tasting.`, "info");
     });
     $("recipeOptions")?.addEventListener("keydown", e => {
@@ -4544,16 +5210,41 @@
     });
     $("libraryDataset").addEventListener("change", renderLibrary);
     $("librarySearch").addEventListener("input", renderLibrary);
-    $("publicBrewSearch")?.addEventListener("input", renderPublicBrewTable);
-    $("publicBrewMethod")?.addEventListener("change", renderPublicBrewTable);
-    $("publicBrewMinQA")?.addEventListener("change", renderPublicBrewTable);
-    $("publicBrewTable")?.addEventListener("click", e => {
+    $("libraryCardGrid")?.addEventListener("click", e => {
+      const card = e.target.closest("[data-library-index]");
+      if (!card) return;
+      document.querySelectorAll("[data-library-index]").forEach(item => item.classList.toggle("active", item === card));
+      renderLibraryDetail(Number(card.dataset.libraryIndex || 0));
+    });
+    $("libraryCardGrid")?.addEventListener("keydown", e => {
+      if (!["Enter", " "].includes(e.key)) return;
+      const card = e.target.closest("[data-library-index]");
+      if (!card) return;
+      e.preventDefault();
+      card.click();
+    });
+    $("libraryTable")?.addEventListener("click", e => {
+      const row = e.target.closest("tr[data-library-index]");
+      if (!row) return;
+      renderLibraryDetail(Number(row.dataset.libraryIndex || 0));
+      $("libraryDetailPanel")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    ["publicBrewSearch", "publicBrewMethod", "publicBrewDripper", "publicBrewProcess", "publicBrewRoast", "publicBrewMinQA", "publicBrewSort"].forEach(id => {
+      const el = $(id);
+      if (!el) return;
+      el.addEventListener(id === "publicBrewSearch" ? "input" : "change", renderPublicBrewTable);
+    });
+    const handlePublicBrewAction = e => {
       const editBtn = e.target.closest("button[data-public-brew-edit]");
       if (editBtn) return openPublicBrewEdit(editBtn.dataset.publicBrewEdit);
+      const useBtn = e.target.closest("button[data-public-brew-use]");
+      if (useBtn) return usePublicBrewAsBaseline(useBtn.dataset.publicBrewUse);
       const btn = e.target.closest("button[data-public-brew-detail]");
       if (!btn) return;
       openPublicBrewDetail(btn.dataset.publicBrewDetail);
-    });
+    };
+    $("publicBrewTable")?.addEventListener("click", handlePublicBrewAction);
+    $("publicBrewCards")?.addEventListener("click", handlePublicBrewAction);
     $("publicBrewModalBody")?.addEventListener("click", e => {
       const editBtn = e.target.closest("button[data-public-brew-edit]");
       if (editBtn) openPublicBrewEdit(editBtn.dataset.publicBrewEdit);
@@ -4567,6 +5258,22 @@
       if (e.key === "Escape" && !$("publicBrewModal")?.classList.contains("hidden")) closePublicBrewDetail();
     });
     $("refreshPublicBrews")?.addEventListener("click", async () => { await syncFromCloud(true).catch(err => alert(`Gagal memuat hasil seduhan publik: ${err.message || err}`)); });
+    ["analyticsScope", "analyticsMinQA"].forEach(id => $(id)?.addEventListener("change", renderAnalytics));
+    $("refreshAnalytics")?.addEventListener("click", async () => {
+      await syncFromCloud(true).catch(err => showMessage(`Gagal refresh analytics: ${err.message || err}`, "error"));
+      renderAnalytics();
+    });
+    ["qualityScope", "qualitySeverity"].forEach(id => $(id)?.addEventListener("change", renderDataQuality));
+    $("refreshQuality")?.addEventListener("click", () => {
+      renderDataQuality();
+      showMessage("Data Quality Checker diperbarui.", "success");
+    });
+    $("mobileQuickBrew")?.addEventListener("click", () => {
+      showTab("brew");
+      document.querySelector("#tab-brew")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    $("mobileQuickSync")?.addEventListener("click", () => processPendingSyncQueue(true));
+    $("mobileQuickTop")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
     $("loginBtn")?.addEventListener("click", handleLogin);
     $("signupBtn")?.addEventListener("click", handleSignup);
     $("authJumpLink")?.addEventListener("click", () => {
@@ -4584,9 +5291,14 @@
     $("moderationDataset")?.addEventListener("change", loadModerationRows);
     $("moderationStatus")?.addEventListener("change", loadModerationRows);
     $("refreshModeration")?.addEventListener("click", loadModerationRows);
+    $("bulkApproveModeration")?.addEventListener("click", () => bulkModerateVisibleRows("approve"));
+    $("bulkRejectModeration")?.addEventListener("click", () => bulkModerateVisibleRows("reject"));
     $("refreshMemberRequests")?.addEventListener("click", loadMemberRequests);
+    $("bulkApproveMembers")?.addEventListener("click", bulkApprovePendingMembers);
     $("refreshWorkspaceUsers")?.addEventListener("click", loadWorkspaceMembers);
     $("refreshSuggestions")?.addEventListener("click", loadSuggestionRows);
+    $("bulkReviewSuggestions")?.addEventListener("click", () => bulkSuggestionStatus("reviewed"));
+    $("bulkCloseSuggestions")?.addEventListener("click", () => bulkSuggestionStatus("closed"));
     $("moderationTable")?.addEventListener("click", e => {
       const btn = e.target.closest("button[data-mod-action]");
       if (!btn) return;
@@ -4640,6 +5352,699 @@
     });
   }
 
+  function analyticsBaseRows() {
+    const workspaceRows = (allBrewLogs() || []).map(log => ({ ...log, AnalyticsSource: "workspace" }));
+    const publicRows = (typeof publicApprovedRows === "function" ? publicApprovedRows() : []).map(log => ({ ...log, AnalyticsSource: "public" }));
+    const seen = new Set();
+    return [...workspaceRows, ...publicRows].filter(log => {
+      const key = String(log.CloudID || log.BrewID || `${log.BeanName}|${log.Date}|${log.BrewerName}`);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function analyticsRows() {
+    const scope = $("analyticsScope")?.value || "all";
+    const minQA = Number($("analyticsMinQA")?.value || 0);
+    return analyticsBaseRows()
+      .filter(log => Number(log.QA_Final || 0) > 0)
+      .filter(log => scope === "all" || log.AnalyticsSource === scope)
+      .filter(log => !minQA || Number(log.QA_Final || 0) >= minQA)
+      .sort((a, b) => new Date(a.Date || a.CreatedAt || 0) - new Date(b.Date || b.CreatedAt || 0));
+  }
+
+  function avg(values) {
+    const nums = values.map(Number).filter(Number.isFinite);
+    return nums.length ? nums.reduce((sum, n) => sum + n, 0) / nums.length : 0;
+  }
+
+  function groupAnalytics(rows, field) {
+    const map = new Map();
+    rows.forEach(log => {
+      const key = log[field] || "-";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(log);
+    });
+    return [...map.entries()].map(([key, logs]) => ({
+      key,
+      count: logs.length,
+      avgQA: avg(logs.map(log => Number(log.QA_Final || 0))),
+      bestQA: Math.max(...logs.map(log => Number(log.QA_Final || 0))),
+      best: logs.slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0))[0]
+    })).sort((a, b) => b.avgQA - a.avgQA || b.count - a.count);
+  }
+
+  function dateBucket(log) {
+    const value = log.Date || log.CreatedAt || "";
+    if (!value) return "-";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function analyticsTrend(rows) {
+    const buckets = new Map();
+    rows.forEach(log => {
+      const key = dateBucket(log);
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(Number(log.QA_Final || 0));
+    });
+    return [...buckets.entries()].map(([date, values]) => ({
+      date,
+      avgQA: avg(values),
+      count: values.filter(Boolean).length
+    })).slice(-10);
+  }
+
+  function recipeCompletenessScore(log) {
+    return [log.Dripper, log.Method, log.Grinder, log.GrindSetting, log.Temp_C, log.Ratio, log.Dose_g, log.TotalWater_ml, log.BrewTime_sec, log.Water, log.ResultNotes]
+      .filter(Boolean).length;
+  }
+
+  function renderAnalyticsMetrics(rows) {
+    const grid = $("analyticsMetricGrid");
+    if (!grid) return;
+    const qaValues = rows.map(log => Number(log.QA_Final || 0)).filter(Boolean);
+    const best = rows.slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0))[0];
+    const dripperBest = groupAnalytics(rows, "Dripper").find(item => item.key !== "-");
+    const processBest = groupAnalytics(rows, "Process").find(item => item.key !== "-");
+    const metrics = [
+      ["Total Brew", rows.length, "Jumlah brew log yang masuk filter analytics."],
+      ["Rata-rata QA", qaValues.length ? fmt(avg(qaValues), 2) : "-", "Rata-rata QA dari data yang terbaca."],
+      ["Best Cup", best ? `${best.BeanName || best.BrewID || "-"} · ${fmt(best.QA_Final, 2)}` : "-", "Seduhan dengan QA tertinggi."],
+      ["Top Dripper", dripperBest ? `${dripperBest.key} · ${fmt(dripperBest.avgQA, 2)}` : "-", "Dripper dengan average QA terbaik."],
+      ["Top Process", processBest ? `${processBest.key} · ${fmt(processBest.avgQA, 2)}` : "-", "Proses pasca panen dengan average QA terbaik."],
+      ["Recipe Ready", rows.filter(log => recipeCompletenessScore(log) >= 8).length, "Brew log dengan parameter resep cukup lengkap."]
+    ];
+    grid.innerHTML = metrics.map(([label, value, desc], idx) => `
+      <article class="analytics-metric-card cinematic-reveal" style="--stagger:${idx}">
+        <span>${html(label)}</span>
+        <strong>${html(value)}</strong>
+        <small>${html(desc)}</small>
+      </article>
+    `).join("");
+  }
+
+  function renderAnalyticsTrend(rows) {
+    const chart = $("analyticsTrendChart");
+    if (!chart) return;
+    const trend = analyticsTrend(rows);
+    if (!trend.length) {
+      chart.innerHTML = `<div class="analytics-empty">Belum ada data QA untuk trend.</div>`;
+      return;
+    }
+    const values = trend.map(item => Number(item.avgQA || 0)).filter(Number.isFinite);
+    let minY = Math.max(0, Math.floor(Math.min(...values, 6) - 0.5));
+    let maxY = Math.min(10, Math.ceil(Math.max(...values, 8) + 0.5));
+    if (maxY - minY < 2) minY = Math.max(0, maxY - 2);
+    const width = 1000;
+    const height = 300;
+    const pad = { left: 54, right: 28, top: 28, bottom: 54 };
+    const spanX = width - pad.left - pad.right;
+    const spanY = height - pad.top - pad.bottom;
+    const xFor = idx => pad.left + (trend.length === 1 ? spanX / 2 : idx * (spanX / (trend.length - 1)));
+    const yFor = value => pad.top + (1 - ((Number(value || 0) - minY) / Math.max(1, maxY - minY))) * spanY;
+    const points = trend.map((item, idx) => ({ ...item, x: xFor(idx), y: yFor(item.avgQA) }));
+    const line = points.map((p, idx) => `${idx ? "L" : "M"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+    const area = `${line} L ${points.at(-1).x.toFixed(1)} ${height - pad.bottom} L ${points[0].x.toFixed(1)} ${height - pad.bottom} Z`;
+    const ticks = [minY, Math.round((minY + maxY) / 2), maxY].filter((v, i, a) => a.indexOf(v) === i);
+    chart.innerHTML = `
+      <div class="analytics-line-chart">
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="QA trend line chart">
+          <defs>
+            <linearGradient id="qaTrendArea" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="rgba(166,112,70,.30)" />
+              <stop offset="100%" stop-color="rgba(166,112,70,0)" />
+            </linearGradient>
+            <linearGradient id="qaTrendLine" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stop-color="rgba(75,46,43,.95)" />
+              <stop offset="100%" stop-color="rgba(205,146,82,.95)" />
+            </linearGradient>
+          </defs>
+          ${ticks.map(tick => {
+            const y = yFor(tick);
+            return `<g class="trend-grid-line"><line x1="${pad.left}" x2="${width - pad.right}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"></line><text x="${pad.left - 12}" y="${(y + 4).toFixed(1)}">${html(fmt(tick, 1))}</text></g>`;
+          }).join("")}
+          <path class="trend-area-path" d="${area}"></path>
+          <path class="trend-line-path" d="${line}"></path>
+          ${points.map((p, idx) => `<g class="trend-point" style="--stagger:${idx}">
+            <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5"></circle>
+            <text class="trend-value" x="${p.x.toFixed(1)}" y="${(p.y - 14).toFixed(1)}">${html(fmt(p.avgQA, 2))}</text>
+            <text class="trend-label" x="${p.x.toFixed(1)}" y="${height - 20}">${html(String(p.date || "").slice(5))}</text>
+          </g>`).join("")}
+        </svg>
+      </div>`;
+  }
+
+  function renderRankList(id, rows, field) {
+    const target = $(id);
+    if (!target) return;
+    const groups = groupAnalytics(rows, field).filter(item => item.key && item.key !== "-").slice(0, 6);
+    if (!groups.length) {
+      target.innerHTML = `<div class="analytics-empty">Belum ada data ${html(field)}.</div>`;
+      return;
+    }
+    const maxAvg = Math.max(...groups.map(item => item.avgQA), 10);
+    target.innerHTML = groups.map((item, idx) => `
+      <article class="analytics-rank-item cinematic-reveal" style="--stagger:${idx}">
+        <div>
+          <span>${html(item.key)}</span>
+          <strong>Avg QA ${html(fmt(item.avgQA, 2))}</strong>
+          <small>${html(item.count)} brew · best ${html(fmt(item.bestQA, 2))}</small>
+        </div>
+        <i style="--bar:${Math.max(8, Math.round((item.avgQA / maxAvg) * 100))}%"></i>
+      </article>
+    `).join("");
+  }
+
+  function analyticsInsights(rows) {
+    if (!rows.length) return [{ title: "Belum ada data", text: "Belum ada brew log dengan QA yang bisa dianalisis. Tambahkan data seduhan dan QA untuk mulai membaca pola." }];
+    const trend = analyticsTrend(rows);
+    const first = trend[0]?.avgQA || 0;
+    const last = trend[trend.length - 1]?.avgQA || 0;
+    const dripper = groupAnalytics(rows, "Dripper").find(item => item.count >= 1 && item.key !== "-");
+    const process = groupAnalytics(rows, "Process").find(item => item.count >= 1 && item.key !== "-");
+    const roast = groupAnalytics(rows, "RoastProfile").find(item => item.count >= 1 && item.key !== "-");
+    const longBrew = rows.filter(log => Number(log.BrewTime_sec || 0) > 240);
+    const longAvg = avg(longBrew.map(log => Number(log.QA_Final || 0)));
+    const allAvg = avg(rows.map(log => Number(log.QA_Final || 0)));
+    const insights = [];
+    insights.push({
+      title: last >= first ? "Trend QA membaik / stabil" : "Trend QA menurun",
+      text: trend.length >= 2 ? `Rata-rata awal ${fmt(first, 2)} dan terbaru ${fmt(last, 2)}. ${last >= first ? "Pertahankan baseline terbaik dan ubah satu variabel per eksperimen." : "Cek perubahan grind, suhu, atau agitation pada brew terakhir."}` : "Data trend masih sedikit. Tambahkan beberapa brew lagi untuk membaca arah performa."
+    });
+    if (dripper) insights.push({ title: "Dripper paling menjanjikan", text: `${dripper.key} memiliki average QA ${fmt(dripper.avgQA, 2)} dari ${dripper.count} brew. Gunakan sebagai pembanding untuk recipe berikutnya.` });
+    if (process) insights.push({ title: "Proses paling kuat", text: `${process.key} saat ini memimpin dengan average QA ${fmt(process.avgQA, 2)}. Validasi apakah pola ini konsisten di roast dan dripper berbeda.` });
+    if (roast) insights.push({ title: "Roast profile dominan", text: `${roast.key} punya performa terbaik di data aktif. Perhatikan apakah solubility-nya cocok dengan suhu dan grind target.` });
+    if (longBrew.length >= 2) insights.push({ title: "Brew time panjang", text: `Brew time > 4 menit memiliki average QA ${fmt(longAvg, 2)} dibanding total ${fmt(allAvg, 2)}. Jika lebih rendah, pertimbangkan grind lebih kasar atau agitation lebih rendah.` });
+    return insights.slice(0, 5);
+  }
+
+  function renderAnalyticsInsights(rows) {
+    const list = $("analyticsInsightList");
+    if (!list) return;
+    list.innerHTML = analyticsInsights(rows).map((item, idx) => `
+      <article class="analytics-insight-item cinematic-reveal" style="--stagger:${idx}">
+        <span>${idx + 1}</span>
+        <div><strong>${html(item.title)}</strong><p>${html(item.text)}</p></div>
+      </article>
+    `).join("");
+  }
+
+  function renderAnalyticsTable(rows) {
+    const table = $("analyticsTopTable");
+    if (!table) return;
+    const tbody = table.querySelector("tbody");
+    const top = rows.slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0)).slice(0, 10);
+    if (!top.length) {
+      tbody.innerHTML = emptyRow(5, "Belum ada data analytics", "Tambahkan brew log dan QA untuk melihat ranking resep.", "◇");
+      return;
+    }
+    tbody.innerHTML = top.map(log => {
+      const profile = [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · ") || "-";
+      const recipe = [log.Dripper, log.Grinder, log.GrindSetting, log.Temp_C ? `${log.Temp_C}°C` : "", log.Ratio ? `1:${log.Ratio}` : ""].filter(Boolean).join(" · ") || "-";
+      return `<tr>
+        <td data-label="Kopi"><strong>${html(log.BeanName || log.BrewID || "Tanpa nama")}</strong><small>${html(log.BrewerName || "Brewer")}</small></td>
+        <td data-label="Profil">${html(profile)}</td>
+        <td data-label="Metode">${html(log.Method || "-")}</td>
+        <td data-label="Resep">${html(recipe)}</td>
+        <td data-label="QA"><span class="score-pill">${html(fmt(log.QA_Final, 2))}</span></td>
+      </tr>`;
+    }).join("");
+  }
+
+  function renderAnalytics() {
+    if (!$("analyticsMetricGrid")) return;
+    const rows = analyticsRows();
+    renderAnalyticsMetrics(rows);
+    renderAnalyticsTrend(rows);
+    renderRankList("analyticsDripperRank", rows, "Dripper");
+    renderRankList("analyticsProcessRank", rows, "Process");
+    renderAnalyticsInsights(rows);
+    renderAnalyticsTable(rows);
+  }
+
+  function qualitySources() {
+    const brewRows = typeof analyticsBaseRows === "function" ? analyticsBaseRows() : [...(allBrewLogs() || []), ...(typeof publicApprovedRows === "function" ? publicApprovedRows() : [])];
+    const seen = new Set();
+    const uniqueBrew = brewRows.filter(log => {
+      const key = String(log.CloudID || log.BrewID || `${log.BeanName}|${log.Date}|${log.BrewerName}`);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    return {
+      brew: uniqueBrew,
+      qa: allQA() || [],
+      stock: workspaceStock() || [],
+      public: typeof publicApprovedRows === "function" ? publicApprovedRows() : [],
+      library: ["varieties", "drippers", "processes", "roasts", "waters", "grinders"].flatMap(key => (DATA[key] || []).map(row => ({ ...row, __dataset: key })))
+    };
+  }
+
+  function pushQualityIssue(list, { severity = "info", module = "general", item = "-", issue = "-", action = "-", ref = "" }) {
+    list.push({ severity, module, item, issue, action, ref });
+  }
+
+  function brewCompleteness(log) {
+    const fields = ["BeanName", "Variety", "Process", "RoastProfile", "Dripper", "Method", "Grinder", "GrindSetting", "Temp_C", "Ratio", "Dose_g", "TotalWater_ml", "BrewTime_sec", "QA_Final"];
+    const filled = fields.filter(field => log[field] !== undefined && log[field] !== null && String(log[field]).trim() !== "").length;
+    return Math.round((filled / fields.length) * 100);
+  }
+
+  function qualityIssuesRaw() {
+    const src = qualitySources();
+    const issues = [];
+
+    src.brew.forEach(log => {
+      const name = log.BeanName || log.BrewID || "Brew tanpa nama";
+      const required = [
+        ["BeanName", "nama kopi"],
+        ["Variety", "varietas"],
+        ["Process", "pasca panen"],
+        ["RoastProfile", "roast profile"],
+        ["Dripper", "dripper"],
+        ["Method", "metode"],
+        ["Grinder", "grinder"],
+        ["GrindSetting", "setting grinder"],
+        ["Temp_C", "suhu"],
+        ["Ratio", "rasio"],
+        ["Dose_g", "dose"],
+        ["TotalWater_ml", "total air"]
+      ];
+      const missing = required.filter(([field]) => log[field] === undefined || log[field] === null || String(log[field]).trim() === "").map(([, label]) => label);
+      if (missing.length) pushQualityIssue(issues, {
+        severity: missing.length >= 5 ? "critical" : "warning",
+        module: "brew",
+        item: name,
+        issue: `Field kosong: ${missing.slice(0, 6).join(", ")}${missing.length > 6 ? "..." : ""}`,
+        action: "Lengkapi data di Brew Log atau Input Seduhan."
+      });
+      if (Number(log.QA_Final || 0) >= APPROVAL_THRESHOLD && brewCompleteness(log) < 75) pushQualityIssue(issues, {
+        severity: "warning",
+        module: "public",
+        item: name,
+        issue: `QA tinggi (${fmt(log.QA_Final, 2)}) tetapi kelengkapan resep baru ${brewCompleteness(log)}%.`,
+        action: "Lengkapi parameter resep sebelum dijadikan referensi publik."
+      });
+      if (Number(log.BrewTime_sec || 0) > 360) pushQualityIssue(issues, {
+        severity: "info",
+        module: "brew",
+        item: name,
+        issue: "Brew time lebih dari 6 menit.",
+        action: "Cek apakah grind terlalu halus, bed tersumbat, atau agitation terlalu tinggi."
+      });
+      if (Number(log.Temp_C || 0) && (Number(log.Temp_C) < 80 || Number(log.Temp_C) > 100)) pushQualityIssue(issues, {
+        severity: "critical",
+        module: "brew",
+        item: name,
+        issue: `Suhu ${log.Temp_C}°C berada di luar rentang wajar.`,
+        action: "Validasi input suhu seduh."
+      });
+      if (Number(log.Ratio || 0) && (Number(log.Ratio) < 8 || Number(log.Ratio) > 25)) pushQualityIssue(issues, {
+        severity: "warning",
+        module: "brew",
+        item: name,
+        issue: `Rasio 1:${log.Ratio} terlihat tidak umum untuk filter brew.`,
+        action: "Cek apakah rasio atau total air salah input."
+      });
+    });
+
+    src.qa.forEach(qa => {
+      const name = qa.BrewID || qa.QA_ID || "QA tanpa BrewID";
+      if (!qa.BrewID) pushQualityIssue(issues, {
+        severity: "critical",
+        module: "qa",
+        item: name,
+        issue: "QA score tidak punya BrewID.",
+        action: "Hubungkan QA ke Brew Log yang benar."
+      });
+      if (!Number.isFinite(Number(qa.QA_Final))) pushQualityIssue(issues, {
+        severity: "critical",
+        module: "qa",
+        item: name,
+        issue: "Final QA kosong atau bukan angka.",
+        action: "Isi ulang skor QA atau hitung ulang preview QA."
+      });
+      if (Number(qa.QA_Final || 0) >= APPROVAL_THRESHOLD && String(qa.ApprovedForRecipe || "").toLowerCase() !== "yes") pushQualityIssue(issues, {
+        severity: "info",
+        module: "qa",
+        item: name,
+        issue: "QA lulus threshold tetapi belum ditandai ApprovedForRecipe.",
+        action: "Review apakah resep layak ditampilkan sebagai referensi."
+      });
+    });
+
+    src.stock.forEach(bean => {
+      const name = bean.BeanName || bean.StockBeanID || "Stock tanpa nama";
+      if (!bean.BeanName || !bean.Variety || !bean.Process || !bean.RoastProfile) pushQualityIssue(issues, {
+        severity: "warning",
+        module: "stock",
+        item: name,
+        issue: "Identitas stok belum lengkap.",
+        action: "Lengkapi nama kopi, varietas, proses, dan roast profile."
+      });
+      if (Number(bean.Remaining_g ?? bean.Stock_g ?? 0) <= 0) pushQualityIssue(issues, {
+        severity: "info",
+        module: "stock",
+        item: name,
+        issue: "Stok habis atau remaining 0g.",
+        action: "Archive stok lama atau update stok baru."
+      });
+    });
+
+    src.public.forEach(log => {
+      const name = log.BeanName || log.BrewID || "Public brew";
+      if (Number(log.QA_Final || 0) < APPROVAL_THRESHOLD) pushQualityIssue(issues, {
+        severity: "critical",
+        module: "public",
+        item: name,
+        issue: "Data publik punya QA di bawah threshold.",
+        action: "Turunkan visibility atau review moderation policy."
+      });
+      if (!log.ResultNotes && !log.PrimaryVariableChanged) pushQualityIssue(issues, {
+        severity: "info",
+        module: "public",
+        item: name,
+        issue: "Resep publik minim catatan hasil/tasting.",
+        action: "Tambahkan result notes agar pengguna lain memahami konteks resep."
+      });
+    });
+
+    src.library.forEach(row => {
+      const title = libraryRowTitle ? libraryRowTitle(row, row.__dataset) : (row.Variety || row.DripperName || row.Process || row.RoastProfile || row.Water || row.Grinder || "Library row");
+      if (!sourceUrl(row)) pushQualityIssue(issues, {
+        severity: "info",
+        module: "library",
+        item: title,
+        issue: "SourceURL belum tersedia.",
+        action: "Tambahkan source agar referensi lebih terpercaya."
+      });
+    });
+
+    return issues;
+  }
+
+  function qualityFilteredIssues() {
+    const scope = $("qualityScope")?.value || "all";
+    const severity = $("qualitySeverity")?.value || "all";
+    return qualityIssuesRaw()
+      .filter(issue => scope === "all" || issue.module === scope)
+      .filter(issue => severity === "all" || issue.severity === severity);
+  }
+
+  function qualityScore(issues) {
+    const critical = issues.filter(i => i.severity === "critical").length;
+    const warning = issues.filter(i => i.severity === "warning").length;
+    const info = issues.filter(i => i.severity === "info").length;
+    return clamp(100 - critical * 12 - warning * 5 - info * 1, 0, 100);
+  }
+
+  function severityLabel(severity) {
+    return severity === "critical" ? "Critical" : severity === "warning" ? "Warning" : "Info";
+  }
+
+  function renderQualityScore(issues) {
+    const score = qualityScore(issues);
+    const card = $("qualityScoreCard");
+    if (!card) return;
+    const label = score >= 88 ? "Excellent" : score >= 74 ? "Good" : score >= 55 ? "Needs cleanup" : "Critical cleanup";
+    card.innerHTML = `
+      <div class="quality-score-ring" style="--score:${score}%"><strong>${html(score)}</strong><span>/100</span></div>
+      <div>
+        <span class="mini-label">Data Quality Score</span>
+        <h3>${html(label)}</h3>
+        <p>${html(issues.length ? `${issues.length} issue terdeteksi berdasarkan filter aktif.` : "Tidak ada issue pada filter aktif.")}</p>
+      </div>
+    `;
+  }
+
+  function renderQualityMetrics(issues) {
+    const grid = $("qualityMetricGrid");
+    if (!grid) return;
+    const src = qualitySources();
+    const recipeReady = src.brew.filter(log => brewCompleteness(log) >= 80).length;
+    const cards = [
+      ["Critical", issues.filter(i => i.severity === "critical").length, "Harus dibenahi agar data aman."],
+      ["Warning", issues.filter(i => i.severity === "warning").length, "Perlu review agar insight akurat."],
+      ["Info", issues.filter(i => i.severity === "info").length, "Penyempurnaan opsional."],
+      ["Recipe Ready", `${recipeReady}/${src.brew.length}`, "Brew log yang cukup lengkap untuk analisis."]
+    ];
+    grid.innerHTML = cards.map(([label, value, desc], idx) => `
+      <article class="quality-metric-card cinematic-reveal" style="--stagger:${idx}">
+        <span>${html(label)}</span>
+        <strong>${html(value)}</strong>
+        <small>${html(desc)}</small>
+      </article>
+    `).join("");
+  }
+
+  function renderQualityIssues(issues) {
+    const list = $("qualityIssueList");
+    if (!list) return;
+    if (!issues.length) {
+      list.innerHTML = `<article class="quality-empty">Tidak ada issue untuk filter aktif.</article>`;
+      return;
+    }
+    list.innerHTML = issues.slice(0, 8).map((issue, idx) => `
+      <article class="quality-issue-item ${html(issue.severity)} cinematic-reveal" style="--stagger:${idx}">
+        <span>${html(severityLabel(issue.severity))}</span>
+        <div>
+          <strong>${html(issue.item)}</strong>
+          <p>${html(issue.issue)}</p>
+          <small>${html(issue.action)}</small>
+        </div>
+      </article>
+    `).join("");
+  }
+
+  function renderQualityChecklist(issues) {
+    const target = $("qualityChecklist");
+    if (!target) return;
+    const src = qualitySources();
+    const checks = [
+      ["Brew log punya identitas lengkap", !issues.some(i => i.module === "brew" && i.issue.includes("Field kosong"))],
+      ["QA terhubung ke BrewID", !issues.some(i => i.module === "qa" && i.issue.includes("BrewID"))],
+      ["Resep publik memenuhi threshold", !issues.some(i => i.module === "public" && i.severity === "critical")],
+      ["Stok punya profil kopi", !issues.some(i => i.module === "stock" && i.severity === "warning")],
+      ["Library punya source", src.library.filter(row => sourceUrl(row)).length >= Math.round(src.library.length * 0.75)]
+    ];
+    target.innerHTML = checks.map(([label, passed], idx) => `
+      <article class="quality-check-item ${passed ? "passed" : "pending"} cinematic-reveal" style="--stagger:${idx}">
+        <i>${passed ? "✓" : "!"}</i>
+        <span>${html(label)}</span>
+      </article>
+    `).join("");
+  }
+
+  function renderQualityTable(issues) {
+    const table = $("qualityIssueTable");
+    if (!table) return;
+    const tbody = table.querySelector("tbody");
+    if (!issues.length) {
+      tbody.innerHTML = emptyRow(5, "Tidak ada issue", "Data pada filter aktif sudah bersih.", "✓");
+      return;
+    }
+    tbody.innerHTML = issues.slice(0, 120).map(issue => `
+      <tr>
+        <td data-label="Severity"><span class="quality-pill ${html(issue.severity)}">${html(severityLabel(issue.severity))}</span></td>
+        <td data-label="Modul">${html(issue.module)}</td>
+        <td data-label="Item"><strong>${html(issue.item)}</strong></td>
+        <td data-label="Masalah">${html(issue.issue)}</td>
+        <td data-label="Aksi">${html(issue.action)}</td>
+      </tr>
+    `).join("");
+  }
+
+  function renderDataQuality() {
+    if (!$("qualityScoreCard")) return;
+    const issues = qualityFilteredIssues();
+    renderQualityScore(issues);
+    renderQualityMetrics(issues);
+    renderQualityIssues(issues);
+    renderQualityChecklist(issues);
+    renderQualityTable(issues);
+  }
+
+  function adminWorkspaceRows(rows = []) {
+    const workspaceId = currentWorkspace?.id || activeWorkspaceId();
+    return (rows || []).filter(row => !workspaceId || row.WorkspaceID === workspaceId || row.workspace_id === workspaceId);
+  }
+
+  function moderationStatusOf(row) {
+    return String(row.ModerationStatus || row.moderation_status || row.status || "pending").toLowerCase();
+  }
+
+  function adminModerationCounts() {
+    const brewRows = adminWorkspaceRows(state.cloudBrewLogs || []);
+    const qaRows = adminWorkspaceRows(state.cloudQA || []);
+    const rows = [...brewRows, ...qaRows];
+    return {
+      total: rows.length,
+      pending: rows.filter(row => moderationStatusOf(row) === "pending").length,
+      approved: rows.filter(row => ["approved", "published"].includes(moderationStatusOf(row))).length,
+      rejected: rows.filter(row => moderationStatusOf(row) === "rejected").length
+    };
+  }
+
+  function renderAdminProDashboard() {
+    const metrics = $("adminProMetricGrid");
+    const workflow = $("adminWorkflowGrid");
+    if (!metrics || !workflow) return;
+
+    const roleText = currentRole || "guest";
+    const workspaceName = currentWorkspace?.name || "Belum ada workspace";
+    const mod = adminModerationCounts();
+    const activeUsers = workspaceMemberRows.filter(row => row.status === "active").length;
+    const disabledUsers = workspaceMemberRows.filter(row => row.status === "disabled").length;
+    const pendingAccess = pendingMemberRows.length;
+    const openSuggestions = (suggestionRows || []).filter(row => ["open", "new", "reviewed"].includes(String(row.status || "open").toLowerCase())).length;
+
+    const cards = [
+      ["Workspace", workspaceName, `${roleText} · ${canAdmin() ? "Admin controls active" : canModerate() ? "Moderation access" : "Limited access"}`],
+      ["Request Pending", pendingAccess, "Permintaan akses Brewer/QA yang menunggu keputusan."],
+      ["Active Users", activeUsers, disabledUsers ? `${disabledUsers} user disabled.` : "Pengguna aktif di workspace."],
+      ["Moderation Queue", mod.pending, `${mod.approved} approved · ${mod.rejected} rejected.`],
+      ["Suggestions", openSuggestions, "Masukan yang masih perlu ditinjau."],
+      ["Role Guard", canAdmin() ? "Admin" : canModerate() ? "QA" : "Viewer", canAdmin() ? "Bisa kelola user dan data." : canModerate() ? "Bisa moderasi data." : "Masuk sebagai admin/QA untuk aksi."]
+    ];
+
+    metrics.innerHTML = cards.map(([label, value, desc], idx) => `
+      <article class="admin-pro-card cinematic-reveal" style="--stagger:${idx}">
+        <span>${html(label)}</span>
+        <strong>${html(value)}</strong>
+        <small>${html(desc)}</small>
+      </article>
+    `).join("");
+
+    const steps = [
+      ["1", "Access intake", pendingAccess ? `${pendingAccess} request menunggu approval.` : "Tidak ada request pending.", canAdmin() ? "Cek Request Akses Workspace." : "Butuh Admin Workspace."],
+      ["2", "Workspace users", activeUsers ? `${activeUsers} user aktif.` : "Belum ada user aktif terbaca.", canAdmin() ? "Review role/status pengguna." : "Panel user khusus admin."],
+      ["3", "Moderation", mod.pending ? `${mod.pending} data menunggu review.` : "Tidak ada data pending.", canModerate() ? "Setujui/tolak data yang valid." : "Butuh QA/Admin."],
+      ["4", "Suggestions", openSuggestions ? `${openSuggestions} masukan terbuka.` : "Tidak ada masukan terbuka.", canAdmin() ? "Review dan tutup masukan." : "Panel masukan khusus admin."]
+    ];
+
+    workflow.innerHTML = steps.map(([num, title, desc, action], idx) => `
+      <article class="admin-workflow-card cinematic-reveal" style="--stagger:${idx}">
+        <i>${html(num)}</i>
+        <div><strong>${html(title)}</strong><p>${html(desc)}</p><small>${html(action)}</small></div>
+      </article>
+    `).join("");
+  }
+
+  async function bulkApprovePendingMembers() {
+    if (!supabaseClient || !canAdmin() || !currentWorkspace) return showMessage("Butuh role Admin Workspace.", "error");
+    if (!pendingMemberRows.length) return showMessage("Tidak ada request pending untuk disetujui.", "info");
+    if (!confirm(`Setujui ${pendingMemberRows.length} request akses pending?`)) return;
+    try {
+      await prepareCloudWrite("Bulk approve member");
+      const userIds = pendingMemberRows.map(row => row.user_id).filter(Boolean);
+      const { error } = await withTimeout(
+        supabaseClient
+          .from("workspace_members")
+          .update({ status: "active", updated_at: new Date().toISOString() })
+          .eq("workspace_id", currentWorkspace.id)
+          .in("user_id", userIds)
+          .eq("status", "pending"),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Bulk approve member"
+      );
+      if (error) throw error;
+      await loadMemberRequests();
+      await loadWorkspaceMembers();
+      renderAdminProDashboard();
+      showMessage(`${userIds.length} request akses disetujui.`, "success");
+    } catch (err) {
+      showMessage(`Bulk approve gagal: ${err.message || err}`, "error");
+    }
+  }
+
+  async function bulkModerateVisibleRows(action) {
+    const table = $("moderationDataset")?.value || "brew_logs";
+    if (!supabaseClient || !canModerate() || !currentWorkspace) return showMessage("Butuh role QA/Admin.", "error");
+    const rows = moderationRows.filter(row => row.id);
+    if (!rows.length) return showMessage("Tidak ada data pada tampilan moderasi saat ini.", "info");
+    const label = action === "approve" ? "setujui" : "tolak";
+    const notes = action === "reject"
+      ? prompt(`Catatan untuk menolak ${rows.length} data:`, "Data perlu dicek ulang.")
+      : "Disetujui lewat bulk moderation";
+    if (action === "reject" && notes === null) return;
+    if (!confirm(`Yakin ${label} ${rows.length} data yang sedang tampil?`)) return;
+
+    try {
+      await prepareCloudWrite("Bulk moderation");
+      let count = 0;
+      for (const row of rows) {
+        const payload = {
+          moderation_status: action === "approve" ? "approved" : "rejected",
+          moderation_notes: notes || null,
+          moderated_by: currentUser.id,
+          moderated_at: new Date().toISOString()
+        };
+        if (table === "brew_logs") {
+          payload.status = action === "approve" ? "published" : "rejected";
+          if (action === "approve" && Number(row?.qa_final || 0) >= APPROVAL_THRESHOLD) {
+            payload.manual_approval = "Yes";
+            payload.approved_for_recipe = "Yes";
+            payload.qa_status = "QA PASS";
+          }
+          if (action === "reject") {
+            payload.manual_approval = "No";
+            payload.approved_for_recipe = "No";
+          }
+        }
+        if (table === "qa_scores") {
+          payload.status = action === "approve" ? (Number(row?.final_qa || 0) >= APPROVAL_THRESHOLD ? "QA PASS" : "APPROVED") : "REJECTED";
+        }
+        const { error } = await withTimeout(
+          supabaseClient
+            .from(table)
+            .update(payload)
+            .eq("id", row.id)
+            .eq("workspace_id", currentWorkspace.id),
+          CLOUD_WRITE_TIMEOUT_MS,
+          "Bulk moderation"
+        );
+        if (error) throw error;
+        count += 1;
+      }
+      await syncFromCloud(true).catch(console.warn);
+      await loadModerationRows();
+      renderAdminProDashboard();
+      showMessage(`${count} data berhasil di-${action === "approve" ? "setujui" : "tolak"}.`, "success");
+    } catch (err) {
+      showMessage(`Bulk moderation gagal: ${err.message || err}`, "error");
+    }
+  }
+
+  async function bulkSuggestionStatus(status) {
+    if (!supabaseClient || !canAdmin()) return showMessage("Butuh role Admin Workspace.", "error");
+    const target = (suggestionRows || []).filter(row => {
+      const current = String(row.status || "open").toLowerCase();
+      return status === "reviewed" ? current === "open" : current === "reviewed";
+    });
+    if (!target.length) return showMessage("Tidak ada masukan yang cocok untuk aksi ini.", "info");
+    if (!confirm(`${status === "closed" ? "Tutup" : "Tandai reviewed"} ${target.length} masukan?`)) return;
+    try {
+      await prepareCloudWrite("Bulk suggestion update");
+      const { error } = await withTimeout(
+        supabaseClient
+          .from("suggestions")
+          .update({ status })
+          .in("id", target.map(row => row.id)),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Bulk suggestion update"
+      );
+      if (error) throw error;
+      await loadSuggestionRows();
+      renderAdminProDashboard();
+      showMessage(`${target.length} masukan berhasil diperbarui.`, "success");
+    } catch (err) {
+      showMessage(`Bulk masukan gagal: ${err.message || err}`, "error");
+    }
+  }
+
   function renderAll() {
     renderMetrics();
     renderAccessUI();
@@ -4651,8 +6056,11 @@
     renderBrewLogTable();
     renderQABrewOptions();
     renderPublicBrewTable();
+    renderAnalytics();
+    renderDataQuality();
     renderLibrary();
     renderWorkspaceUI();
+    renderAdminProDashboard();
     if (canModerate()) loadModerationRows().catch(console.warn);
     else renderModerationTable?.();
     if (canAdmin()) {
@@ -4824,10 +6232,14 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     hydrateSelects();
+    restoreAutosaveDrafts();
     bindEvents();
+    bindAutosaveDrafts();
     renderAll();
     initPremiumUIInteractions();
     await initCloud();
+    processPendingSyncQueue(false).catch(console.warn);
     renderAll();
+    updateSyncGuardStatus();
   });
 })();
