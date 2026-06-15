@@ -9501,3 +9501,76 @@ table td {
     z-index: 40;
   }
 }
+
+
+/* ===== v28.1 Navigation icon fix + cleaner commercial nav ===== */
+.tabs {
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)) !important;
+  gap: 8px !important;
+  overflow: visible !important;
+}
+
+.tab-btn {
+  position: relative !important;
+  overflow: visible !important;
+  min-width: 0 !important;
+  padding: 8px 11px !important;
+  gap: 8px !important;
+}
+
+.tab-btn::before {
+  content: "";
+  flex: 0 0 24px !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  line-height: 1 !important;
+  overflow: visible !important;
+  transform: translateZ(0) !important;
+  box-sizing: border-box !important;
+}
+
+.tab-btn[data-tab="guide"]::before,
+.tab-btn[data-tab="brew"]::before,
+.tab-btn[data-tab="manual"]::before,
+.tab-btn[data-tab="bean-match"]::before,
+.tab-btn[data-tab="stock"]::before,
+.tab-btn[data-tab="qa"]::before,
+.tab-btn[data-tab="public-brews"]::before,
+.tab-btn[data-tab="analytics"]::before,
+.tab-btn[data-tab="quality"]::before,
+.tab-btn[data-tab="reports"]::before,
+.tab-btn[data-tab="suggestion"]::before,
+.tab-btn[data-tab="admin"]::before,
+.tab-btn[data-tab="library"]::before {
+  display: inline-grid !important;
+  place-items: center !important;
+  text-align: center !important;
+}
+
+@media (min-width: 1280px) {
+  .tabs {
+    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)) !important;
+  }
+
+  .tab-btn {
+    min-height: 48px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  .tabs {
+    grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .tabs {
+    display: none !important;
+  }
+}
