@@ -9574,3 +9574,90 @@ table td {
     display: none !important;
   }
 }
+
+
+/* ===== v28.2 Navigation layout + complete icon mapping ===== */
+.tabs {
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)) !important;
+  gap: 8px !important;
+  padding: 10px !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+}
+
+.tab-btn {
+  min-height: 50px !important;
+  padding: 8px 10px !important;
+  gap: 8px !important;
+  border-radius: 17px !important;
+  overflow: visible !important;
+  justify-content: center !important;
+  align-items: center !important;
+  line-height: 1.05 !important;
+}
+
+.tab-btn::before {
+  flex: 0 0 24px !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  overflow: visible !important;
+  color: rgba(86, 54, 37, .78) !important;
+  background: rgba(75, 46, 43, .065) !important;
+  box-sizing: border-box !important;
+}
+
+.tab-btn[data-tab="guide"]::before { content: "○" !important; }
+.tab-btn[data-tab="brew"]::before { content: "♨" !important; }
+.tab-btn[data-tab="input-seduhan"]::before { content: "✦" !important; }
+.tab-btn[data-tab="beans"]::before { content: "◆" !important; }
+.tab-btn[data-tab="stock"]::before { content: "▣" !important; }
+.tab-btn[data-tab="qa"]::before { content: "✓" !important; }
+.tab-btn[data-tab="public-brews"]::before { content: "◎" !important; }
+.tab-btn[data-tab="analytics"]::before { content: "⌁" !important; }
+.tab-btn[data-tab="quality"]::before { content: "◇" !important; }
+.tab-btn[data-tab="reports"]::before { content: "⇩" !important; }
+.tab-btn[data-tab="suggestion"]::before { content: "✎" !important; }
+.tab-btn[data-tab="admin"]::before { content: "⌘" !important; }
+.tab-btn[data-tab="library"]::before { content: "☷" !important; }
+
+.tab-btn.active::before {
+  color: #ffedcf !important;
+  background: rgba(255,255,255,.13) !important;
+}
+
+@media (min-width: 1400px) {
+  .tabs {
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  }
+
+  .tab-btn[data-tab="library"] {
+    grid-column: auto !important;
+  }
+}
+
+@media (max-width: 1260px) {
+  .tabs {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
+  }
+
+  .tab-btn {
+    font-size: 11.5px !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .tabs {
+    display: none !important;
+  }
+
+  .mobile-tab-switcher {
+    display: block !important;
+  }
+}
