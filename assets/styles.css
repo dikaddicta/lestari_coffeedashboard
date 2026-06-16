@@ -9661,3 +9661,79 @@ table td {
     display: block !important;
   }
 }
+
+
+/* ===== v28.3 Two-row desktop navigation refinement ===== */
+@media (min-width: 981px) {
+  .tabs {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    grid-auto-rows: minmax(68px, auto) !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+    padding: 12px !important;
+    overflow: visible !important;
+  }
+
+  .tab-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 68px !important;
+    height: 100% !important;
+    padding: 10px 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 9px !important;
+    white-space: normal !important;
+    line-height: 1.08 !important;
+    text-wrap: balance !important;
+    overflow: visible !important;
+  }
+
+  .tab-btn::before {
+    flex: 0 0 26px !important;
+    width: 26px !important;
+    min-width: 26px !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    font-size: 12px !important;
+    line-height: 1 !important;
+    overflow: visible !important;
+  }
+
+  .tab-btn[data-tab="public-brews"],
+  .tab-btn[data-tab="quality"],
+  .tab-btn[data-tab="reports"],
+  .tab-btn[data-tab="admin"] {
+    font-size: 11.5px !important;
+    letter-spacing: -.01em !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .tabs {
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1280px) and (min-width: 981px) {
+  .tabs {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    grid-auto-rows: minmax(64px, auto) !important;
+  }
+
+  .tab-btn {
+    min-height: 64px !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .tabs {
+    display: none !important;
+  }
+
+  .mobile-tab-switcher {
+    display: block !important;
+  }
+}

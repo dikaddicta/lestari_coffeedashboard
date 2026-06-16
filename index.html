@@ -6,7 +6,7 @@
   <title>Coffee Brew OS — Brew Intelligence Dashboard</title>
   <meta name="description" content="Dashboard kopi untuk rekomendasi seduh, brew log, QA, analytics, pustaka data, dan workflow operasional coffee team." />
   <meta name="theme-color" content="#4B2E2B" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260614-v28-2-nav-layout-icon-polish" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260614-v28-3-two-row-nav" />
 </head>
 <body>
   <div class="app-shell">
@@ -60,7 +60,7 @@
           <div class="metric-grid" id="libraryMetrics"></div>
         </div>
         <div class="auth-card" id="authSummary">
-          <span class="mini-label">Akun</span>
+          <span class="mini-label">Akun &amp; Admin</span>
           <strong id="authUserLabel">Mode Tamu</strong>
           <small id="authRoleLabel">Masuk untuk menyimpan dan membagikan data.</small>
           <button class="auth-jump-link" type="button" id="authJumpLink">Masuk / Daftar</button>
@@ -77,12 +77,12 @@
           <option value="beans">Beans</option>
           <option value="stock">Stok</option>
           <option value="qa">Brew QA</option>
-          <option value="public-brews">Public</option>
+          <option value="public-brews">Hasil Seduhan Publik</option>
           <option value="analytics">Analytics</option>
-          <option value="quality">Quality</option>
-          <option value="reports">Report</option>
+          <option value="quality">Data Quality</option>
+          <option value="reports">Export / Report</option>
           <option value="suggestion">Saran</option>
-          <option value="admin">Akun</option>
+          <option value="admin">Akun &amp; Admin</option>
           <option value="library">Pustaka</option>
         </select>
       </label>
@@ -103,10 +103,10 @@
       <button class="tab-btn" data-tab="beans">Beans</button>
       <button class="tab-btn" data-tab="stock">Stok</button>
       <button class="tab-btn" data-tab="qa">Brew Log & QA</button>
-      <button class="tab-btn" data-tab="public-brews">Public</button>
+      <button class="tab-btn" data-tab="public-brews">Hasil Seduhan Publik</button>
       <button class="tab-btn" data-tab="analytics">Analytics</button>
-      <button class="tab-btn" data-tab="quality">Quality</button>
-      <button class="tab-btn" data-tab="reports">Report</button>
+      <button class="tab-btn" data-tab="quality">Data Quality</button>
+      <button class="tab-btn" data-tab="reports">Export / Report</button>
       <button class="tab-btn" data-tab="suggestion">Saran</button>
       <button class="tab-btn" data-tab="admin">Akun & Admin</button>
       <button class="tab-btn" data-tab="library">Pustaka</button>
@@ -224,11 +224,11 @@
               </div>
               <p>Mode ini cocok untuk pengguna yang ingin mengenal dashboard, mencoba rekomendasi seduh, menginput seduhan manual, dan membaca hasil seduhan publik sebelum memutuskan membuat akun.</p>
             </div>
-            <div class="guide-path"><span>Rekomendasi</span><span>Input</span><span>Public</span><span>Saran</span><span>Akun</span></div>
+            <div class="guide-path"><span>Rekomendasi</span><span>Input</span><span>Hasil Seduhan Publik</span><span>Saran</span><span>Akun &amp; Admin</span></div>
             <div class="guide-menu-grid">
               <article class="guide-menu-card"><h4>Rekomendasi</h4><p>Gunakan menu ini sebagai titik awal. Isi <b>Data Seduhan</b> untuk mendapatkan rekomendasi dasar, tahapan seduh, dan referensi dari brew log terverifikasi dengan kemiripan variabel utama.</p></article>
               <article class="guide-menu-card"><h4>Input</h4><p>Pakai menu ini jika kamu ingin mencatat resep manual dengan biji kopi dan rumus sendiri. Hasil hanya bisa disimpan ke publik ketika <b>Final QA ≥ 6.5</b>.</p></article>
-              <article class="guide-menu-card"><h4>Public</h4><p>Baca hasil seduhan pengguna lain untuk membandingkan pendekatan, memahami pola ekstraksi, dan mencari referensi brew dengan nilai QA yang layak.</p></article>
+              <article class="guide-menu-card"><h4>Hasil Seduhan Publik</h4><p>Baca hasil seduhan pengguna lain untuk membandingkan pendekatan, memahami pola ekstraksi, dan mencari referensi brew dengan nilai QA yang layak.</p></article>
               <article class="guide-menu-card"><h4>Kotak Saran & Akun</h4><p>Gunakan <b>Saran</b> untuk memberi masukan, lalu masuk ke <b>Akun & Admin</b> jika kamu ingin menyimpan data pribadi atau bekerja di dalam workspace.</p></article>
             </div>
             <div class="guide-note-box">
@@ -279,7 +279,7 @@
               <article class="guide-menu-card"><h4>Rekomendasi</h4><p>Gunakan untuk membangun baseline sebelum pengujian. Menu ini berguna saat kamu ingin membandingkan resep rekomendasi dengan hasil evaluasi aktual.</p></article>
               <article class="guide-menu-card"><h4>Input Seduhan & Brew Log</h4><p>Catat detail resep, hasil seduhan, dan evaluasi rasa secara lengkap. Ini membantu QA membaca pola ekstraksi dan menyusun insight yang lebih terukur.</p></article>
               <article class="guide-menu-card"><h4>Panel Moderasi</h4><p>Di dalam <b>Akun & Admin</b>, QA dapat menyetujui, menolak, atau menghapus data pada panel moderasi. Fokus QA adalah kualitas data, bukan pengelolaan member workspace.</p></article>
-              <article class="guide-menu-card"><h4>Public</h4><p>Gunakan menu ini untuk memeriksa hasil akhir yang sudah lolos standar serta membaca data mana yang paling berguna sebagai referensi bersama.</p></article>
+              <article class="guide-menu-card"><h4>Hasil Seduhan Publik</h4><p>Gunakan menu ini untuk memeriksa hasil akhir yang sudah lolos standar serta membaca data mana yang paling berguna sebagai referensi bersama.</p></article>
             </div>
             <div class="guide-note-box">
               <strong>Best practice untuk QA</strong>
@@ -495,7 +495,7 @@
       <section id="tab-input-seduhan" class="tab-panel">
         <section class="panel wide manual-input-panel">
           <div class="section-title"><span>Manual Brew</span><h2>Input</h2></div>
-          <p class="hint">Menu ini untuk guest atau brewer yang ingin mencatat seduhan dengan rumus sendiri dan biji kopi sendiri. Data akan masuk ke <strong>Public</strong> hanya jika Final QA minimal <strong>6.5</strong>.</p>
+          <p class="hint">Menu ini untuk guest atau brewer yang ingin mencatat seduhan dengan rumus sendiri dan biji kopi sendiri. Data akan masuk ke <strong>Hasil Seduhan Publik</strong> hanya jika Final QA minimal <strong>6.5</strong>.</p>
           <div id="manualEditBanner" class="manual-edit-banner hidden"><div><strong id="manualEditTitle">Mode edit hasil seduhan</strong><small>Form edit memakai kolom yang sama seperti Input Seduhan. Tombol edit hanya muncul untuk akun yang menginput data tersebut.</small></div><button id="manualCancelEditBtn" class="ghost small-action" type="button">Batalkan Edit</button></div>
           <form id="manualBrewForm" class="form-grid qa-form manual-brew-form">
             <div class="form-subtitle span-2"><span>1. Data Seduhan</span><small>Tanpa stok. Isi biji kopi dan resep manual yang kamu gunakan.</small></div>
@@ -970,7 +970,7 @@
       <section id="tab-quality" class="tab-panel">
         <section class="panel wide quality-premium-panel">
           <div class="section-title">
-            <span>Quality</span>
+            <span>Data Quality</span>
             <h2>Data Quality Checker</h2>
           </div>
           <p class="hint">Cek kelengkapan Brew Log, QA, resep publik, stok, dan pustaka data. Tujuannya agar rekomendasi, analytics, dan publikasi resep tetap terpercaya.</p>
@@ -1080,7 +1080,7 @@
             </article>
             <article class="report-action-card">
               <span class="mini-label">CSV</span>
-              <strong>Public</strong>
+              <strong>Hasil Seduhan Publik</strong>
               <p>Export resep publik yang sudah approved dan lolos threshold.</p>
               <button class="secondary" type="button" data-report-action="public-csv">Download Public CSV</button>
             </article>
@@ -1157,7 +1157,7 @@
       <section id="tab-admin" class="tab-panel">
         <div class="grid two-col top-align">
           <section class="panel">
-            <div class="section-title"><span>Akun</span><h2 id="authPanelTitle">Login Pengguna</h2></div>
+            <div class="section-title"><span>Akun &amp; Admin</span><h2 id="authPanelTitle">Login Pengguna</h2></div>
             <div id="authLoggedOutArea">
               <form id="loginForm" class="form-grid compact">
                 <label>Email<input id="authEmail" type="email" placeholder="nama@email.com" autocomplete="email" /></label>
