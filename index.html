@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
   <link rel="preload" href="assets/latte-art-icon.png" as="image" />
   <link rel="preload" href="assets/barista-mascot.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260705-v31-9-usda-kopyol-multi-varietas" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260705-v32-3-final-ux-audit" />
 </head>
 <body>
 
@@ -170,7 +170,7 @@
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v31.9 · USDA Kopyol Multi Varietas</small>
+          <small class="sidebar-build-version">v32.3 · Final UX Audit</small>
         </div>
       </aside>
 
@@ -718,6 +718,10 @@
               </label>
               <label>Pasca Panen
                 <select id="brewProcess"></select>
+                <small>Pilih Custom jika proses pasca panen tidak tersedia.</small>
+              </label>
+              <label id="brewProcessCustomWrap" class="hidden">Pasca Panen Manual
+                <input id="brewProcessCustom" placeholder="Contoh: Double Anaerobic Washed, Natural CM, Honey Thermal Shock" />
               </label>
               <label>Roast Profile
                 <select id="brewRoast"></select>
@@ -852,7 +856,7 @@
             <div>
               <span class="page-intro-eyebrow">Manual Record</span>
               <h2>Input Seduhan</h2>
-              <p>Catat eksperimen seduh manual dengan parameter lengkap, termasuk 1–3 varietas atau Mix Varietas, agar hasilnya mudah dievaluasi, dibandingkan, dan dipublikasikan jika memenuhi standar QA.</p>
+              <p>Catat eksperimen seduh manual dengan parameter lengkap, termasuk 1–3 varietas, Mix Varietas, dan proses pasca panen manual jika tidak tersedia di pustaka.</p>
               <div class="page-intro-chips"><span>Guest Input</span>
 <span>Manual Recipe</span>
 <span>QA ≥ 6.5</span></div>
@@ -903,6 +907,10 @@
             </div>
             <label>Pasca Panen
               <select id="manualProcess"></select>
+              <small>Pilih Custom jika proses pasca panen tidak tersedia.</small>
+            </label>
+            <label id="manualProcessCustomWrap" class="hidden">Pasca Panen Manual
+              <input id="manualProcessCustom" placeholder="Contoh: Anaerobic Natural 120h, Washed Thermal Shock" />
             </label>
             <label>Roast Profile
               <select id="manualRoast"></select>
@@ -1125,7 +1133,8 @@
               <label>Produsen<input id="stockProducer" placeholder="Farm / Producer" /></label>
               <label>Varietas 1<select id="stockVariety1"></select></label>
               <label>Varietas 2 (opsional)<select id="stockVariety2"></select></label>
-              <label>Proses<select id="stockProcess"></select></label>
+              <label>Proses<select id="stockProcess"></select><small>Pilih Custom jika proses tidak ada di pustaka.</small></label>
+              <label id="stockProcessCustomWrap" class="hidden">Proses Manual<input id="stockProcessCustom" placeholder="Contoh: Experimental Honey Anaerobic" /></label>
               <label>Roast Profile<select id="stockRoast"></select></label>
               <label>Kelompok Rasa 1<select id="stockFlavor1"></select></label>
               <label>Kelompok Rasa 2<select id="stockFlavor2"></select></label>

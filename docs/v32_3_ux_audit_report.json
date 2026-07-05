@@ -1,0 +1,15 @@
+{
+  "version": "v32.3 Final UX Audit",
+  "jsSyntax": "passed",
+  "tabCount": 14,
+  "sectionBalanceIssues": [],
+  "duplicateIds": [],
+  "checks": [
+    "Route fallback hardened",
+    "Tab visibility guard added",
+    "Floating Quick Start / autosave widgets repositioned",
+    "Brew Compass / Preflight / Insight contrast recovered",
+    "Data jump buttons safety binding added",
+    "Custom process field state re-synced after render"
+  ]
+}

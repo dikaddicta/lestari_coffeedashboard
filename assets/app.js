@@ -245,6 +245,7 @@
   function savePendingSyncItems(items) {
     writeJSONStorage(PENDING_SYNC_KEY, Array.isArray(items) ? items : []);
     updateSystemStatus();
+    ensureCriticalUiState();
     updateSyncGuardStatus();
   }
 
@@ -1447,7 +1448,7 @@
 
     if (stockBean && apply) {
       setSelectIfAvailable("brewVariety", stockBean.Variety);
-      setSelectIfAvailable("brewProcess", stockBean.Process);
+      setProcessFieldValue("brewProcess", "brewProcessCustom", stockBean.Process);
       setSelectIfAvailable("brewRoast", stockBean.RoastProfile);
     }
 
@@ -1550,13 +1551,17 @@
     makeOptions($("manualVariety2"), varieties, { blank: true, blankLabel: "Opsional / tidak ada" });
     makeOptions($("manualVariety3"), varieties, { blank: true, blankLabel: "Opsional / tidak ada" });
     makeOptions($("manualProcess"), processes, { selected: processes.includes("Natural") ? "Natural" : processes[0] });
+    addCustomProcessOption($("manualProcess"));
     makeOptions($("manualRoast"), roasts, { selected: roasts.includes("Medium") ? "Medium" : roasts[0] });
     makeOptions($("manualDripper"), drippers, { selected: drippers.includes("Hario V60 02 Plastic") ? "Hario V60 02 Plastic" : drippers[0] });
     makeOptions($("manualGrinder"), grinders, { selected: grinders.includes("Custom") ? "Custom" : grinders[0] });
     makeOptions($("manualWater"), waters, { selected: waters.includes("Cleo 1:1 Le Minerale") ? "Cleo 1:1 Le Minerale" : waters[0] });
 
     ["filterVariety1", "filterVariety2", "stockVariety1", "stockVariety2"].forEach(id => makeOptions($(id), varieties, { blank: id.includes("2") || id.startsWith("filter"), blankLabel: id.includes("2") ? "Opsional" : "Semua" }));
-    ["stockProcess"].forEach(id => makeOptions($(id), processes));
+    ["stockProcess"].forEach(id => {
+      makeOptions($(id), processes);
+      addCustomProcessOption($(id));
+    });
     ["stockRoast"].forEach(id => makeOptions($(id), roasts));
     ["filterFlavor1", "filterFlavor2", "filterFlavor3", "stockFlavor1", "stockFlavor2", "stockFlavor3"].forEach(id => makeOptions($(id), flavors, { blank: id.includes("2") || id.includes("3"), blankLabel: "Opsional" }));
 
@@ -1564,6 +1569,7 @@
     if ($("filterFlavor2")) $("filterFlavor2").value = "";
     if ($("filterFlavor3")) $("filterFlavor3").value = "";
     if ($("stockFlavor1")) $("stockFlavor1").value = "Fruity";
+    syncCustomProcessFields();
   }
 
   function knownDashboardContributorCount() {
@@ -1759,7 +1765,7 @@
 
   function computeBrew() {
     const variety = getBy(DATA.varieties, "Variety", $("brewVariety").value);
-    const process = getBy(DATA.processes, "Process", $("brewProcess").value);
+    const process = getBy(DATA.processes, "Process", selectedProcessValue("brewProcess", "brewProcessCustom"));
     const roast = getBy(DATA.roasts, "RoastProfile", $("brewRoast").value);
     const dripper = getBy(DATA.drippers, "DripperName", $("brewDripper").value);
     const water = getBy(DATA.waters, "Water", $("brewWater").value);
@@ -2607,7 +2613,7 @@
   }
 
   function renderRecipeOptions(brew) {
-    const key = recipeKey($("brewVariety").value, $("brewProcess").value, $("brewRoast").value);
+    const key = recipeKey($("brewVariety").value, selectedProcessValue("brewProcess", "brewProcessCustom"), $("brewRoast").value);
     const approved = allBrewLogs()
       .filter(log => norm(log.RecipeKey) === norm(key) && Number(log.QA_Final) >= APPROVAL_THRESHOLD && norm(log.ManualApproval) === "yes" && norm(log.ApprovedForRecipe) === "yes")
       .sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0))
@@ -2912,7 +2918,7 @@
       StockBeanCode: extra.StockBeanCode || stockBean?.BeanID || "",
       StockUsage_g: extra.StockUsage_g ?? (stockBean ? brew.dose : ""),
       Variety: $("brewVariety").value,
-      Process: $("brewProcess").value,
+      Process: selectedProcessValue("brewProcess", "brewProcessCustom"),
       RoastProfile: $("brewRoast").value,
       Dripper: $("brewDripper").value,
       Method: $("brewMode").value,
@@ -2941,7 +2947,7 @@
       QA_Status: extra.QA_Status || defaultVerifyText,
       ManualApproval: extra.ManualApproval || "No",
       ApprovedForRecipe: extra.ApprovedForRecipe || defaultVerifyText,
-      RecipeKey: recipeKey($("brewVariety").value, $("brewProcess").value, $("brewRoast").value),
+      RecipeKey: recipeKey($("brewVariety").value, selectedProcessValue("brewProcess", "brewProcessCustom"), $("brewRoast").value),
       CurrentMatchScore: "",
       Water_Formula_Note: "TotalWater_ml = Rasio × Dosis_g. Japanese: air panas = 60%, es = 40%.",
       SwitchValveMode: brew.switchMode,
@@ -3260,6 +3266,91 @@
   }
 
 
+
+  const CUSTOM_PROCESS_VALUE = "__custom_process__";
+
+  function addCustomProcessOption(select) {
+    if (!select) return;
+    const exists = Array.from(select.options || []).some(option => option.value === CUSTOM_PROCESS_VALUE);
+    if (!exists) {
+      const option = document.createElement("option");
+      option.value = CUSTOM_PROCESS_VALUE;
+      option.textContent = "Custom / Isi Manual";
+      select.appendChild(option);
+    }
+  }
+
+  function syncCustomProcessFields() {
+    [
+      ["brewProcess", "brewProcessCustomWrap", "brewProcessCustom"],
+      ["manualProcess", "manualProcessCustomWrap", "manualProcessCustom"],
+      ["stockProcess", "stockProcessCustomWrap", "stockProcessCustom"]
+    ].forEach(([selectId, wrapId, inputId]) => {
+      const select = $(selectId);
+      const wrap = $(wrapId);
+      const input = $(inputId);
+      if (!select || !wrap) return;
+      addCustomProcessOption(select);
+      const custom = select.value === CUSTOM_PROCESS_VALUE;
+      wrap.classList.toggle("hidden", !custom);
+      if (input) {
+        input.disabled = !custom;
+        input.required = custom && selectId !== "brewProcess";
+      }
+    });
+  }
+
+  function selectedProcessValue(selectId, customInputId) {
+    const select = $(selectId);
+    if (!select) return "";
+    if (select.value === CUSTOM_PROCESS_VALUE) {
+      return ($(customInputId)?.value || "").trim() || "Custom Process";
+    }
+    return select.value || "";
+  }
+
+  function setProcessFieldValue(selectId, customInputId, value) {
+    const select = $(selectId);
+    const input = $(customInputId);
+    if (!select) return;
+    addCustomProcessOption(select);
+    const safe = String(value || "").trim();
+    if (!safe) {
+      select.value = select.options?.[0]?.value || "";
+      if (input) input.value = "";
+      syncCustomProcessFields();
+      return;
+    }
+    const options = Array.from(select.options || []);
+    const match = options.find(opt => norm(opt.value) === norm(safe) || norm(opt.textContent) === norm(safe));
+    if (match && match.value !== CUSTOM_PROCESS_VALUE) {
+      select.value = match.value;
+      if (input) input.value = "";
+    } else {
+      select.value = CUSTOM_PROCESS_VALUE;
+      if (input) input.value = safe;
+    }
+    syncCustomProcessFields();
+  }
+
+  function bindCustomProcessInputs() {
+    if (document.body?.dataset.customProcessReady === "true") return;
+    if (document.body) document.body.dataset.customProcessReady = "true";
+    ["brewProcess", "manualProcess", "stockProcess"].forEach(id => {
+      $(id)?.addEventListener("change", () => {
+        syncCustomProcessFields();
+        renderManualBrewPreview?.();
+      });
+    });
+    ["brewProcessCustom", "manualProcessCustom", "stockProcessCustom"].forEach(id => {
+      $(id)?.addEventListener("input", () => {
+        renderManualBrewPreview?.();
+      });
+    });
+    syncCustomProcessFields();
+  }
+
+
   function selectedManualVarieties() {
     const values = ["manualVariety", "manualVariety2", "manualVariety3"]
       .map(id => $(id)?.value || "")
@@ -3429,7 +3520,7 @@
       Variety2_optional: $("manualVariety2")?.value || "",
       Variety3_optional: $("manualVariety3")?.value || "",
       VarietyList: manualVarieties.join(" / "),
-      Process: $("manualProcess")?.value || "",
+      Process: selectedProcessValue("manualProcess", "manualProcessCustom"),
       RoastProfile: $("manualRoast")?.value || "",
       Dripper: $("manualDripper")?.value || "",
       Method: method,
@@ -3458,7 +3549,7 @@
       QA_Status: "QA PASS",
       ManualApproval: "Yes",
       ApprovedForRecipe: "Yes",
-      RecipeKey: recipeKey(manualVarietyText || $("manualVariety")?.value, $("manualProcess")?.value, $("manualRoast")?.value),
+      RecipeKey: recipeKey(manualVarietyText || $("manualVariety")?.value, selectedProcessValue("manualProcess", "manualProcessCustom"), $("manualRoast")?.value),
       CurrentMatchScore: "",
       Water_Formula_Note: "Input manual dari menu Input Seduhan.",
       SwitchValveMode: manualValveMode(),
@@ -3608,7 +3699,7 @@
     setManualFieldValue("manualVariety", editVarieties[0] || log.Variety || "");
     setManualFieldValue("manualVariety2", editVarieties[1] || log.Variety2_optional || "");
     setManualFieldValue("manualVariety3", editVarieties[2] || log.Variety3_optional || "");
-    setManualFieldValue("manualProcess", log.Process || "");
+    setProcessFieldValue("manualProcess", "manualProcessCustom", log.Process || "");
     setManualFieldValue("manualRoast", log.RoastProfile || "");
     setManualFieldValue("manualDripper", log.Dripper || "");
     setManualFieldValue("manualMode", log.Method || "Hot V60");
@@ -3971,7 +4062,7 @@
       Producer: $("stockProducer").value.trim(),
       Variety: $("stockVariety1").value,
       Variety2_optional: $("stockVariety2").value,
-      Process: $("stockProcess").value,
+      Process: selectedProcessValue("stockProcess", "stockProcessCustom"),
       RoastProfile: $("stockRoast").value,
       FlavorFamily: $("stockFlavor1").value,
       FlavorFamily2_optional: $("stockFlavor2").value,
@@ -4811,7 +4902,7 @@
     const log = findPublicBrewLog(key);
     if (!log) return showMessage("Resep publik tidak ditemukan.", "error");
     setSelectIfPossible("brewVariety", log.Variety);
-    setSelectIfPossible("brewProcess", log.Process);
+    setProcessFieldValue("brewProcess", "brewProcessCustom", log.Process);
     setSelectIfPossible("brewRoast", log.RoastProfile);
     setSelectIfPossible("brewDripper", log.Dripper);
     setSelectIfPossible("brewMode", log.Method);
@@ -5111,12 +5202,23 @@
     showTab(tab, { replaceRoute: replace });
   }
 
+
+  function safeShowInitialRoute() {
+    const route = currentRouteSlug();
+    const tab = tabFromRoute(route);
+    if (tab) {
+      navigateByRoute(route, true);
+      return;
+    }
+    showTab(currentUser ? "home" : "guide", { replaceRoute: true });
+  }
+
   function initPageRouter() {
     if (document.body?.dataset.pageRouterReady === "true") return;
     if (document.body) document.body.dataset.pageRouterReady = "true";
     window.addEventListener("hashchange", () => {
       if (routeSyncLock) return;
-      navigateByRoute(currentRouteSlug(), true);
+      safeShowInitialRoute();
     });
   }
 
@@ -6834,6 +6936,31 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
 
+
+  function ensureCriticalUiState() {
+    document.querySelectorAll(".tab-panel").forEach(panel => {
+      const active = panel.classList.contains("active");
+      panel.setAttribute("aria-hidden", active ? "false" : "true");
+    });
+    if (typeof syncCustomProcessFields === "function") syncCustomProcessFields();
+    if (typeof syncRouteHint === "function") syncRouteHint(document.querySelector(".tab-btn.active")?.dataset.tab || "guide");
+  }
+
+
+  function bindUxAuditButtonSafety() {
+    if (document.body?.dataset.uxAuditButtonSafety === "true") return;
+    if (document.body) document.body.dataset.uxAuditButtonSafety = "true";
+    document.addEventListener("click", event => {
+      const jump = event.target?.closest?.("[data-jump-tab]");
+      if (!jump) return;
+      const tab = jump.dataset.jumpTab;
+      if (!tab) return;
+      event.preventDefault();
+      showTab(tab);
+      if (typeof setSidebarOpen === "function") setSidebarOpen(false);
+    }, true);
+  }
+
   function renderAll() {
     if (currentUser) { document.body.dataset.accessMode = "login"; document.body.classList.add("experience-entered", "access-login"); document.body.classList.remove("access-guest"); }
     renderMetrics();
@@ -7035,6 +7162,8 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     bindNotificationCenter();
     bindReportSuitePolish();
     bindAccountRolePolish();
+    bindCustomProcessInputs();
+    bindUxAuditButtonSafety();
     initPageRouter();
     bindAutosaveDrafts();
     renderAll();

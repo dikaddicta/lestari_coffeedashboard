@@ -136,3 +136,17 @@ Patch ini memperhalus tampilan menjadi **Coffee Brew OS** dengan nuansa lebih kr
 ## Update v23.3
 
 Menu Input Seduhan kini memiliki detail Pour 1–4, logika Switch Valve Mode adaptif, dan kolom Es Batu khusus Japanese Iced.
+
+
+## v32.3 Final UX Audit
+
+- Route fallback hardened
+- Tab visibility guard added
+- Floating Quick Start / autosave widgets repositioned
+- Brew Compass / Preflight / Insight contrast recovered
+- Data jump buttons safety binding added
+- Custom process field state re-synced after render
+- JS syntax: passed
+- Tab routes checked: 14
+- Section balance issues: 0
+- Duplicate IDs found: 0
