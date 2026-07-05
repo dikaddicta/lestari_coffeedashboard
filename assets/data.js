@@ -1187,8 +1187,8 @@ window.COFFEE_DATA = {
       "Fruity_Base": 3,
       "Floral_Base": 2,
       "Fermentation_Tolerance": 3,
-      "Notes": "Balinese local arabica variety included among released/recommended Indonesian arabica varieties. Practical profile emphasizes sweetness, balanced acidity, and citrus/spice potential in Kintamani-style lots.",
-      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
+      "Notes": "Varietas lokal arabika asli Bali, dirilis Desember 2010. Untuk brewing, perlakukan sebagai profil Bali/Kintamani yang bisa menonjolkan sweetness, acidity bersih, citrus/floral, dan body sedang tergantung proses dan roast.",
+      "SourceURL": "https://epublikasi.pertanian.go.id/berkala/wartabun/article/view/3865"
     },
     {
       "Variety": "Kopyol Bali Lokal",
@@ -2397,16 +2397,16 @@ window.COFFEE_DATA = {
     {
       "Variety": "USDA 762",
       "Species": "C. arabica",
-      "Genetic_Market_Group": "Typica-related selection",
-      "Typical_Regions": "Indonesia; Java; Sumatra; Sulawesi; Bali",
+      "Genetic_Market_Group": "Ethiopian-origin selection / USDA introduction",
+      "Typical_Regions": "Indonesia; Bali; Java; Sumatra; Sulawesi; highland arabica areas",
       "Acidity_Base": 3,
       "Sweetness_Base": 3,
       "Body_Base": 3,
       "Fruity_Base": 3,
       "Floral_Base": 2,
       "Fermentation_Tolerance": 3,
-      "Notes": "Older arabica selection released/recommended in Indonesia. Practical profile is balanced acidity, medium sweetness, and moderate body; often used as a familiar Indonesian cultivar label.",
-      "SourceURL": "https://repository.pertanian.go.id/bitstreams/923c947f-21d3-4cb2-8204-e13a2caf956b/download"
+      "Notes": "USDA 762 adalah varietas arabika lama yang masuk ke sektor kopi Indonesia sekitar 1950-an dari seleksi Ethiopia/Mizan Tafari. Praktis diperlakukan sebagai varietas balanced untuk highland lots; tidak selalu punya flavor fingerprint kuat, tetapi sering muncul pada label kopi Indonesia.",
+      "SourceURL": "https://www.singleprofilecoffee.com/product-page/kintamani-indonesia"
     },
     {
       "Variety": "Venecia",
@@ -2477,6 +2477,48 @@ window.COFFEE_DATA = {
       "Fermentation_Tolerance": 3,
       "Notes": "Compact; very high yield; drought tolerance; late ripening.",
       "SourceURL": "https://varieties.worldcoffeeresearch.org/robusta/varieties"
+    },
+    {
+      "Variety": "USDA",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "USDA 762 label / Ethiopian-origin selection",
+      "Typical_Regions": "Indonesia; Bali; Java; Sumatra; Sulawesi; highland arabica areas",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 3,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Alias praktis untuk green bean yang hanya mencantumkan USDA. Di Indonesia label ini umumnya merujuk USDA 762, varietas arabika lama yang diperkenalkan sekitar 1950-an dan berasal dari seleksi Ethiopia; di beberapa daerah pernah tertukar persepsi dengan Geisha.",
+      "SourceURL": "https://www.singleprofilecoffee.com/product-page/kintamani-indonesia"
+    },
+    {
+      "Variety": "Kopyol",
+      "Species": "C. arabica",
+      "Genetic_Market_Group": "Balinese local arabica selection",
+      "Typical_Regions": "Bali; Kintamani; Indonesia",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 4,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Alias praktis untuk Kopyol Bali. Kopyol adalah varietas lokal arabika Bali yang dirilis pada Desember 2010; sering dikaitkan dengan Kintamani dan dikenal sebagai salah satu varietas lokal yang perlu dilestarikan.",
+      "SourceURL": "https://epublikasi.pertanian.go.id/berkala/wartabun/article/view/3865"
+    },
+    {
+      "Variety": "Mix Varietas",
+      "Species": "C. arabica / mixed lot",
+      "Genetic_Market_Group": "Mixed cultivar lot",
+      "Typical_Regions": "Any origin; used when bag label lists mixed/multiple varieties",
+      "Acidity_Base": 3,
+      "Sweetness_Base": 3,
+      "Body_Base": 3,
+      "Fruity_Base": 3,
+      "Floral_Base": 2,
+      "Fermentation_Tolerance": 3,
+      "Notes": "Gunakan pilihan ini ketika label kopi hanya menulis mix varietas atau mencantumkan beberapa varietas tanpa komposisi jelas. Untuk rekomendasi seduh, gunakan sebagai profil netral dan dial-in berdasarkan proses, roast, dripper, dan hasil cupping.",
+      "SourceURL": "internal-dashboard-reference"
     }
   ],
   "drippers": [
@@ -6322,7 +6364,7 @@ window.COFFEE_DATA = {
     "sourceWorkbook": "coffee_competition_dashboard_v13.xlsx",
     "version": "web-v27-library-metrics-local-varieties-processes",
     "lastLibraryExpansion": "v27: expanded Indonesian local varieties and experimental local processes; updated user metrics source handling.",
-    "lastDataRefresh": "2026-07-02",
-    "lastDataRefreshNotes": "Added SOLO Dripper references; updated modern fermentation/process watchlist; refreshed selected F1 hybrid variety notes."
+    "lastDataRefresh": "2026-07-05",
+    "lastDataRefreshNotes": "Added practical aliases for USDA, Kopyol, and Mix Varietas; enabled manual brew input for up to 3 varieties."
   }
 };

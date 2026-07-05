@@ -244,6 +244,7 @@
 
   function savePendingSyncItems(items) {
     writeJSONStorage(PENDING_SYNC_KEY, Array.isArray(items) ? items : []);
+    updateSystemStatus();
     updateSyncGuardStatus();
   }
 
@@ -548,6 +549,7 @@
     const loggedInArea = $("authLoggedInArea");
     const title = $("authPanelTitle");
     const isLoggedIn = Boolean(currentUser);
+    setElementHidden($("authSignupShortcut"), isLoggedIn);
 
     const roleCtx = displayRoleContext();
     const roleStatusClass = roleCtx.status === "active" ? "approved" : roleCtx.status === "rejected" ? "rejected" : roleCtx.status === "pending" ? "pending" : roleCtx.status === "disabled" ? "disabled" : "";
@@ -571,6 +573,7 @@
     setElementHidden(loggedOutArea, isLoggedIn);
     setElementHidden(loggedInArea, !isLoggedIn);
     setElementHidden(authJumpLink, isLoggedIn);
+    renderAccountRoleStatus();
   }
 
   async function ensureRequestedMembership() {
@@ -1544,6 +1547,8 @@
     makeOptions($("brewWater"), waters, { selected: waters.includes("Cleo 1:1 Le Minerale") ? "Cleo 1:1 Le Minerale" : waters[0] });
 
     makeOptions($("manualVariety"), varieties, { selected: varieties.includes("Catimor 129") ? "Catimor 129" : varieties[0] });
+    makeOptions($("manualVariety2"), varieties, { blank: true, blankLabel: "Opsional / tidak ada" });
+    makeOptions($("manualVariety3"), varieties, { blank: true, blankLabel: "Opsional / tidak ada" });
     makeOptions($("manualProcess"), processes, { selected: processes.includes("Natural") ? "Natural" : processes[0] });
     makeOptions($("manualRoast"), roasts, { selected: roasts.includes("Medium") ? "Medium" : roasts[0] });
     makeOptions($("manualDripper"), drippers, { selected: drippers.includes("Hario V60 02 Plastic") ? "Hario V60 02 Plastic" : drippers[0] });
@@ -1645,13 +1650,14 @@
     const userCountValue = Number.isFinite(Number(dashboardUserCount)) ? Number(dashboardUserCount) : localDashboardUserCount();
     const metrics = [
       { value: DATA.varieties?.length || 0, label: "Varietas", hint: "Jumlah varietas/kultivar di pustaka data lokal dashboard." },
-      { value: DATA.drippers?.length || 0, label: "Dripper", hint: "Jumlah dripper di pustaka data lokal dashboard." },
-      { value: DATA.processes?.length || 0, label: "Proses", hint: "Jumlah metode pasca panen di pustaka data lokal dashboard." },
+      { value: DATA.processes?.length || 0, label: "Proses Pasca Panen", hint: "Jumlah metode pasca panen di pustaka data lokal dashboard." },
       { value: DATA.roasts?.length || 0, label: "Roast Profile", hint: "Jumlah profil roasting di pustaka data lokal dashboard." },
-      { value: DATA.waters?.length || 0, label: "Water", hint: "Jumlah profil air/mineral di pustaka data lokal dashboard." },
-      { value: userCountValue, label: "Pengguna Tercatat", hint: "Jumlah pengguna/kontributor yang terbaca dari Supabase atau fallback lokal." }
+      { value: DATA.drippers?.length || 0, label: "Dripper", hint: "Jumlah dripper di pustaka data lokal dashboard." },
+      { value: DATA.waters?.length || 0, label: "Jenis Air", hint: "Jumlah profil air/mineral di pustaka data lokal dashboard." },
+      { value: DATA.grinders?.length || 0, label: "Grinder", hint: "Jumlah grinder di pustaka data lokal dashboard." },
+      { value: userCountValue, label: "Akun Terdaftar", hint: "Jumlah akun/kontributor yang terbaca dari Supabase atau fallback lokal." }
     ];
-    $("libraryMetrics").innerHTML = metrics.map(item => `<div class="metric" title="${html(item.hint)}"><strong>${html(item.value)}</strong><span>${html(item.label)}</span></div>`).join("");
+    $("libraryMetrics").innerHTML = metrics.map(item => `<div class="metric" title="${html(item.hint || item.label)}"><strong>${html(item.value)}</strong><span>${html(item.label)}</span></div>`).join("");
   }
 
   function resolveSwitchMode() {
@@ -2745,6 +2751,26 @@
     forms.forEach(form => form.classList.toggle("module-disabled", locked));
   }
 
+
+  function updateStockOverview(rows = [], locked = false) {
+    if (locked) {
+      if ($("stockBeanCount")) $("stockBeanCount").textContent = "Login";
+      if ($("stockActiveCount")) $("stockActiveCount").textContent = "—";
+      if ($("stockGramTotal")) $("stockGramTotal").textContent = "—";
+      if ($("stockMethodCount")) $("stockMethodCount").textContent = "—";
+      return;
+    }
+    const list = Array.isArray(rows) ? rows : [];
+    const active = list.filter(bean => String(bean.Active || "Yes").toLowerCase() !== "no").length;
+    const totalGram = list.reduce((sum, bean) => sum + (Number(bean.Stock_g) || 0), 0);
+    const methods = uniq(list.map(bean => bean.BestBrew || "").filter(Boolean)).length;
+    if ($("stockBeanCount")) $("stockBeanCount").textContent = list.length;
+    if ($("stockActiveCount")) $("stockActiveCount").textContent = active;
+    if ($("stockGramTotal")) $("stockGramTotal").textContent = `${fmt(totalGram)}g`;
+    if ($("stockMethodCount")) $("stockMethodCount").textContent = methods || 0;
+  }
+
+
   function renderStockTable() {
     renderBrewStockOptions();
     const tbody = $("stockTable")?.querySelector("tbody");
@@ -2752,10 +2778,12 @@
     const locked = !canUseWorkspaceModules();
     setModuleLocked("tab-stock", "stockAccessNotice", locked, privateModuleMessage("Stok Kopi"));
     if (locked) {
+      updateStockOverview([], true);
       tbody.innerHTML = emptyRow(12, "Stok privat belum terbuka", "Masuk dan pilih workspace untuk melihat atau mengelola stok kopi.", "◐");
       return;
     }
     const rows = allStock();
+    updateStockOverview(rows, false);
     if (!rows.length) {
       tbody.innerHTML = emptyRow(12, "Stok kopi masih kosong", "Tambahkan bean pertama untuk mulai membangun pustaka seduh personal.", "☕");
       return;
@@ -3231,6 +3259,27 @@
     }
   }
 
+
+  function selectedManualVarieties() {
+    const values = ["manualVariety", "manualVariety2", "manualVariety3"]
+      .map(id => $(id)?.value || "")
+      .map(value => String(value || "").trim())
+      .filter(Boolean);
+    return uniq(values);
+  }
+
+  function manualVarietyLabel() {
+    return selectedManualVarieties().join(" / ");
+  }
+
+  function splitVarietyLabel(value = "") {
+    return uniq(String(value || "")
+      .split(/\s*(?:\/|\+|,|;|\band\b|\bdan\b)\s*/i)
+      .map(v => v.trim())
+      .filter(Boolean));
+  }
+
+
   function selectedManualGrinderName() {
     const grinder = $("manualGrinder")?.value || "";
     if (norm(grinder) === "custom") return $("manualGrindSetting")?.value ? "Custom" : "Custom";
@@ -3361,6 +3410,8 @@
     const ice = isIced ? manualIce : 0;
     const hotWater = isIced ? Math.max(0, totalWater - ice) : totalWater;
     const waterName = $("manualWater")?.value || "";
+    const manualVarieties = selectedManualVarieties();
+    const manualVarietyText = manualVarietyLabel();
     const qaId = extra.QA_ID || nextId("QA", allQA(), "QA_ID");
     const brewerName = $("manualEvaluator")?.value.trim() || currentBrewerName();
     const final = extra.QA_Final ?? computeManualQAFromForm();
@@ -3373,7 +3424,11 @@
       StockBeanID: "",
       StockBeanCode: "",
       StockUsage_g: "",
-      Variety: $("manualVariety")?.value || "",
+      Variety: manualVarietyText || $("manualVariety")?.value || "",
+      Variety1: $("manualVariety")?.value || "",
+      Variety2_optional: $("manualVariety2")?.value || "",
+      Variety3_optional: $("manualVariety3")?.value || "",
+      VarietyList: manualVarieties.join(" / "),
       Process: $("manualProcess")?.value || "",
       RoastProfile: $("manualRoast")?.value || "",
       Dripper: $("manualDripper")?.value || "",
@@ -3403,7 +3458,7 @@
       QA_Status: "QA PASS",
       ManualApproval: "Yes",
       ApprovedForRecipe: "Yes",
-      RecipeKey: recipeKey($("manualVariety")?.value, $("manualProcess")?.value, $("manualRoast")?.value),
+      RecipeKey: recipeKey(manualVarietyText || $("manualVariety")?.value, $("manualProcess")?.value, $("manualRoast")?.value),
       CurrentMatchScore: "",
       Water_Formula_Note: "Input manual dari menu Input Seduhan.",
       SwitchValveMode: manualValveMode(),
@@ -3549,7 +3604,10 @@
     setManualFieldValue("manualBeanName", log.BeanName || "");
     setManualFieldValue("manualOrigin", log.Origin || "");
     setManualFieldValue("manualEvaluator", log.BrewerName || qa?.Evaluator || currentBrewerName());
-    setManualFieldValue("manualVariety", log.Variety || "");
+    const editVarieties = uniq([log.Variety, log.Variety2_optional, log.Variety3_optional].flatMap(splitVarietyLabel));
+    setManualFieldValue("manualVariety", editVarieties[0] || log.Variety || "");
+    setManualFieldValue("manualVariety2", editVarieties[1] || log.Variety2_optional || "");
+    setManualFieldValue("manualVariety3", editVarieties[2] || log.Variety3_optional || "");
     setManualFieldValue("manualProcess", log.Process || "");
     setManualFieldValue("manualRoast", log.RoastProfile || "");
     setManualFieldValue("manualDripper", log.Dripper || "");
@@ -3711,7 +3769,7 @@
     if (locked) return;
 
     const adminView = canAdmin();
-    const baseHeaders = ["BrewID", "Tanggal", "Biji Kopi", "Key", "Metode", "Dripper", "Grinder", "Gilingan", "Suhu", "Ratio", "QA", "Disetujui", "Variabel", "Hipotesis", "Catatan Hasil"];
+    const baseHeaders = ["Brew ID", "Tanggal", "Kopi", "Profil", "Metode", "Dripper", "Grinder", "Grind", "Suhu", "Rasio", "QA", "Status", "Variabel", "Hipotesis", "Catatan"];
     thead.innerHTML = `<tr>${baseHeaders.map(label => `<th>${html(label)}</th>`).join("")}${adminView ? "<th>Aksi</th>" : ""}</tr>`;
 
     const rows = sortBrewNewest(allBrewLogs());
@@ -4578,7 +4636,8 @@
   }
 
   function publicBrewDetailHtml(log) {
-    const profile = [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · ") || "-";
+    const varietyText = uniq([log.Variety, log.Variety2_optional, log.Variety3_optional].flatMap(splitVarietyLabel)).join(" / ") || log.Variety || "";
+    const profile = [varietyText, log.Process, log.RoastProfile].filter(Boolean).join(" · ") || "-";
     const grinderRecipe = [log.Grinder, log.GrindSetting].filter(Boolean).join(" · ") || "-";
     const stepSummary = formatPublicRecipeSteps(log);
     const waterInfo = [
@@ -4680,7 +4739,8 @@
 
   function publicBrewCardHtml(log, idx) {
     const key = html(publicBrewKey(log));
-    const profile = [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · ") || "Profil belum lengkap";
+    const varietyText = uniq([log.Variety, log.Variety2_optional, log.Variety3_optional].flatMap(splitVarietyLabel)).join(" / ") || log.Variety || "";
+    const profile = [varietyText, log.Process, log.RoastProfile].filter(Boolean).join(" · ") || "Profil belum lengkap";
     const recipe = [
       log.Dripper || "Dripper -",
       log.Temp_C ? `${log.Temp_C}°C` : "Temp -",
@@ -4688,19 +4748,35 @@
       log.GrindSetting || log.Grinder || "Grind -"
     ].filter(Boolean).join(" · ");
     const completeness = recipeCompleteness(log);
-    return `<article class="public-brew-card cinematic-reveal" style="--stagger:${idx}">
+    const qa = Number(log.QA_Final || 0);
+    const qaClass = qa >= 8 ? "excellent" : qa >= 7 ? "strong" : "standard";
+    const notes = String(log.ResultNotes || log.TastingNotes || "").trim();
+    const shortNotes = notes ? notes.slice(0, 160) + (notes.length > 160 ? "…" : "") : "Catatan rasa belum tersedia.";
+    return `<article class="public-brew-card public-catalog-card cinematic-reveal" data-qa="${html(qaClass)}" style="--stagger:${idx}">
       <div class="public-card-topline">
         <span class="score-pill">QA ${html(log.QA_Final || "-")}</span>
-        <em>${html(completeness)}% lengkap</em>
+        <em>${html(completeness)}% recipe-ready</em>
       </div>
-      <h3>${html(log.BeanName || "Tanpa nama")}</h3>
-      <p>${html(profile)}</p>
-      <div class="public-recipe-strip">
-        <span>${html(log.Method || "-")}</span>
-        <span>${html(recipe)}</span>
+      <div class="public-catalog-main">
+        <div>
+          <span class="public-catalog-method">${html(log.Method || "Metode belum diisi")}</span>
+          <h3>${html(log.BeanName || "Tanpa nama")}</h3>
+          <p>${html(profile)}</p>
+        </div>
+        <div class="public-catalog-badge">
+          <small>Brewer</small>
+          <strong>${html(log.BrewerName || "Brewer")}</strong>
+        </div>
       </div>
+      <div class="public-recipe-strip public-recipe-strip--catalog">
+        <span>${html(log.Dripper || "Dripper -")}</span>
+        <span>${html(log.Temp_C ? `${log.Temp_C}°C` : "Temp -")}</span>
+        <span>${html(log.Ratio ? `1:${log.Ratio}` : "Ratio -")}</span>
+        <span>${html(log.GrindSetting || log.Grinder || "Grind -")}</span>
+      </div>
+      <p class="public-catalog-notes">${html(shortNotes)}</p>
       <div class="public-card-footer">
-        <small>${html(log.BrewerName || "Brewer")} · ${html(log.Date || "")}</small>
+        <small>${html(log.Date || "")} · ${html(log.Water || "Water -")}</small>
         <div>
           <button class="secondary small-action" type="button" data-public-brew-detail="${key}">Detail</button>
           <button class="ghost small-action" type="button" data-public-brew-use="${key}">Gunakan Resep</button>
@@ -4764,7 +4840,7 @@
     tbody.innerHTML = rows.map(log => {
       const key = html(publicBrewKey(log));
       return `<tr>
-        <td data-label="Kopi"><strong>${html(log.BeanName || "Tanpa nama")}</strong><small>${html([log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · "))}</small></td>
+        <td data-label="Kopi"><strong>${html(log.BeanName || "Tanpa nama")}</strong><small>${html([uniq([log.Variety, log.Variety2_optional, log.Variety3_optional].flatMap(splitVarietyLabel)).join(" / ") || log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · "))}</small></td>
         <td data-label="Brewer">${html(log.BrewerName || "Brewer")}</td>
         <td data-label="Metode">${html(log.Method || "-")}<br><small>${html(log.Dripper || "")}</small></td>
         <td data-label="QA"><span class="score-pill">${html(log.QA_Final || "-")}</span></td>
@@ -4972,45 +5048,207 @@
     if (select && select.value !== name) select.value = name;
   }
 
-  const GUEST_PRIVATE_TABS = ["stock", "qa", "analytics", "quality", "reports"];
+  const GUEST_PRIVATE_TABS = ["home", "beans", "stock", "qa", "analytics", "quality", "reports", "admin"];
 
   function isGuestPrivateTab(name) {
     return !currentUser && GUEST_PRIVATE_TABS.includes(String(name || ""));
   }
 
-  function updateGuestPrivateNavigation() {
-    const isGuest = !currentUser;
-    GUEST_PRIVATE_TABS.forEach(tab => {
-      const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
-      setElementHidden(btn, isGuest);
-      const opt = document.querySelector(`#mobileTabSelect option[value="${tab}"]`);
-      if (opt) {
-        opt.hidden = isGuest;
-        opt.disabled = isGuest;
-      }
-      const panel = $(`tab-${tab}`);
-      panel?.classList.toggle("guest-locked", isGuest);
+  
+
+  const PAGE_ROUTES = {
+    home: "beranda",
+    guide: "cara-pakai",
+    brew: "rekomendasi-seduh",
+    "input-seduhan": "input-seduhan",
+    "public-brews": "hasil-seduhan-publik",
+    beans: "beans",
+    stock: "stock",
+    qa: "brew-log-qa",
+    analytics: "data-analytics",
+    quality: "notification",
+    reports: "export-report",
+    admin: "akun-role",
+    suggestion: "saran",
+    library: "pustaka-data"
+  };
+
+  const ROUTE_TO_TAB = Object.fromEntries(Object.entries(PAGE_ROUTES).map(([tab, route]) => [route, tab]));
+  let routeSyncLock = false;
+
+  function currentRouteSlug() {
+    return String(location.hash || "").replace(/^#\/?/, "").replace(/^\/+/, "").trim();
+  }
+
+  function tabFromRoute(route = currentRouteSlug()) {
+    return ROUTE_TO_TAB[String(route || "").toLowerCase()] || "";
+  }
+
+  function routeFromTab(tab) {
+    return PAGE_ROUTES[String(tab || "")] || "cara-pakai";
+  }
+
+  function writeRoute(tab, replace = false) {
+    const route = routeFromTab(tab);
+    const nextHash = `#/${route}`;
+    if (location.hash === nextHash) return;
+    routeSyncLock = true;
+    if (replace) history.replaceState(null, "", nextHash);
+    else history.pushState(null, "", nextHash);
+    setTimeout(() => { routeSyncLock = false; }, 0);
+  }
+
+  function syncRouteHint(tab) {
+    const route = routeFromTab(tab);
+    if ($("pageRouteHint")) $("pageRouteHint").textContent = `/#/${route}`;
+    document.querySelectorAll("[data-route]").forEach(el => {
+      el.classList.toggle("route-active", el.dataset.route === route);
     });
-    setElementHidden($("guestPrivateNotice"), !isGuest);
-    if (isGuest && GUEST_PRIVATE_TABS.includes(document.querySelector(".tab-btn.active")?.dataset.tab || "")) {
-      showTab("guide");
-    }
-    if (isGuest && GUEST_PRIVATE_TABS.includes($("mobileTabSelect")?.value || "")) {
-      syncMobileTabSelect("guide");
+  }
+
+  function navigateByRoute(route, replace = true) {
+    const tab = tabFromRoute(route) || (currentUser ? "home" : "guide");
+    showTab(tab, { replaceRoute: replace });
+  }
+
+  function initPageRouter() {
+    if (document.body?.dataset.pageRouterReady === "true") return;
+    if (document.body) document.body.dataset.pageRouterReady = "true";
+    window.addEventListener("hashchange", () => {
+      if (routeSyncLock) return;
+      navigateByRoute(currentRouteSlug(), true);
+    });
+  }
+
+
+  const PAGE_META = {
+    home: { title: "Beranda", subtitle: "Ringkasan metrik utama, akses modul, dan informasi library coffee dashboard." },
+    guide: { title: "Cara Pakai", subtitle: "Panduan menggunakan dashboard dari rekomendasi hingga publikasi hasil seduhan." },
+    brew: { title: "Rekomendasi Seduh", subtitle: "Titik awal resep seduh berbasis data beans, proses, alat, dan target rasa." },
+    "input-seduhan": { title: "Input Seduhan", subtitle: "Masukkan parameter eksperimen seduh untuk dibandingkan dan disimpan." },
+    "public-brews": { title: "Hasil Seduhan Publik", subtitle: "Lihat hasil seduhan yang sudah dipublikasikan dan lolos proses review." },
+    beans: { title: "Beans", subtitle: "Kelola referensi beans, origin, dan atribut pendukung untuk workflow internal." },
+    stock: { title: "Stock", subtitle: "Pantau stock kopi, status bahan, dan ketersediaan untuk eksperimen berikutnya." },
+    qa: { title: "Brew Log & QA", subtitle: "Catat hasil seduhan, validasi kualitas, dan bangun histori evaluasi internal." },
+    analytics: { title: "Data Analytics", subtitle: "Executive insight untuk membaca performa seduhan, tren QA, dan pola eksperimen." },
+    quality: { title: "Notification", subtitle: "Pusat notifikasi issue, warning, dan action item untuk menjaga kualitas workflow." },
+    reports: { title: "Export / Report", subtitle: "Ekspor data dan rangkum hasil seduhan menjadi laporan yang lebih siap dibagikan." },
+    admin: { title: "Akun & Role", subtitle: "Kelola akun, peran, dan workspace untuk membuka seluruh modul dashboard." },
+    suggestion: { title: "Saran", subtitle: "Kirim masukan untuk membantu pengembangan Coffee Brew OS." },
+    library: { title: "Pustaka Data", subtitle: "Jelajahi referensi dripper, varietas, proses, roast, air, dan grinder." }
+  };
+
+  function updatePageHeading(name) {
+    const key = String(name || "home");
+    const meta = PAGE_META[key] || PAGE_META.home;
+    $("pageTitle") && ($("pageTitle").textContent = meta.title);
+    $("pageSubtitle") && ($("pageSubtitle").textContent = meta.subtitle);
+    $("pageBreadcrumb") && ($("pageBreadcrumb").textContent = `Workspace Coffee Intelligence / ${meta.title}`);
+    syncRouteHint(key);
+    if (document.body) {
+      document.body.dataset.page = key;
     }
   }
 
-  function showTab(name) {
-    if (isGuestPrivateTab(name)) {
-      showMessage("Login untuk membuka Stock Kopi, Brew Log & QA, Analytics, Data Quality, dan Export / Report.", "info");
-      name = "admin";
+  function syncAccessChrome() {
+    const loggedIn = Boolean(currentUser);
+    const mode = document.body?.dataset.accessMode || (loggedIn ? "login" : "guest");
+    $("sidebarModeLabel") && ($("sidebarModeLabel").textContent = loggedIn ? (userProfile?.display_name || currentUser.email || "Pengguna") : (mode === "login" ? "Login Mode" : "Guest"));
+    $("sidebarModeHint") && ($("sidebarModeHint").textContent = loggedIn ? `Masuk sebagai ${displayRoleContext().roleLabel}.` : (mode === "login" ? "Silakan login untuk membuka seluruh fitur." : "Akses terbatas hingga kamu login."));
+    if (document.body) {
+      document.body.classList.toggle("is-authenticated", loggedIn);
+      document.body.classList.toggle("is-guest", !loggedIn);
+    }
+    setElementHidden($("topbarSignupBtn"), loggedIn);
+    const topbarBtn = $("topbarAccessBtn");
+    if (topbarBtn) {
+      topbarBtn.textContent = loggedIn ? "Akun & Role" : "Login";
+    }
+  }
+
+  function enterExperience(mode = "guest") {
+    const accessMode = loggedInUser() ? "login" : mode;
+    document.body.classList.add("experience-entered");
+    document.body.dataset.accessMode = accessMode;
+    document.body.classList.toggle("access-login", accessMode === "login");
+    document.body.classList.toggle("access-guest", accessMode === "guest");
+    $("welcomeScreen")?.classList.add("is-hidden");
+    try { localStorage.setItem("coffee_experience_mode", accessMode); } catch {}
+    markOnboardingStep("welcome");
+    if (accessMode === "login") {
+      showTab(loggedInUser() ? "home" : "admin");
+    } else {
+      showTab("guide");
+    }
+    syncAccessChrome();
+  }
+
+  function loggedInUser() {
+    return Boolean(currentUser);
+  }
+
+  function bindWelcomeScreen() {
+    $("welcomeLoginBtn")?.addEventListener("click", openLoginFlow);
+    $("welcomeGuestBtn")?.addEventListener("click", () => enterExperience("guest"));
+    $("returnWelcomeBtn")?.addEventListener("click", () => {
+      $("welcomeScreen")?.classList.remove("is-hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    $("topbarAccessBtn")?.addEventListener("click", openLoginFlow);
+    if (loggedInUser()) {
+      $("welcomeScreen")?.classList.add("is-hidden");
+      document.body.classList.add("experience-entered", "access-login");
+      document.body.dataset.accessMode = "login";
+    }
+  }
+
+
+  function updateGuestPrivateNavigation() {
+    const isGuest = !currentUser;
+    const authIntent = document.body?.dataset.accessMode === "login";
+    GUEST_PRIVATE_TABS.forEach(tab => {
+      const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+      const allowAuthPanel = tab === "admin" && isGuest && authIntent;
+      setElementHidden(btn, isGuest && !allowAuthPanel);
+      const opt = document.querySelector(`#mobileTabSelect option[value="${tab}"]`);
+      if (opt) {
+        opt.hidden = isGuest && !allowAuthPanel;
+        opt.disabled = isGuest && !allowAuthPanel;
+      }
+      const panel = $(`tab-${tab}`);
+      panel?.classList.toggle("guest-locked", isGuest && !allowAuthPanel);
+    });
+    setElementHidden($("guestPrivateNotice"), !isGuest || authIntent);
+    const active = document.querySelector(".tab-btn.active")?.dataset.tab || "";
+    if (isGuest && GUEST_PRIVATE_TABS.includes(active) && !(active === "admin" && authIntent)) {
+      showTab("guide");
+    }
+    const mobileValue = $("mobileTabSelect")?.value || "";
+    if (isGuest && GUEST_PRIVATE_TABS.includes(mobileValue) && !(mobileValue === "admin" && authIntent)) {
+      syncMobileTabSelect("guide");
+    }
+    syncAccessChrome();
+  }
+
+  function showTab(name, options = {}) {
+    const authIntent = document.body?.dataset.accessMode === "login";
+    const allowAuthPanel = String(name || "") === "admin" && !currentUser && authIntent;
+    if (isGuestPrivateTab(name) && !allowAuthPanel) {
+      showMessage("Login untuk membuka Beranda, Beans, Stock, Brew Log & QA, Data Analytics, Notification, Export / Report, dan Akun & Role.", "info");
+      name = "guide";
     }
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
     document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.toggle("active", panel.id === `tab-${name}`));
     syncMobileTabSelect(name);
+    updatePageHeading(name);
+    if (!options.replaceRoute) writeRoute(name);
+    const onboardingStep = tabToOnboardingStep(name);
+    if (onboardingStep) markOnboardingStep(onboardingStep);
     updateGuestPrivateNavigation();
     if (window.matchMedia?.("(max-width: 760px)").matches) {
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      document.querySelector(".dashboard-main-shell")?.scrollIntoView({ block: "start", behavior: "smooth" });
     }
   }
 
@@ -5871,6 +6109,8 @@
     renderQualityIssues(issues);
     renderQualityChecklist(issues);
     renderQualityTable(issues);
+    updateNotificationSummaryFromIssues(issues);
+    syncNotificationQuickFilters();
   }
 
   function adminWorkspaceRows(rows = []) {
@@ -6140,7 +6380,7 @@
       <div>
         <span class="mini-label">Report Preview</span>
         <h3>${html(best ? `Best Cup: ${best.BeanName || best.BrewID || "Tanpa nama"}` : "Belum ada best cup")}</h3>
-        <p>${html(best ? `QA ${fmt(best.QA_Final, 2)} · ${[best.Variety, best.Process, best.RoastProfile].filter(Boolean).join(" · ") || "profil belum lengkap"} · ${best.Method || "-"} · ${best.Dripper || "-"}` : "Tambahkan brew log dan QA untuk membuat report analytics yang lebih lengkap.")}</p>
+        <p>${html(best ? `QA ${fmt(best.QA_Final, 2)} · ${[uniq([best.Variety, best.Variety2_optional, best.Variety3_optional].flatMap(splitVarietyLabel)).join(" / ") || best.Variety, best.Process, best.RoastProfile].filter(Boolean).join(" · ") || "profil belum lengkap"} · ${best.Method || "-"} · ${best.Dripper || "-"}` : "Tambahkan brew log dan QA untuk membuat report analytics yang lebih lengkap.")}</p>
       </div>
       <button class="secondary" type="button" data-report-action="analytics-html">Download Analytics Report</button>
     `;
@@ -6220,7 +6460,382 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     if (action === "json-backup") return exportJson();
   }
 
+  
+  function updateNotificationSummary() {
+    const cards = Array.from(document.querySelectorAll("#tab-quality .quality-card, #tab-quality [data-severity], #qualityResults .quality-item"));
+    const text = cards.map(card => (card.dataset?.severity || card.textContent || "").toLowerCase());
+    const critical = text.filter(v => /critical|kritis|error|missing|required/.test(v)).length;
+    const warning = text.filter(v => /warning|peringatan|kurang|incomplete|empty|kosong/.test(v)).length;
+    const info = Math.max(0, text.length - critical - warning);
+    if ($("notifCriticalCount")) $("notifCriticalCount").textContent = critical;
+    if ($("notifWarningCount")) $("notifWarningCount").textContent = warning;
+    if ($("notifInfoCount")) $("notifInfoCount").textContent = info;
+    if ($("notifResolvedCount")) $("notifResolvedCount").textContent = text.length ? Math.max(0, text.length - critical - warning) : "—";
+  }
+
+
+  
+  function setSidebarOpen(open) {
+    document.body?.classList.toggle("sidebar-open", Boolean(open));
+    const toggle = $("sidebarToggleBtn");
+    if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function bindSidebarDrawer() {
+    if (document.body?.dataset.sidebarDrawerReady === "true") return;
+    if (document.body) document.body.dataset.sidebarDrawerReady = "true";
+    $("sidebarToggleBtn")?.addEventListener("click", () => setSidebarOpen(!document.body.classList.contains("sidebar-open")));
+    $("sidebarCloseBtn")?.addEventListener("click", () => setSidebarOpen(false));
+    $("sidebarBackdrop")?.addEventListener("click", () => setSidebarOpen(false));
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") setSidebarOpen(false);
+    });
+    document.querySelectorAll(".sidebar-nav .tab-btn, .sidebar-footer-card button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (window.matchMedia?.("(max-width: 1220px)").matches) setSidebarOpen(false);
+      });
+    });
+  }
+
+
+  
+  let deferredInstallPrompt = null;
+
+  function updateSystemStatus() {
+    const online = navigator.onLine;
+    if ($("systemOnlineStatus")) {
+      $("systemOnlineStatus").textContent = online ? "Online" : "Offline";
+      $("systemOnlineStatus").classList.toggle("is-offline", !online);
+    }
+    if ($("systemCacheStatus")) {
+      const supported = "serviceWorker" in navigator;
+      $("systemCacheStatus").textContent = supported ? "PWA Ready" : "Browser Cache";
+    }
+    if ($("systemDataStatus")) {
+      const total = (DATA.varieties?.length || 0) + (DATA.processes?.length || 0) + (DATA.drippers?.length || 0) + (DATA.roasts?.length || 0) + (DATA.waters?.length || 0) + (DATA.grinders?.length || 0);
+      $("systemDataStatus").textContent = document.body?.classList.contains("demo-mode-active") ? "Demo Active" : `${total} Data`;
+    }
+  }
+
+  function initPWAExperience() {
+    updateSystemStatus();
+    window.addEventListener("online", updateSystemStatus);
+    window.addEventListener("offline", updateSystemStatus);
+
+    const installBtn = $("installAppBtn");
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      installBtn?.classList.remove("hidden");
+    });
+
+    installBtn?.addEventListener("click", async () => {
+      if (!deferredInstallPrompt) {
+        showMessage("Install app tersedia di browser yang mendukung PWA. Gunakan menu browser: Add to Home Screen / Install App.", "info");
+        return;
+      }
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice.catch(() => null);
+      deferredInstallPrompt = null;
+      installBtn.classList.add("hidden");
+    });
+
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      navigator.serviceWorker.register("./sw.js")
+        .then(() => {
+          if ($("systemCacheStatus")) $("systemCacheStatus").textContent = "Cached";
+        })
+        .catch(() => {
+          if ($("systemCacheStatus")) $("systemCacheStatus").textContent = "Cache Off";
+        });
+    }
+  }
+
+
+  
+  const ONBOARDING_KEY = "coffee_brew_os_onboarding_v30_7";
+  const ONBOARDING_STEPS = ["welcome", "guide", "brew", "input", "public"];
+
+  function readOnboardingState() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(ONBOARDING_KEY) || "{}");
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function writeOnboardingState(next) {
+    try { localStorage.setItem(ONBOARDING_KEY, JSON.stringify(next)); } catch {}
+  }
+
+  function markOnboardingStep(step) {
+    if (!ONBOARDING_STEPS.includes(step)) return;
+    const state = readOnboardingState();
+    if (state[step]) return;
+    state[step] = true;
+    writeOnboardingState(state);
+    renderOnboardingCoach();
+  }
+
+  function tabToOnboardingStep(tab) {
+    if (tab === "guide") return "guide";
+    if (tab === "brew") return "brew";
+    if (tab === "input-seduhan") return "input";
+    if (tab === "public-brews") return "public";
+    return "";
+  }
+
+  function renderOnboardingCoach() {
+    const state = readOnboardingState();
+    const done = ONBOARDING_STEPS.filter(step => state[step]).length;
+    const pct = Math.round((done / ONBOARDING_STEPS.length) * 100);
+    if ($("onboardingProgressText")) $("onboardingProgressText").textContent = `${pct}%`;
+    if ($("onboardingProgressBar")) $("onboardingProgressBar").style.width = `${pct}%`;
+    document.querySelectorAll(".onboarding-list li").forEach(item => {
+      item.classList.toggle("is-done", Boolean(state[item.dataset.step]));
+    });
+  }
+
+  function setOnboardingOpen(open) {
+    const coach = $("onboardingCoach");
+    if (!coach) return;
+    coach.dataset.open = open ? "true" : "false";
+    $("onboardingToggle")?.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function bindOnboardingCoach() {
+    if (document.body?.dataset.onboardingReady === "true") return;
+    if (document.body) document.body.dataset.onboardingReady = "true";
+
+    $("onboardingToggle")?.addEventListener("click", () => {
+      setOnboardingOpen($("onboardingCoach")?.dataset.open !== "true");
+    });
+    $("onboardingClose")?.addEventListener("click", () => setOnboardingOpen(false));
+    $("onboardingReset")?.addEventListener("click", () => {
+      try { localStorage.removeItem(ONBOARDING_KEY); } catch {}
+      renderOnboardingCoach();
+      showMessage("Checklist Quick Start sudah direset.", "info");
+    });
+    document.querySelectorAll("[data-onboard-action='welcome']").forEach(btn => {
+      btn.addEventListener("click", () => {
+        $("welcomeScreen")?.classList.remove("is-hidden");
+        setOnboardingOpen(false);
+      });
+    });
+
+    renderOnboardingCoach();
+  }
+
+
+  
+  function selectOptionContaining(selectId, terms = []) {
+    const select = $(selectId);
+    if (!select) return false;
+    const normalizedTerms = terms.map(term => String(term).toLowerCase());
+    const option = Array.from(select.options || []).find(opt => {
+      const text = `${opt.value || ""} ${opt.textContent || ""}`.toLowerCase();
+      return normalizedTerms.every(term => text.includes(term));
+    }) || Array.from(select.options || []).find(opt => {
+      const text = `${opt.value || ""} ${opt.textContent || ""}`.toLowerCase();
+      return normalizedTerms.some(term => text.includes(term));
+    });
+    if (!option) return false;
+    select.value = option.value;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    return true;
+  }
+
+  function applySoloDemoRecipe() {
+    document.body?.classList.add("demo-mode-active");
+    try { localStorage.setItem("coffee_demo_recipe_v30_8", "solo"); } catch {}
+
+    showTab("brew");
+    setTimeout(() => {
+      selectOptionContaining("brewDripper", ["solo"]);
+      selectOptionContaining("brewMode", ["hot"]);
+      selectOptionContaining("brewVariety", ["typica"]);
+      selectOptionContaining("brewProcess", ["washed"]);
+      selectOptionContaining("brewRoast", ["light"]);
+      selectOptionContaining("brewWater", ["cleo"]);
+      selectOptionContaining("brewGrinder", ["timemore"]);
+      const dose = $("brewDose");
+      if (dose) {
+        dose.value = "15";
+        dose.dispatchEvent(new Event("input", { bubbles: true }));
+        dose.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      const beanName = $("brewBeanName");
+      if (beanName) {
+        beanName.value = "SOLO Demo · Clean Washed Baseline";
+        beanName.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      renderBrew();
+      markOnboardingStep("brew");
+      showMessage("SOLO Demo aktif. Field rekomendasi sudah diarahkan ke baseline clean fast-flow.", "success");
+    }, 120);
+  }
+
+  function bindDemoExperience() {
+    if (document.body?.dataset.demoExperienceReady === "true") return;
+    if (document.body) document.body.dataset.demoExperienceReady = "true";
+    ["welcomeDemoBtn", "topbarDemoBtn", "homeDemoRecipeBtn", "brewDemoRecipeBtn", "guideDemoRecipeBtn"].forEach(id => {
+      $(id)?.addEventListener("click", () => {
+        enterExperience("guest");
+        applySoloDemoRecipe();
+      });
+    });
+  }
+
+
+  
+  function openSignupFlow() {
+    document.body?.classList.add("experience-entered");
+    document.body.dataset.accessMode = "login";
+    document.body.classList.add("access-login");
+    document.body.classList.remove("access-guest");
+    $("welcomeScreen")?.classList.add("is-hidden");
+    showTab("admin");
+
+    setTimeout(() => {
+      const details = $("signupDetails");
+      if (details) details.open = true;
+      $("authSignupShortcut")?.classList.remove("hidden");
+      $("signupEmail")?.focus?.({ preventScroll: true });
+      document.querySelector("#signupDetails")?.scrollIntoView({ block: "center", behavior: "smooth" });
+      showMessage("Form daftar sudah dibuka. Isi data akun untuk melanjutkan.", "info");
+    }, 160);
+  }
+
+  function openLoginFlow() {
+    document.body?.classList.add("experience-entered");
+    document.body.dataset.accessMode = "login";
+    document.body.classList.add("access-login");
+    document.body.classList.remove("access-guest");
+    $("welcomeScreen")?.classList.add("is-hidden");
+    showTab("admin");
+
+    setTimeout(() => {
+      $("authEmail")?.focus?.({ preventScroll: true });
+      document.querySelector("#loginForm")?.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, 160);
+  }
+
+  function bindSignupLandingFlow() {
+    if (document.body?.dataset.signupLandingReady === "true") return;
+    if (document.body) document.body.dataset.signupLandingReady = "true";
+    $("welcomeSignupBtn")?.addEventListener("click", openSignupFlow);
+    $("topbarSignupBtn")?.addEventListener("click", openSignupFlow);
+    $("openSignupDetailsBtn")?.addEventListener("click", openSignupFlow);
+  }
+
+
+
+  function updateNotificationSummaryFromIssues(issues = []) {
+    const rawTotal = qualityIssuesRaw().length;
+    const critical = issues.filter(i => i.severity === "critical").length;
+    const warning = issues.filter(i => i.severity === "warning").length;
+    const info = issues.filter(i => i.severity === "info").length;
+    const resolved = Math.max(0, rawTotal - issues.length);
+    if ($("notifCriticalCount")) $("notifCriticalCount").textContent = critical;
+    if ($("notifWarningCount")) $("notifWarningCount").textContent = warning;
+    if ($("notifInfoCount")) $("notifInfoCount").textContent = info;
+    if ($("notifResolvedCount")) $("notifResolvedCount").textContent = resolved || "—";
+  }
+
+  function syncNotificationQuickFilters() {
+    const scope = $("qualityScope")?.value || "all";
+    const severity = $("qualitySeverity")?.value || "all";
+    document.querySelectorAll("[data-notif-scope]").forEach(btn => btn.classList.toggle("active", btn.dataset.notifScope === scope));
+    document.querySelectorAll("[data-notif-filter]").forEach(btn => btn.classList.toggle("active", btn.dataset.notifFilter === severity));
+  }
+
+  function bindNotificationCenter() {
+    if (document.body?.dataset.notificationCenterReady === "true") return;
+    if (document.body) document.body.dataset.notificationCenterReady = "true";
+    document.querySelectorAll("[data-notif-scope]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if ($("qualityScope")) $("qualityScope").value = btn.dataset.notifScope || "all";
+        renderDataQuality();
+      });
+    });
+    document.querySelectorAll("[data-notif-filter]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const filter = btn.dataset.notifFilter || "all";
+        if ($("qualitySeverity")) $("qualitySeverity").value = filter;
+        renderDataQuality();
+      });
+    });
+  }
+
+
+
+  function syncReportShortcutState() {
+    const scope = $("reportScope")?.value || "workspace";
+    document.querySelectorAll("[data-report-scope-shortcut]").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.reportScopeShortcut === scope);
+    });
+  }
+
+  function bindReportSuitePolish() {
+    if (document.body?.dataset.reportSuiteReady === "true") return;
+    if (document.body) document.body.dataset.reportSuiteReady = "true";
+
+    document.querySelectorAll("[data-report-scope-shortcut]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if ($("reportScope")) $("reportScope").value = btn.dataset.reportScopeShortcut || "workspace";
+        renderReportPreview();
+        syncReportShortcutState();
+        showMessage(`Scope report diubah ke ${btn.textContent.trim()}.`, "info");
+      });
+    });
+  }
+
+
+
+  function renderAccountRoleStatus() {
+    const loggedIn = Boolean(currentUser);
+    const roleCtx = displayRoleContext();
+    const status = roleCtx.status || (loggedIn ? "active" : "guest");
+    const statusText = status === "pending" ? "Pending"
+      : status === "rejected" ? "Rejected"
+      : status === "disabled" ? "Disabled"
+      : status === "active" ? "Active"
+      : "Guest";
+
+    if ($("adminModeMetric")) $("adminModeMetric").textContent = loggedIn ? "Login" : "Guest";
+    if ($("adminModeHint")) $("adminModeHint").textContent = loggedIn ? (currentUser.email || "User aktif") : "Login untuk membuka fitur premium.";
+    if ($("adminRoleMetric")) $("adminRoleMetric").textContent = roleCtx.role || "-";
+    if ($("adminRoleHint")) $("adminRoleHint").textContent = loggedIn ? "Role mengikuti workspace aktif." : "Role tersedia setelah login.";
+    if ($("adminWorkspaceMetric")) $("adminWorkspaceMetric").textContent = roleCtx.workspace || "-";
+    if ($("adminWorkspaceHint")) $("adminWorkspaceHint").textContent = currentWorkspace?.slug || "Pilih atau buat workspace.";
+    if ($("adminStatusMetric")) $("adminStatusMetric").textContent = statusText;
+    if ($("adminStatusHint")) $("adminStatusHint").textContent = status === "pending" ? "Menunggu approval admin."
+      : status === "rejected" ? "Akses ditolak."
+      : status === "disabled" ? "Akses disuspend."
+      : status === "active" ? "Akses workspace aktif."
+      : "Mode tamu aktif.";
+  }
+
+  function bindAccountRolePolish() {
+    if (document.body?.dataset.accountRolePolishReady === "true") return;
+    if (document.body) document.body.dataset.accountRolePolishReady = "true";
+
+    $("adminQuickLoginBtn")?.addEventListener("click", () => {
+      openLoginFlow();
+    });
+    $("adminQuickSignupBtn")?.addEventListener("click", () => {
+      openSignupFlow();
+    });
+    $("adminQuickWorkspaceBtn")?.addEventListener("click", () => {
+      document.querySelector("#workspacePanel")?.scrollIntoView({ block: "center", behavior: "smooth" });
+      showMessage("Panel workspace ditampilkan.", "info");
+    });
+  }
+
+
   function renderAll() {
+    if (currentUser) { document.body.dataset.accessMode = "login"; document.body.classList.add("experience-entered", "access-login"); document.body.classList.remove("access-guest"); }
     renderMetrics();
     renderAccessUI();
     renderBrew();
@@ -6233,8 +6848,10 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     renderPublicBrewTable();
     renderAnalytics();
     renderDataQuality();
+    updateNotificationSummary();
     renderReportPreview();
     renderLibrary();
+    renderOnboardingCoach();
     renderWorkspaceUI();
     renderAdminProDashboard();
     if (canModerate()) loadModerationRows().catch(console.warn);
@@ -6410,12 +7027,24 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     hydrateSelects();
     restoreAutosaveDrafts();
     bindEvents();
+    bindWelcomeScreen();
+    bindSidebarDrawer();
+    bindOnboardingCoach();
+    bindDemoExperience();
+    bindSignupLandingFlow();
+    bindNotificationCenter();
+    bindReportSuitePolish();
+    bindAccountRolePolish();
+    initPageRouter();
     bindAutosaveDrafts();
     renderAll();
     initPremiumUIInteractions();
+    initPWAExperience();
     await initCloud();
     processPendingSyncQueue(false).catch(console.warn);
     renderAll();
+    updatePageHeading(document.querySelector(".tab-btn.active")?.dataset.tab || "home");
+    syncAccessChrome();
     updateSyncGuardStatus();
   });
 })();
