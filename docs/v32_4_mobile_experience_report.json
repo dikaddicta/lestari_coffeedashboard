@@ -1,0 +1,13 @@
+{
+  "version": "v32.4 Mobile Experience Polish",
+  "checks": [
+    "Mobile sidebar drawer strengthened",
+    "Sticky topbar compacted for tablet/mobile",
+    "Mobile form input font-size set to 16px to prevent zoom",
+    "Large tables retain horizontal scroll",
+    "Quick Start and sync guard repositioned",
+    "Floating mascot hidden on small screens to reduce overlap",
+    "Mobile buttons and action groups normalized",
+    "Responsive grid stacks standardized"
+  ]
+}

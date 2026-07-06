@@ -33,6 +33,7 @@
   let dashboardUserCountSource = "local";
   let libraryCurrentRows = [];
   let libraryCurrentDataset = "varieties";
+  let libraryCurrentFocus = "all";
   const LAST_WORKSPACE_KEY = "coffeeDashboardActiveWorkspace";
   const DEFAULT_PUBLIC_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001";
   const CLOUD_WRITE_TIMEOUT_MS = 45000;
@@ -5008,8 +5009,68 @@
     return "-";
   }
 
+
+  function libraryFocusMatch(row, dataset, focus) {
+    if (!focus || focus === "all") return true;
+    const haystack = norm(Object.values(row || {}).join(" "));
+    if (focus === "source") return Boolean(sourceUrl(row));
+    if (focus === "local-id") return /indonesia|bali|java|sumatra|sulawesi|gayo|kintamani|kerinci|lintong|toraja|flores/.test(haystack);
+    if (focus === "new") return /usda|kopyol|mix varietas|mixed cultivar|mixed lot/.test(haystack);
+    if (focus === "brew-risk") {
+      const risk = Number(row.FermentRisk_1low_5high || row.Fermentation_Tolerance || 0);
+      return risk >= 4 || /anaerobic|carbonic|co-ferment|thermal|extended|experimental|ferment/.test(haystack);
+    }
+    return true;
+  }
+
+  function libraryFocusLabel(focus = libraryCurrentFocus) {
+    return {
+      all: "Semua Data",
+      source: "Source Ready",
+      "local-id": "Indonesia / Local",
+      new: "USDA · Kopyol · Mix",
+      "brew-risk": "High Ferment / Risk"
+    }[focus] || "Semua Data";
+  }
+
+  function renderLibraryFocusToolbar() {
+    document.querySelectorAll("[data-library-focus]").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.libraryFocus === libraryCurrentFocus);
+    });
+  }
+
+  function renderLibrarySpotlight(rows, dataset) {
+    const wrap = $("librarySpotlightStrip");
+    if (!wrap) return;
+    const all = DATA[dataset] || [];
+    const featuredNames = dataset === "varieties"
+      ? ["USDA", "USDA 762", "Kopyol", "Kopyol Bali", "Mix Varietas"]
+      : dataset === "processes"
+        ? ["Anaerobic Fermentation - Closed Tank", "Carbonic Maceration - CO2 Saturated", "Thermal Shock Washed", "Co-Fermentation / Ingredient Co-Ferment"]
+        : [];
+    const featured = featuredNames
+      .map(name => all.find(row => norm(libraryRowTitle(row, dataset)) === norm(name) || norm(libraryRowTitle(row, dataset)).includes(norm(name))))
+      .filter(Boolean);
+    const samples = (featured.length ? featured : rows.slice(0, 4)).slice(0, 5);
+    if (!samples.length) {
+      wrap.innerHTML = "";
+      return;
+    }
+    wrap.innerHTML = samples.map((row, idx) => `
+      <button type="button" data-library-spotlight="${idx}" data-library-title="${html(libraryRowTitle(row, dataset))}">
+        <span>${html(sourceUrl(row) ? "Source" : libraryDatasetLabel(dataset))}</span>
+        <strong>${html(libraryRowTitle(row, dataset))}</strong>
+        <small>${html(libraryCue(row, dataset))}</small>
+      </button>
+    `).join("");
+  }
+
+
   function libraryFilteredRows(dataset, search) {
-    return (DATA[dataset] || []).filter(row => !search || Object.values(row).some(v => norm(v).includes(search)) || norm(sourceUrl(row)).includes(search));
+    return (DATA[dataset] || []).filter(row => {
+      const searchMatch = !search || Object.values(row).some(v => norm(v).includes(search)) || norm(sourceUrl(row)).includes(search);
+      return searchMatch && libraryFocusMatch(row, dataset, libraryCurrentFocus);
+    });
   }
 
   function renderLibraryOverview(rows, dataset) {
@@ -5017,10 +5078,12 @@
     const shown = rows.length;
     const sourceCount = rows.filter(row => sourceUrl(row)).length;
     const first = rows[0] || {};
+    const noSource = Math.max(0, shown - sourceCount);
     const cards = [
       ["Dataset", libraryDatasetLabel(dataset), "Kategori referensi aktif."],
-      ["Tampil", `${shown}/${total}`, "Jumlah data sesuai filter."],
-      ["Source", sourceCount, "Record tampil yang punya SourceURL."],
+      ["Tampil", `${shown}/${total}`, "Jumlah data sesuai filter & pencarian."],
+      ["Source", `${sourceCount}/${shown || 0}`, noSource ? `${noSource} record belum punya source.` : "Semua hasil tampil punya SourceURL."],
+      ["Focus", libraryFocusLabel(), "Filter cepat yang sedang aktif."],
       ["Highlight", libraryRowTitle(first, dataset) || "-", "Record pertama dari hasil filter."]
     ];
     const overview = $("libraryOverview");
@@ -5035,6 +5098,43 @@
     if (heroSignal) heroSignal.innerHTML = `<span>${html(libraryDatasetLabel(dataset))}</span><strong>${html(shown)}</strong><small>hasil aktif</small>`;
   }
 
+
+  function libraryMiniMetrics(row, dataset) {
+    const metric = (label, value) => value !== undefined && value !== "" && value !== null
+      ? `<span><b>${html(label)}</b><strong>${html(value)}</strong></span>`
+      : "";
+    if (dataset === "varieties") {
+      return [
+        metric("Acid", row.Acidity_Base),
+        metric("Sweet", row.Sweetness_Base),
+        metric("Body", row.Body_Base)
+      ].join("");
+    }
+    if (dataset === "processes") {
+      return [
+        metric("Risk", row.FermentRisk_1low_5high),
+        metric("Temp", row.TempMod_C ? `${row.TempMod_C}°C` : ""),
+        metric("Agit", row.AgitationCue)
+      ].join("");
+    }
+    if (dataset === "drippers") {
+      return [
+        metric("Flow", row.FlowSpeed_1slow_5fast),
+        metric("Heat", row.HeatRetention_1low_5high),
+        metric("Bypass", row.BypassRisk_1low_5high)
+      ].join("");
+    }
+    if (dataset === "waters") {
+      return [
+        metric("TDS", row.TDS_ppm ? `${row.TDS_ppm}` : ""),
+        metric("pH", row.pH),
+        metric("Type", row.Type)
+      ].join("");
+    }
+    return "";
+  }
+
+
   function renderLibraryCards(rows, dataset) {
     const grid = $("libraryCardGrid");
     if (!grid) return;
@@ -5043,17 +5143,20 @@
       return;
     }
     grid.classList.remove("is-live");
-    grid.innerHTML = rows.slice(0, 12).map((row, idx) => `
-      <article class="library-ref-card cinematic-reveal" style="--stagger:${idx}" role="button" tabindex="0" data-library-index="${idx}">
+    grid.innerHTML = rows.slice(0, 12).map((row, idx) => {
+      const cueMetrics = libraryMiniMetrics(row, dataset);
+      return `
+      <article class="library-ref-card cinematic-reveal ${idx === 0 ? "active" : ""}" style="--stagger:${idx}" role="button" tabindex="0" data-library-index="${idx}">
         <div class="library-ref-topline">
           <span>${html(libraryDatasetLabel(dataset))}</span>
-          <em>${sourceUrl(row) ? "Source ready" : "No source"}</em>
+          <em class="${sourceUrl(row) ? "is-ready" : "is-missing"}">${sourceUrl(row) ? "Source ready" : "No source"}</em>
         </div>
         <h3>${html(libraryRowTitle(row, dataset))}</h3>
         <p>${html(libraryRowSubtitle(row, dataset) || "Detail referensi tersedia pada panel.")}</p>
+        ${cueMetrics ? `<div class="library-mini-metrics">${cueMetrics}</div>` : ""}
         <div class="library-cue-box">${html(libraryCue(row, dataset))}</div>
-      </article>
-    `).join("");
+      </article>`;
+    }).join("");
     requestAnimationFrame(() => grid.classList.add("is-live"));
   }
 
@@ -5073,10 +5176,16 @@
         <strong>${col === "RoastVisual" ? roastVisual(row) : html(row[col])}</strong>
       </div>
     `).join("");
+    const sourceReady = Boolean(sourceUrl(row));
+    const metricStrip = libraryMiniMetrics(row, libraryCurrentDataset);
     panel.innerHTML = `
-      <span class="mini-label">Detail Referensi</span>
+      <div class="library-detail-head">
+        <span class="mini-label">Detail Referensi</span>
+        <em class="${sourceReady ? "is-ready" : "is-missing"}">${sourceReady ? "Source Ready" : "No Source"}</em>
+      </div>
       <h3>${html(libraryRowTitle(row, libraryCurrentDataset))}</h3>
       <p>${html(libraryCue(row, libraryCurrentDataset))}</p>
+      ${metricStrip ? `<div class="library-mini-metrics library-mini-metrics--detail">${metricStrip}</div>` : ""}
       <div class="library-detail-lines">${details}</div>
       <div class="library-detail-source">${sourceLink(row) || "<span>Source belum tersedia</span>"}</div>
     `;
@@ -5095,7 +5204,9 @@
       if (c === "Source") return sourceLink(row);
       return html(row[c]);
     };
+    renderLibraryFocusToolbar();
     renderLibraryOverview(rows, dataset);
+    renderLibrarySpotlight(rows, dataset);
     renderLibraryCards(rows, dataset);
     renderLibraryDetail(0);
     const table = $("libraryTable");
@@ -5544,8 +5655,25 @@
         if (!e.target.checked) input.value = "";
       }
     });
-    $("libraryDataset").addEventListener("change", renderLibrary);
+    $("libraryDataset").addEventListener("change", () => {
+      libraryCurrentFocus = "all";
+      renderLibrary();
+    });
     $("librarySearch").addEventListener("input", renderLibrary);
+    $("libraryFocusToolbar")?.addEventListener("click", e => {
+      const btn = e.target.closest("[data-library-focus]");
+      if (!btn) return;
+      libraryCurrentFocus = btn.dataset.libraryFocus || "all";
+      renderLibrary();
+    });
+    $("librarySpotlightStrip")?.addEventListener("click", e => {
+      const btn = e.target.closest("[data-library-spotlight]");
+      if (!btn) return;
+      const title = btn.dataset.libraryTitle || "";
+      if ($("librarySearch")) $("librarySearch").value = title;
+      libraryCurrentFocus = "all";
+      renderLibrary();
+    });
     $("libraryCardGrid")?.addEventListener("click", e => {
       const card = e.target.closest("[data-library-index]");
       if (!card) return;
@@ -6961,6 +7089,37 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     }, true);
   }
 
+
+  function bindMobileExperiencePolish() {
+    if (document.body?.dataset.mobileExperiencePolish === "true") return;
+    if (document.body) document.body.dataset.mobileExperiencePolish = "true";
+
+    const mq = window.matchMedia?.("(max-width: 760px)");
+    const closeCoachOnInput = () => {
+      if (!mq?.matches) return;
+      const coach = $("onboardingCoach");
+      if (coach?.dataset.open === "true") {
+        coach.dataset.open = "false";
+        $("onboardingToggle")?.setAttribute("aria-expanded", "false");
+      }
+    };
+
+    document.addEventListener("focusin", event => {
+      if (event.target?.matches?.("input, select, textarea")) closeCoachOnInput();
+    }, true);
+
+    document.addEventListener("click", event => {
+      if (!mq?.matches) return;
+      const target = event.target;
+      if (target?.closest?.(".dashboard-sidebar")) return;
+      if (target?.closest?.("#sidebarToggleBtn")) return;
+      if (document.body?.classList.contains("sidebar-open") && target?.closest?.(".dashboard-main-shell")) {
+        setSidebarOpen(false);
+      }
+    }, true);
+  }
+
+
   function renderAll() {
     if (currentUser) { document.body.dataset.accessMode = "login"; document.body.classList.add("experience-entered", "access-login"); document.body.classList.remove("access-guest"); }
     renderMetrics();
@@ -7164,6 +7323,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     bindAccountRolePolish();
     bindCustomProcessInputs();
     bindUxAuditButtonSafety();
+    bindMobileExperiencePolish();
     initPageRouter();
     bindAutosaveDrafts();
     renderAll();

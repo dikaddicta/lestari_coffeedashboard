@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
   <link rel="preload" href="assets/latte-art-icon.png" as="image" />
   <link rel="preload" href="assets/barista-mascot.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260705-v32-3-final-ux-audit" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260705-v32-5-library-polish" />
 </head>
 <body>
 
@@ -170,7 +170,7 @@
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v32.3 · Final UX Audit</small>
+          <small class="sidebar-build-version">v32.5 · Pustaka Data Polish</small>
         </div>
       </aside>
 
@@ -2003,10 +2003,22 @@
             </div>
             <div class="library-hero-signal" id="libraryHeroSignal"></div>
           </div>
-          <div class="library-controls">
-            <select id="libraryDataset"><option value="varieties">Varietas</option><option value="drippers">Dripper</option><option value="processes">Proses</option><option value="roasts">Roast Profile</option><option value="waters">Air</option><option value="grinders">Grinder</option></select>
-            <input id="librarySearch" placeholder="Search data library..." />
+          <div class="library-controls library-controls--premium">
+            <label>Dataset
+              <select id="libraryDataset"><option value="varieties">Varietas</option><option value="drippers">Dripper</option><option value="processes">Proses</option><option value="roasts">Roast Profile</option><option value="waters">Air</option><option value="grinders">Grinder</option></select>
+            </label>
+            <label>Pencarian
+              <input id="librarySearch" placeholder="Cari USDA, Kopyol, Mix Varietas, Anaerobic, SOLO..." />
+            </label>
           </div>
+          <div class="library-focus-toolbar" id="libraryFocusToolbar" aria-label="Filter cepat pustaka data">
+            <button type="button" class="active" data-library-focus="all">Semua</button>
+            <button type="button" data-library-focus="source">Source Ready</button>
+            <button type="button" data-library-focus="local-id">Indonesia / Local</button>
+            <button type="button" data-library-focus="new">USDA · Kopyol · Mix</button>
+            <button type="button" data-library-focus="brew-risk">High Ferment / Risk</button>
+          </div>
+          <div class="library-spotlight-strip" id="librarySpotlightStrip" aria-live="polite"></div>
           <div class="library-overview-grid" id="libraryOverview"></div>
           <div class="library-explorer-layout">
             <div class="library-main-column">
@@ -2042,6 +2054,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
   <script src="assets/data.js?v=20260705-usda-kopyol-multi-varietas"></script>
-  <script src="assets/app.js?v=20260603-stable-v8"></script>
+  <script src="assets/app.js?v=20260705-v32-5-library-polish"></script>
 </body>
 </html>

@@ -150,3 +150,26 @@ Menu Input Seduhan kini memiliki detail Pour 1–4, logika Switch Valve Mode ada
 - Tab routes checked: 14
 - Section balance issues: 0
 - Duplicate IDs found: 0
+
+
+## v32.4 Mobile Experience Polish
+
+- Mobile sidebar drawer strengthened
+- Sticky topbar compacted for tablet/mobile
+- Mobile form input font-size set to 16px to prevent zoom
+- Large tables retain horizontal scroll
+- Quick Start and sync guard repositioned
+- Floating mascot hidden on small screens to reduce overlap
+- Mobile buttons and action groups normalized
+- Responsive grid stacks standardized
+
+
+## v32.5 Pustaka Data Polish
+
+- Premium dataset/search controls added
+- Quick focus filters added
+- USDA, Kopyol, Mix Varietas spotlight ready for varieties dataset
+- Source-ready and local Indonesia filters added
+- Knowledge cards include mini metric chips
+- Detail panel strengthened with source status and metrics
+- Mobile library layout improved
