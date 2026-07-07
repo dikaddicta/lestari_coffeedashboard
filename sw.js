@@ -1,4 +1,4 @@
-const CACHE_NAME = "coffee-brew-os-v33-0-redesign";
+const CACHE_NAME = "coffee-brew-os-v33-1-radical-ui";
 const CORE_ASSETS = [
   "./",
   "./index.html",

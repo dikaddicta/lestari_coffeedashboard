@@ -1,12 +1,12 @@
 {
-  "name": "Coffee Brew OS v33",
-  "short_name": "Brew OS",
-  "description": "Coffee Brew OS v33 dengan UI/UX baru, struktur CSS modular, rekomendasi seduh, QA, analytics, report, dan pustaka data kopi.",
+  "name": "Coffee Brew OS v33.1",
+  "short_name": "Lab Console",
+  "description": "Radical UI rewrite untuk Coffee Brew OS: modern lab console, dark navigation, clean SaaS workspace, brew intelligence, QA, analytics, report, dan data library.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#D6C8AD",
-  "theme_color": "#2D2D2D",
+  "background_color": "#f5f7fb",
+  "theme_color": "#0f172a",
   "orientation": "any",
   "icons": [
     {

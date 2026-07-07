@@ -1,40 +1,37 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{
-  margin:0 !important;
+body.v33-radical-ui{
+  margin:0!important;
   min-height:100vh;
-  color:var(--v33-ink) !important;
-  font-family:var(--v33-font) !important;
+  color:var(--ink)!important;
+  font-family:var(--font)!important;
   background:
-    radial-gradient(circle at 6% 4%, rgba(217,164,111,.26), transparent 28%),
-    radial-gradient(circle at 86% 0%, rgba(49,95,120,.12), transparent 26%),
-    linear-gradient(135deg,#f9f2e8 0%,#efe2cf 48%,#f8efe4 100%) !important;
-  letter-spacing:-.01em;
+    linear-gradient(90deg, rgba(15,23,42,.035) 1px, transparent 1px),
+    linear-gradient(rgba(15,23,42,.035) 1px, transparent 1px),
+    radial-gradient(circle at 85% 8%, rgba(45,212,191,.16), transparent 26%),
+    radial-gradient(circle at 18% 0%, rgba(255,138,61,.12), transparent 24%),
+    var(--bg)!important;
+  background-size:34px 34px,34px 34px,auto,auto,auto!important;
+  letter-spacing:-.015em;
 }
-body::before{
-  content:"";
+body.v33-radical-ui::before{
+  content:"Coffee Brew OS";
   position:fixed;
-  inset:0;
-  pointer-events:none;
-  background-image:
-    linear-gradient(rgba(31,27,23,.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(31,27,23,.025) 1px, transparent 1px);
-  background-size:32px 32px;
-  mask-image:linear-gradient(to bottom,rgba(0,0,0,.65),transparent 80%);
+  right:-34px;
+  bottom:12px;
   z-index:-1;
+  font-size:118px;
+  font-weight:950;
+  letter-spacing:-.09em;
+  color:rgba(15,23,42,.035);
+  pointer-events:none;
 }
-a{color:var(--v33-accent)}
-img{max-width:100%;display:block}
 .hidden{display:none!important}
-.sr-only{
-  position:absolute!important;
-  width:1px!important;
-  height:1px!important;
-  overflow:hidden!important;
-  clip:rect(0,0,0,0)!important;
-  white-space:nowrap!important;
-}
-::selection{background:rgba(184,121,69,.22);color:var(--v33-ink)}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important}
+img{max-width:100%;display:block}
+a{color:var(--brand-3);text-decoration:none}
+a:hover{text-decoration:underline}
+::selection{background:rgba(255,138,61,.22);color:var(--ink)}
 ::-webkit-scrollbar{width:10px;height:10px}
-::-webkit-scrollbar-track{background:rgba(31,27,23,.04)}
-::-webkit-scrollbar-thumb{background:rgba(31,27,23,.20);border-radius:999px}
+::-webkit-scrollbar-track{background:#eef2f7}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}

@@ -1,0 +1,17 @@
+{
+  "version": "v33.1 Radical UI Rewrite",
+  "reason": "v33.0 masih terasa seperti versi lama karena mempertahankan legacy compatibility sebagai visual fallback.",
+  "majorChanges": [
+    "Legacy CSS no longer imported by main.css",
+    "Visual system rewritten into modern lab console style",
+    "Dark full-height navigation replaces warm beige dashboard feel",
+    "Bright SaaS work area with grid background replaces old cream/brown ambience",
+    "Hero, card, form, table, welcome screen, brew, library, and dashboard components restyled from scratch",
+    "Mascot hidden by default to make product feel more serious and modern",
+    "PWA theme changed to slate/lab console identity"
+  ],
+  "validation": [
+    "node --check assets/app.js passed",
+    "main.css no longer imports legacy compatibility CSS"
+  ]
+}
