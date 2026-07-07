@@ -1716,6 +1716,176 @@
     return { primary, label: labelMap[primary] || "Balanced sweetness", cues };
   }
 
+
+  function inferProcessProfile(processName = "") {
+    const text = norm(processName);
+    if (!text) return {};
+    const contains = (...words) => words.some(word => text.includes(word));
+    const row = {
+      Process: processName,
+      Category: "Custom / Inferred",
+      Stage: "Custom post-harvest process inferred from label keywords",
+      AcidityMod: 0,
+      SweetnessMod: 0,
+      BodyMod: 0,
+      FruityMod: 0,
+      FloralMod: 0,
+      SpicyMod: 0,
+      FermentRisk_1low_5high: 2,
+      TempMod_C: 0,
+      GrindMod_coarser: 0,
+      RatioMod_ml_per_g: 0,
+      BrewTimeMod_sec: 0,
+      TransparencyNote: "Process tidak ada di pustaka utama. Dashboard memakai keyword guardrail sementara; validasi dengan tasting dan update pustaka bila proses sering digunakan.",
+      BrewingCue: "start conservative; validate by taste",
+      Inferred: true
+    };
+
+    if (contains("natural")) {
+      row.Category = "Natural / Inferred";
+      row.Stage = "Whole cherry / dry process inferred from label";
+      row.SweetnessMod += 1;
+      row.BodyMod += 1;
+      row.FruityMod += 1;
+      row.FermentRisk_1low_5high = Math.max(row.FermentRisk_1low_5high, 3);
+      row.TempMod_C -= 0.5;
+      row.BrewingCue = "low-medium agitation; protect fruit sweetness";
+    }
+    if (contains("fermented", "ferment", "extended", "long")) {
+      row.Category = "Extended Fermentation / Inferred";
+      row.FruityMod += 1;
+      row.SweetnessMod += 1;
+      row.FermentRisk_1low_5high = Math.max(row.FermentRisk_1low_5high, 4);
+      row.TempMod_C -= 1.2;
+      row.GrindMod_coarser += 1;
+      row.RatioMod_ml_per_g -= 0.3;
+      row.BrewTimeMod_sec += 10;
+      row.BrewingCue = "cooler water; fewer pours; avoid aggressive swirl";
+    }
+    if (contains("anaerobic", "anoxic", "oxygen")) {
+      row.Category = "Anaerobic / Inferred";
+      row.FruityMod += 2;
+      row.SweetnessMod += 1;
+      row.BodyMod += 1;
+      row.FermentRisk_1low_5high = 5;
+      row.TempMod_C -= 2;
+      row.GrindMod_coarser += 2;
+      row.RatioMod_ml_per_g -= 0.5;
+      row.BrewTimeMod_sec += 20;
+      row.BrewingCue = "lower temp; coarse; low agitation";
+    }
+    if (contains("carbonic", "maceration", "cm")) {
+      row.Category = "Carbonic Maceration / Inferred";
+      row.FruityMod += 2;
+      row.FloralMod += 1;
+      row.FermentRisk_1low_5high = 5;
+      row.TempMod_C -= 2;
+      row.GrindMod_coarser += 2;
+      row.RatioMod_ml_per_g -= 0.5;
+      row.BrewingCue = "aroma first; cooler water; gentle pulses";
+    }
+    if (contains("co-ferment", "coferment", "infused", "infusion", "fruit")) {
+      row.Category = "Co-ferment / Inferred";
+      row.FruityMod += 2;
+      row.SweetnessMod += 1;
+      row.FermentRisk_1low_5high = 5;
+      row.TempMod_C -= 2;
+      row.GrindMod_coarser += 2;
+      row.RatioMod_ml_per_g -= 0.6;
+      row.BrewingCue = "cooler water; protect aromatics; monitor artificial/boozy notes";
+    }
+    if (contains("honey")) {
+      row.Category = "Honey / Inferred";
+      row.SweetnessMod += 1;
+      row.BodyMod += 1;
+      row.FermentRisk_1low_5high = Math.max(row.FermentRisk_1low_5high, 3);
+      row.RatioMod_ml_per_g -= 0.1;
+      row.BrewingCue = "steady pour; balance sweetness and clean finish";
+    }
+    if (contains("washed", "wet")) {
+      row.Category = "Washed / Inferred";
+      row.AcidityMod += 1;
+      row.BodyMod -= 1;
+      row.FermentRisk_1low_5high = Math.min(row.FermentRisk_1low_5high, 2);
+      row.TempMod_C += 0.4;
+      row.RatioMod_ml_per_g += 0.2;
+      row.BrewingCue = "clarity-friendly; use stable pulse";
+    }
+    if (contains("thermal", "shock")) {
+      row.Category = "Thermal Shock / Inferred";
+      row.FruityMod += 1;
+      row.SweetnessMod += 1;
+      row.FermentRisk_1low_5high = Math.max(row.FermentRisk_1low_5high, 4);
+      row.TempMod_C -= 1.4;
+      row.GrindMod_coarser += 1;
+      row.BrewingCue = "cooler water; gentle pour; avoid over-extraction";
+    }
+
+    row.AcidityMod = clamp(row.AcidityMod, -2, 2);
+    row.SweetnessMod = clamp(row.SweetnessMod, -1, 3);
+    row.BodyMod = clamp(row.BodyMod, -2, 2);
+    row.FruityMod = clamp(row.FruityMod, -1, 3);
+    row.FloralMod = clamp(row.FloralMod, -1, 2);
+    row.FermentRisk_1low_5high = clamp(row.FermentRisk_1low_5high, 1, 5);
+    row.TempMod_C = clamp(row.TempMod_C, -3, 1.5);
+    row.GrindMod_coarser = clamp(row.GrindMod_coarser, -1, 3);
+    row.RatioMod_ml_per_g = clamp(row.RatioMod_ml_per_g, -0.8, 0.5);
+    row.BrewTimeMod_sec = clamp(row.BrewTimeMod_sec, -10, 35);
+    return row;
+  }
+
+  function resolveProcessProfile(processName = "") {
+    const exact = getBy(DATA.processes, "Process", processName);
+    return exact?.Process ? exact : inferProcessProfile(processName);
+  }
+
+  function effectiveBrewVarietyNames() {
+    const stockBean = selectedBrewStockBean?.();
+    if (stockBean) {
+      const values = [
+        stockBean.Variety,
+        stockBean.Variety2_optional,
+        stockBean.Variety3_optional,
+        stockBean.VarietyList
+      ].flatMap(splitVarietyLabel);
+      return uniq(values);
+    }
+    return uniq([$("brewVariety")?.value || ""]);
+  }
+
+  function resolveVarietyProfile(names = []) {
+    const cleanNames = uniq((names || []).flatMap(splitVarietyLabel));
+    const rows = cleanNames.map(name => getBy(DATA.varieties, "Variety", name)).filter(row => row?.Variety);
+    if (rows.length <= 1) return rows[0] || getBy(DATA.varieties, "Variety", cleanNames[0] || $("brewVariety")?.value);
+    const avg = field => round(rows.reduce((sum, row) => sum + numberField(row, field, 3), 0) / rows.length, 1);
+    return {
+      Variety: cleanNames.join(" / "),
+      Species: uniq(rows.map(row => row.Species)).join(" / "),
+      Genetic_Market_Group: uniq(rows.map(row => row.Genetic_Market_Group)).join(" / "),
+      Typical_Regions: uniq(rows.map(row => row.Typical_Regions)).join(" / "),
+      Acidity_Base: avg("Acidity_Base"),
+      Sweetness_Base: avg("Sweetness_Base"),
+      Body_Base: avg("Body_Base"),
+      Fruity_Base: avg("Fruity_Base"),
+      Floral_Base: avg("Floral_Base"),
+      Fermentation_Tolerance: avg("Fermentation_Tolerance"),
+      Notes: `Composite profile from ${cleanNames.length} varieties: ${cleanNames.join(", ")}. Dashboard averages sensory bases and keeps process/roast guardrails active.`,
+      SourceURL: rows.find(row => sourceUrl(row))?.SourceURL || "",
+      IsComposite: true
+    };
+  }
+
+  function brewLogicSummary(brew = {}) {
+    const parts = [];
+    if (brew.variety?.IsComposite) parts.push(`Composite variety: ${brew.variety.Variety}`);
+    if (brew.process?.Inferred) parts.push(`Custom process inferred: ${brew.process.Process}`);
+    if (brew.risk >= 4) parts.push("High ferment guardrail active");
+    if (brew.mineralBand === "soft") parts.push("Soft water compensation");
+    if (brew.mineralBand === "hard") parts.push("Hard water guardrail");
+    return parts.join(" · ") || "Standard library match";
+  }
+
+
   function extractBrewSignals({ variety, process, roast, dripper, water, mode }) {
     const acidity = clamp(numberField(variety, "Acidity_Base", 3) + numberField(process, "AcidityMod", 0) + numberField(roast, "AcidityMod", 0), 1, 5);
     const sweetness = clamp(numberField(variety, "Sweetness_Base", 3) + numberField(process, "SweetnessMod", 0), 1, 5);
@@ -1734,7 +1904,9 @@
   function confidenceScore({ variety, process, roast, dripper, water, grinderName, isCustom }) {
     let score = 86;
     if (!variety?.Variety) score -= 12;
+    if (variety?.IsComposite) score -= 2;
     if (!process?.Process) score -= 12;
+    if (process?.Inferred) score -= 5;
     if (!roast?.RoastProfile) score -= 10;
     if (!dripper?.DripperName) score -= 8;
     if (!water?.Water) score -= 6;
@@ -1751,6 +1923,8 @@
     if (brew.body >= 4) tips.push("Body tinggi: jaga flow tetap bersih. Jika finish terasa berat, kasar 1–2 step atau turunkan suhu 1°C.");
     if (brew.mineralBand === "soft") tips.push("Air sangat soft: gunakan mineral/blend atau naikkan suhu 1°C agar sweetness tidak terasa tipis.");
     if (brew.mineralBand === "hard") tips.push("Air mineral tinggi: turunkan suhu 1°C dan hindari ekstraksi terlalu panjang agar aftertaste tidak chalky.");
+    if (brew.process?.Inferred) tips.push("Custom process: dashboard memakai keyword guardrail. Setelah tasting, simpan proses ini ke Pustaka bila sering digunakan.");
+    if (brew.variety?.IsComposite) tips.push("Multi-varietas: gunakan hasil ini sebagai baseline gabungan; validasi apakah satu karakter varietas terlalu dominan.");
     if (modeIce) tips.push("Japanese iced: swirl server setelah drawdown supaya meltwater dan konsentrasi kopi homogen.");
     if (!tips.length) tips.push("Mulai dari resep ini sebagai control. Setelah tasting, ubah satu variabel saja: grind → suhu → rasio.");
     return tips.slice(0, 3);
@@ -1765,8 +1939,10 @@
   }
 
   function computeBrew() {
-    const variety = getBy(DATA.varieties, "Variety", $("brewVariety").value);
-    const process = getBy(DATA.processes, "Process", selectedProcessValue("brewProcess", "brewProcessCustom"));
+    const varietyNames = effectiveBrewVarietyNames();
+    const variety = resolveVarietyProfile(varietyNames);
+    const processValue = selectedProcessValue("brewProcess", "brewProcessCustom");
+    const process = resolveProcessProfile(processValue);
     const roast = getBy(DATA.roasts, "RoastProfile", $("brewRoast").value);
     const dripper = getBy(DATA.drippers, "DripperName", $("brewDripper").value);
     const water = getBy(DATA.waters, "Water", $("brewWater").value);
@@ -2321,6 +2497,7 @@
         <article><span>Focus</span><strong>${html(brew.intent?.label || "Balanced")}</strong><small>Acuan profil seduh utama.</small></article>
         <article><span>Agitation</span><strong>${html(brew.risk >= 4 ? "Low" : brew.body >= 4 ? "Medium-soft" : "Medium")}</strong><small>Disesuaikan dengan proses dan body.</small></article>
         <article><span>Water Band</span><strong>${html(brew.mineralBand)}</strong><small>TDS ${html(brew.tds)} ppm.</small></article>
+        <article><span>Logic</span><strong>${html(brew.process?.Inferred || brew.variety?.IsComposite ? "Adaptive" : "Library")}</strong><small>${html(brewLogicSummary(brew))}</small></article>
       </div>
       <ul class="dial-tips">${tips}</ul>
       ${sources ? `<div class="source-chip-row"><span>Source</span>${sources}</div>` : ""}`;
@@ -2336,7 +2513,8 @@
     const flowText = brew.flow >= 4 ? "Fast flow" : brew.flow <= 2 ? "Slow flow" : "Medium flow";
     const riskText = brew.risk >= 4 ? "High ferment" : brew.risk >= 3 ? "Medium ferment" : "Clean process";
     const mineralText = brew.mineralBand === "balanced" ? "Balanced water" : brew.mineralBand === "soft" ? "Soft water" : brew.mineralBand === "hard" ? "Hard water" : "Usable water";
-    const sourceStatus = sourceCount >= 5 ? "Source lengkap" : `${sourceCount}/5 source aktif`;
+    const inferredCount = sourceRows.filter(row => row?.Inferred || row?.IsComposite).length;
+    const sourceStatus = sourceCount >= 5 ? "Source lengkap" : inferredCount ? `${sourceCount}/5 source · ${inferredCount} inferred` : `${sourceCount}/5 source aktif`;
     const bars = [
       ["Clarity", clamp((brew.acidity + brew.fruity + brew.floral) / 15, .08, 1)],
       ["Sweetness", clamp(brew.sweetness / 5, .08, 1)],
@@ -2370,10 +2548,12 @@
     const feedback = floatingMascotFeedback(brew);
     const sourceCount = [brew.variety, brew.process, brew.roast, brew.dripper, brew.water].filter(Boolean).filter(row => sourceUrl(row)).length;
     const caution = brew.risk >= 4 ? "High caution" : brew.risk >= 3 ? "Moderate caution" : "Controlled";
+    const logicText = brewLogicSummary(brew);
     const items = [
       ["Confidence", `${brew.confidence}%`, "Kesiapan rekomendasi berdasarkan data & fit."],
       ["Source", `${sourceCount}/5 aktif`, "Referensi utama sudah terhubung ke dashboard."],
-      ["Guardrail", caution, feedback.text]
+      ["Guardrail", caution, feedback.text],
+      ["Logic", brew.process?.Inferred || brew.variety?.IsComposite ? "Adaptive" : "Library", logicText]
     ];
     const cards = items.map(([label, value, desc], idx) => `<article class="preflight-card cinematic-reveal" style="--stagger:${idx}"><span>${html(label)}</span><strong>${html(value)}</strong><small>${html(desc)}</small></article>`).join("");
     wrap.innerHTML = `

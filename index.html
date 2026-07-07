@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Coffee Brew OS — Premium Brew Dashboard</title>
-  <meta name="description" content="Dashboard kopi premium dengan halaman terpisah untuk rekomendasi, input seduhan, public brew, analytics, report, dan pustaka data." />
+  <title>Coffee Brew OS v33 — Coffee Lab Dashboard</title>
+  <meta name="description" content="Coffee Brew OS v33 dengan UI/UX baru, struktur CSS modular, rekomendasi seduh, brew log, QA, analytics, report, dan pustaka data kopi." />
   <meta name="theme-color" content="#2D2D2D" />
   <meta name="application-name" content="Coffee Brew OS" />
   <meta name="apple-mobile-web-app-title" content="Coffee Brew OS" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta property="og:title" content="Coffee Brew OS — Premium Brew Dashboard" />
-  <meta property="og:description" content="Premium dashboard untuk rekomendasi seduh, brew log, QA, analytics, report, dan pustaka data kopi." />
+  <meta property="og:title" content="Coffee Brew OS v33 — Coffee Lab Dashboard" />
+  <meta property="og:description" content="Coffee Brew OS v33 — clean SaaS dashboard untuk workflow seduh, QA, analytics, report, dan pustaka data kopi." />
   <meta property="og:type" content="website" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
-  <link rel="preload" href="assets/latte-art-icon.png" as="image" />
-  <link rel="preload" href="assets/barista-mascot.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260705-v32-5-library-polish" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260706-v33-0-full-redesign" />
+  <link rel="apple-touch-icon" href="assets/images/latte-art-icon.png" />
+  <link rel="preload" href="assets/images/latte-art-icon.png" as="image" />
+  <link rel="preload" href="assets/images/barista-mascot.png" as="image" />
+  <link rel="stylesheet" href="assets/styles/main.css?v=20260706-v33-0-full-redesign" />
 </head>
 <body>
 
@@ -25,14 +25,14 @@
     <div class="welcome-screen__backdrop"></div>
     <div class="welcome-screen__card">
       <div class="welcome-brand">
-        <span class="welcome-brand__icon"><img src="assets/latte-art-icon.png" alt="" /></span>
+        <span class="welcome-brand__icon"><img src="assets/images/latte-art-icon.png" alt="" /></span>
         <div>
           <p class="welcome-eyebrow">Coffee Brew OS</p>
-          <h1>Welcome to your premium coffee workflow.</h1>
+          <h1>Welcome to Coffee Brew OS v33.</h1>
         </div>
       </div>
       <p class="welcome-copy">
-        Brew recommendation, brew log, stock, public recipes, analytics, reporting, dan pustaka data dalam satu dashboard yang lebih clean, premium, elegan, dan tertata.
+        A new coffee lab dashboard for brew recommendation, stock, QA, analytics, reporting, public recipes, and coffee knowledge base.
       </p>
       <div class="welcome-actions">
         <button id="welcomeLoginBtn" class="primary welcome-btn" type="button">Login</button>
@@ -75,7 +75,7 @@
       </div>
       <div class="floating-mascot-stage" aria-hidden="true">
         <span class="floating-mascot-halo"></span>
-        <img class="floating-mascot-image" src="assets/barista-mascot.png" alt="" />
+        <img class="floating-mascot-image" src="assets/images/barista-mascot.png" alt="" />
       </div>
     </div>
     <button type="button" id="floatingMascotLauncher" class="floating-mascot-launcher hidden" aria-label="Show coffee mascot">☕ Mascot</button>
@@ -123,9 +123,9 @@
       <aside class="dashboard-sidebar">
         <button id="sidebarCloseBtn" class="sidebar-close-btn" type="button" aria-label="Tutup menu">×</button>
         <div class="sidebar-brand">
-          <span class="sidebar-brand__icon"><img src="assets/latte-art-icon.png" alt="" /></span>
+          <span class="sidebar-brand__icon"><img src="assets/images/latte-art-icon.png" alt="" /></span>
           <div>
-            <span class="sidebar-brand__eyebrow">Lestari Coffee Dashboard</span>
+            <span class="sidebar-brand__eyebrow">Coffee Lab Workspace</span>
             <strong>Coffee Brew OS</strong>
           </div>
         </div>
@@ -170,7 +170,7 @@
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v32.5 · Pustaka Data Polish</small>
+          <small class="sidebar-build-version">v33.0 · Full UI/UX Redesign</small>
         </div>
       </aside>
 
@@ -229,9 +229,9 @@
             <section class="panel home-hero-panel">
               <header class="hero">
       <div class="hero-main">
-        <p class="eyebrow">Lestari Coffee Dashboard</p>
+        <p class="eyebrow">Coffee Lab Workspace</p>
         <div class="hero-title-row">
-          <span class="hero-icon hero-icon-image" aria-hidden="true"><img src="assets/latte-art-icon.png" alt="" /></span>
+          <span class="hero-icon hero-icon-image" aria-hidden="true"><img src="assets/images/latte-art-icon.png" alt="" /></span>
           <h1>Coffee Brew OS</h1>
         </div>
         <div class="hero-text">
@@ -400,6 +400,19 @@
                 <article><strong>Offline Shell</strong><small>Asset utama disiapkan untuk cache sehingga halaman lebih cepat dibuka ulang.</small></article>
                 <article><strong>Share Preview</strong><small>Meta title dan description disiapkan agar link terlihat lebih profesional saat dibagikan.</small></article>
                 <article><strong>System Status</strong><small>Status online, cache, dan data ditampilkan di topbar untuk memberi rasa produk yang matang.</small></article>
+              </div>
+            </section>
+
+            <section class="panel home-production-pack-panel">
+              <div class="section-title">
+                <span>Production</span>
+                <h2>Deploy readiness pack</h2>
+              </div>
+              <div class="production-pack-grid">
+                <article><b>01</b><strong>Cache Versioned</strong><small>Service worker cache dinaikkan ke versi produksi terbaru supaya browser tidak menyajikan asset lama.</small></article>
+                <article><b>02</b><strong>Deploy Checklist</strong><small>Dokumen checklist deploy dan SOP Git aman ditambahkan di folder docs.</small></article>
+                <article><b>03</b><strong>PWA Metadata</strong><small>Manifest, theme color, dan deskripsi aplikasi dirapikan untuk install/share experience.</small></article>
+                <article><b>04</b><strong>Release Report</strong><small>Release report dibuat agar perubahan v32.8 mudah diaudit sebelum publish.</small></article>
               </div>
             </section>
           </section>
@@ -787,7 +800,7 @@
               </div>
               <div class="brew-visualizer-scene">
                 <span class="brew-visual-glow"></span>
-                <img class="brew-visual-banner" src="assets/barista-banner.png" alt="" />
+                <img class="brew-visual-banner" src="assets/images/barista-banner.png" alt="" />
               </div>
             </div>
             <div class="output-grid" id="brewOutputs"></div>
@@ -2053,7 +2066,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
-  <script src="assets/data.js?v=20260705-usda-kopyol-multi-varietas"></script>
-  <script src="assets/app.js?v=20260705-v32-5-library-polish"></script>
+  <script src="assets/data.js?v=20260706-v33-0-full-redesign"></script>
+  <script src="assets/app.js?v=20260706-v33-0-full-redesign"></script>
 </body>
 </html>

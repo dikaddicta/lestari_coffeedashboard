@@ -5213,6 +5213,44 @@ window.COFFEE_DATA = {
       "BrewingCue": "clarity-first; stable pours; avoid over-extraction at finish",
       "Notes": "Useful label when thermal shock is washed rather than natural/anaerobic natural. Brew like aromatic washed with ferment guardrail.",
       "SourceURL": "https://buddhabeanscoffee.com/blogs/news/exotic-coffee-trends-in-2026-anaerobic-fermentation-thermal-shock-and-co-ferments-explained"
+    },
+    {
+      "Process": "Extended Natural",
+      "Category": "Experimental Natural",
+      "Stage": "Whole cherry natural process with longer fermentation/drying contact than standard natural",
+      "AcidityMod": -1,
+      "SweetnessMod": 2,
+      "BodyMod": 1,
+      "FruityMod": 3,
+      "FloralMod": 0,
+      "SpicyMod": 1,
+      "FermentRisk_1low_5high": 4,
+      "TempMod_C": -2,
+      "GrindMod_coarser": 1,
+      "RatioMod_ml_per_g": -0.4,
+      "BrewTimeMod_sec": 20,
+      "TransparencyNote": "Use for labels that say Extended Natural / Natural Extended. Treat as a high-intensity natural: fruit-forward, sweeter, potentially boozy if over-extracted.",
+      "BrewingCue": "lower temp; low agitation; avoid over-extraction",
+      "SourceURL": "https://www.pactcoffee.com/blog/extended-fermentation-explained"
+    },
+    {
+      "Process": "Fermented Natural",
+      "Category": "Experimental Natural",
+      "Stage": "Whole cherry natural/dry process with explicit fermentation stage before or during drying",
+      "AcidityMod": -1,
+      "SweetnessMod": 2,
+      "BodyMod": 1,
+      "FruityMod": 2,
+      "FloralMod": 0,
+      "SpicyMod": 1,
+      "FermentRisk_1low_5high": 4,
+      "TempMod_C": -2,
+      "GrindMod_coarser": 1,
+      "RatioMod_ml_per_g": -0.4,
+      "BrewTimeMod_sec": 20,
+      "TransparencyNote": "Use for labels that say Fermented Natural without specifying anaerobic/lactic/carbonic. Validate by taste: protect fruit sweetness and monitor alcoholic/over-ferment notes.",
+      "BrewingCue": "cooler water; fewer pours; taste for boozy notes",
+      "SourceURL": "https://www.scielo.br/j/aabc/a/BgCRJgCj5S398YbrqCfHFMQ/?lang=en"
     }
   ],
   "roasts": [
@@ -6364,7 +6402,7 @@ window.COFFEE_DATA = {
     "sourceWorkbook": "coffee_competition_dashboard_v13.xlsx",
     "version": "web-v27-library-metrics-local-varieties-processes",
     "lastLibraryExpansion": "v27: expanded Indonesian local varieties and experimental local processes; updated user metrics source handling.",
-    "lastDataRefresh": "2026-07-05",
-    "lastDataRefreshNotes": "Added practical aliases for USDA, Kopyol, and Mix Varietas; enabled manual brew input for up to 3 varieties."
+    "lastDataRefresh": "2026-07-06",
+    "lastDataRefreshNotes": "Added Extended Natural and Fermented Natural process references; improved Pustaka hero contrast."
   }
 };

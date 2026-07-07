@@ -173,3 +173,43 @@ Menu Input Seduhan kini memiliki detail Pour 1–4, logika Switch Valve Mode ada
 - Knowledge cards include mini metric chips
 - Detail panel strengthened with source status and metrics
 - Mobile library layout improved
+
+
+## v32.6 Process Data & Library Contrast
+
+- Added Extended Natural process reference.
+- Added Fermented Natural process reference.
+- Improved Pustaka Data hero text contrast.
+
+
+## v32.7 Brew Logic Upgrade
+
+- Custom post-harvest process can now be inferred from label keywords
+- Unknown/custom processes get adaptive modifiers instead of neutral default only
+- Stock beans with 2-3 varieties are resolved into a composite sensory profile
+- Brew Preflight now shows Logic card
+- Brew Intelligence now shows Library/Adaptive logic signal
+- Confidence score accounts for inferred process and composite varieties
+
+
+## v32.8 Production Pack
+
+- Service worker cache bumped to coffee-brew-os-v32-8-production
+- Navigation uses network-first fallback to avoid stale index.html
+- Static same-origin assets keep cache-first behavior
+- Manifest metadata and shortcuts added
+- Deployment checklist added
+- Safe Git update SOP added
+- Home production readiness panel added
+
+
+## v33.0 Full UI/UX Redesign Foundation
+
+- Total visual direction refreshed into clean SaaS / premium coffee lab style
+- CSS moved into modular assets/styles structure
+- Images copied into assets/images structure
+- index.html now loads assets/styles/main.css
+- Sidebar, topbar, panel, card, button, input, table, home, brew, and library visual system redesigned
+- PWA manifest updated for v33
+- Service worker cache updated to coffee-brew-os-v33-0-redesign
+- Legacy compatibility CSS preserved to avoid breaking existing modules

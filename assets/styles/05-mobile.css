@@ -1,0 +1,97 @@
+@media(max-width:1180px){
+  .dashboard-layout{
+    grid-template-columns:1fr!important;
+  }
+  .dashboard-sidebar{
+    position:fixed!important;
+    inset:12px auto 12px 12px!important;
+    width:min(340px,calc(100vw - 24px))!important;
+    height:auto!important;
+    transform:translateX(-112%)!important;
+    transition:transform .24s ease!important;
+    z-index:1000!important;
+  }
+  body.sidebar-open .dashboard-sidebar,
+  .dashboard-sidebar.is-open{
+    transform:translateX(0)!important;
+  }
+  .dashboard-topbar{
+    top:12px!important;
+  }
+  .brew-layout,
+  .library-explorer-layout{
+    grid-template-columns:1fr!important;
+  }
+  .metric-grid,
+  .readiness-grid,
+  .product-packaging-grid,
+  .production-pack-grid,
+  .insight-grid,
+  .preflight-grid,
+  .library-overview-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:760px){
+  .app-shell{
+    padding:10px!important;
+  }
+  .dashboard-topbar{
+    border-radius:26px!important;
+    padding:14px!important;
+    align-items:flex-start!important;
+    flex-direction:column!important;
+  }
+  .dashboard-topbar h2{
+    font-size:30px!important;
+  }
+  .dashboard-topbar__actions{
+    width:100%!important;
+    justify-content:stretch!important;
+  }
+  .system-status-pills{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,1fr)!important;
+  }
+  .system-status-pills span{
+    justify-content:center!important;
+    text-align:center!important;
+    font-size:10px!important;
+  }
+  .sidebar-toggle-btn,
+  .mobile-tab-switcher,
+  .mobile-tab-switcher select{
+    width:100%!important;
+  }
+  .panel{
+    padding:16px!important;
+    border-radius:24px!important;
+  }
+  .metric-grid,
+  .readiness-grid,
+  .product-packaging-grid,
+  .production-pack-grid,
+  .insight-grid,
+  .preflight-grid,
+  .library-overview-grid{
+    grid-template-columns:1fr!important;
+  }
+  .section-title{
+    flex-direction:column!important;
+  }
+  .welcome-screen__card{
+    border-radius:28px!important;
+    padding:20px!important;
+  }
+  .welcome-actions{
+    grid-template-columns:1fr!important;
+  }
+  .floating-mascot{
+    display:none!important;
+  }
+  .onboarding-coach,
+  .sync-guard-widget{
+    max-width:calc(100vw - 20px)!important;
+  }
+}
