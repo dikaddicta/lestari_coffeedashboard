@@ -1,22 +1,22 @@
 {
-  "name": "Coffee Brew OS v33.1",
-  "short_name": "Lab Console",
-  "description": "Radical UI rewrite untuk Coffee Brew OS: modern lab console, dark navigation, clean SaaS workspace, brew intelligence, QA, analytics, report, dan data library.",
+  "name": "Coffee Brew OS",
+  "short_name": "Coffee Brew OS",
+  "description": "Premium dashboard untuk rekomendasi seduh, brew log, QA, analytics, report, dan pustaka data kopi.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f5f7fb",
-  "theme_color": "#0f172a",
+  "background_color": "#D6C8AD",
+  "theme_color": "#2D2D2D",
   "orientation": "any",
   "icons": [
     {
-      "src": "assets/images/latte-art-icon.png",
+      "src": "assets/latte-art-icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/images/latte-art-icon.png",
+      "src": "assets/latte-art-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -27,33 +27,5 @@
     "food",
     "utilities"
   ],
-  "lang": "id",
-  "shortcuts": [
-    {
-      "name": "Rekomendasi Seduh",
-      "short_name": "Brew",
-      "description": "Buka modul rekomendasi seduh.",
-      "url": "./index.html#/rekomendasi-seduh",
-      "icons": [
-        {
-          "src": "assets/images/latte-art-icon.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
-      "name": "Pustaka Data",
-      "short_name": "Pustaka",
-      "description": "Buka knowledge base kopi.",
-      "url": "./index.html#/pustaka-data",
-      "icons": [
-        {
-          "src": "assets/images/latte-art-icon.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    }
-  ]
+  "lang": "id"
 }
