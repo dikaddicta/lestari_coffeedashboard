@@ -505,3 +505,101 @@ button.secondary,
 .page-intro-card--admin .page-intro-action.secondary {
   color: var(--v34-inverse) !important;
 }
+
+/* ===== v34.2 Contrast specificity hotfix =====
+   The legacy stylesheet has late generic .panel rules that can replace the
+   intended background of special panels. v34.1 also treated several light
+   command cards as dark surfaces. This final layer aligns text color with the
+   background that is actually rendered. */
+
+/* Restore the two Akun & Peran surfaces that are intentionally dark. */
+.panel.page-intro-card--admin {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(165, 135, 99, 0.24), transparent 38%),
+    linear-gradient(135deg, #2d2d2d 0%, #544436 58%, #765b43 100%) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 20px 44px rgba(45, 45, 45, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+  color: var(--v34-inverse) !important;
+}
+
+.panel.admin-command-center {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(165, 135, 99, 0.24), transparent 46%),
+    linear-gradient(135deg, #2d2d2d 0%, #504032 62%, #6a513d 100%) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 20px 44px rgba(45, 45, 45, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+  color: var(--v34-inverse) !important;
+}
+
+.panel.page-intro-card--admin h1,
+.panel.page-intro-card--admin h2,
+.panel.page-intro-card--admin h3,
+.panel.page-intro-card--admin strong,
+.panel.admin-command-center h1,
+.panel.admin-command-center h2,
+.panel.admin-command-center h3,
+.panel.admin-command-center strong {
+  color: var(--v34-inverse) !important;
+  opacity: 1 !important;
+}
+
+.panel.page-intro-card--admin p,
+.panel.page-intro-card--admin small,
+.panel.page-intro-card--admin .page-intro-eyebrow,
+.panel.page-intro-card--admin .page-intro-chips span,
+.panel.admin-command-center p,
+.panel.admin-command-center small,
+.panel.admin-command-center .mini-label {
+  color: var(--v34-inverse-soft) !important;
+  opacity: 1 !important;
+}
+
+/* These cards use pale glass backgrounds, so they require dark typography. */
+.panel.notification-command-center,
+.panel.report-command-center,
+.public-catalog-highlight {
+  color: var(--v34-text) !important;
+}
+
+.panel.notification-command-center h1,
+.panel.notification-command-center h2,
+.panel.notification-command-center h3,
+.panel.notification-command-center strong,
+.panel.report-command-center h1,
+.panel.report-command-center h2,
+.panel.report-command-center h3,
+.panel.report-command-center strong,
+.public-catalog-highlight > div:first-child > strong {
+  color: var(--v34-text) !important;
+  opacity: 1 !important;
+}
+
+.panel.notification-command-center p,
+.panel.notification-command-center small,
+.panel.notification-command-center .mini-label,
+.panel.report-command-center p,
+.panel.report-command-center small,
+.panel.report-command-center .mini-label,
+.public-catalog-highlight > div:first-child > p,
+.public-catalog-highlight > div:first-child > span {
+  color: var(--v34-text-muted) !important;
+  opacity: 1 !important;
+}
+
+/* Keep the score block inside the light public-catalog card inverse. */
+.public-catalog-highlight .catalog-highlight-score,
+.public-catalog-highlight .catalog-highlight-score b {
+  color: var(--v34-inverse) !important;
+}
+
+.public-catalog-highlight .catalog-highlight-score small,
+.public-catalog-highlight .catalog-highlight-score em {
+  color: var(--v34-inverse-soft) !important;
+  opacity: 1 !important;
+}
+
+/* Avoid generic inverse text on light secondary actions. */
+.panel.notification-command-center .secondary,
+.panel.report-command-center .secondary {
+  color: var(--v34-inverse) !important;
+}
