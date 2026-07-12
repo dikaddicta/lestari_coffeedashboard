@@ -262,3 +262,246 @@ th {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===== v34.1 Contrast correction =====
+   Restore light typography on every dark/brown surface and keep action
+   labels readable. These selectors intentionally live in the final layer. */
+
+:root {
+  --v34-inverse: #fffaf2;
+  --v34-inverse-soft: rgba(255, 250, 242, 0.80);
+  --v34-inverse-muted: rgba(255, 250, 242, 0.68);
+}
+
+/* Navigation and brown action buttons */
+.sidebar-nav .tab-btn,
+.sidebar-nav .tab-btn:not(.active),
+.sidebar-nav .tab-btn.active,
+.dashboard-sidebar button,
+button.primary,
+button.secondary,
+.file-button,
+.welcome-btn,
+.demo-recipe-btn,
+.topbar-signup-btn,
+.page-intro-action.secondary,
+.auth-jump-link,
+.home-demo-actions .primary,
+.home-demo-actions .secondary {
+  color: var(--v34-inverse) !important;
+}
+
+button.secondary,
+.file-button,
+.demo-recipe-btn,
+.topbar-signup-btn,
+.page-intro-action.secondary {
+  text-shadow: 0 1px 1px rgba(45, 32, 22, 0.18);
+}
+
+/* Welcome screen */
+.welcome-screen__card,
+.welcome-screen__card h1,
+.welcome-screen__card h2,
+.welcome-screen__card h3,
+.welcome-screen__card strong,
+.welcome-screen__card .welcome-eyebrow {
+  color: var(--v34-inverse) !important;
+}
+
+.welcome-screen__card p,
+.welcome-screen__card small,
+.welcome-screen__card span,
+.welcome-screen__card li,
+.welcome-copy,
+.welcome-note,
+.welcome-onboarding-hint span,
+.welcome-account-path small,
+.welcome-feature-grid span {
+  color: var(--v34-inverse-soft) !important;
+  opacity: 1 !important;
+}
+
+.welcome-onboarding-hint,
+.welcome-account-path article,
+.welcome-feature-grid article {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+/* Sidebar */
+.dashboard-sidebar,
+.dashboard-sidebar h1,
+.dashboard-sidebar h2,
+.dashboard-sidebar h3,
+.dashboard-sidebar h4,
+.dashboard-sidebar strong,
+.dashboard-sidebar label,
+.dashboard-sidebar .sidebar-section-label,
+.dashboard-sidebar .sidebar-brand__eyebrow {
+  color: var(--v34-inverse) !important;
+}
+
+.dashboard-sidebar p,
+.dashboard-sidebar small,
+.dashboard-sidebar span:not(.lock-pill),
+.dashboard-sidebar li {
+  color: var(--v34-inverse-soft) !important;
+  opacity: 1 !important;
+}
+
+.sidebar-nav .tab-btn::before {
+  color: var(--v34-inverse) !important;
+}
+
+/* Shared dark and brown content surfaces */
+.home-hero-panel .hero,
+.guide-stat-card,
+.quality-score-card,
+.report-sample-card,
+.library-explorer-hero,
+.page-intro-card--admin,
+.recipe-active-summary,
+.report-command-center,
+.admin-command-center,
+.notification-command-center,
+.public-catalog-highlight,
+.analytics-command-center {
+  color: var(--v34-inverse) !important;
+}
+
+.home-hero-panel .hero h1,
+.home-hero-panel .hero h2,
+.home-hero-panel .hero h3,
+.home-hero-panel .hero h4,
+.home-hero-panel .hero strong,
+.home-hero-panel .hero .eyebrow,
+.guide-stat-card h1,
+.guide-stat-card h2,
+.guide-stat-card h3,
+.guide-stat-card strong,
+.quality-score-card h1,
+.quality-score-card h2,
+.quality-score-card h3,
+.quality-score-card strong,
+.report-sample-card h1,
+.report-sample-card h2,
+.report-sample-card h3,
+.report-sample-card strong,
+.library-explorer-hero h1,
+.library-explorer-hero h2,
+.library-explorer-hero h3,
+.library-explorer-hero strong,
+.page-intro-card--admin h1,
+.page-intro-card--admin h2,
+.page-intro-card--admin h3,
+.page-intro-card--admin strong,
+.recipe-active-summary h1,
+.recipe-active-summary h2,
+.recipe-active-summary h3,
+.recipe-active-summary strong,
+.report-command-center h1,
+.report-command-center h2,
+.report-command-center h3,
+.report-command-center strong,
+.admin-command-center h1,
+.admin-command-center h2,
+.admin-command-center h3,
+.admin-command-center strong,
+.notification-command-center h1,
+.notification-command-center h2,
+.notification-command-center h3,
+.notification-command-center strong,
+.public-catalog-highlight h1,
+.public-catalog-highlight h2,
+.public-catalog-highlight h3,
+.public-catalog-highlight strong,
+.analytics-command-center h1,
+.analytics-command-center h2,
+.analytics-command-center h3,
+.analytics-command-center strong {
+  color: var(--v34-inverse) !important;
+  opacity: 1 !important;
+}
+
+.home-hero-panel .hero p,
+.home-hero-panel .hero small,
+.home-hero-panel .hero span,
+.home-hero-panel .hero li,
+.guide-stat-card p,
+.guide-stat-card small,
+.guide-stat-card span,
+.quality-score-card p,
+.quality-score-card small,
+.quality-score-card span,
+.report-sample-card p,
+.report-sample-card small,
+.report-sample-card span,
+.library-explorer-hero p,
+.library-explorer-hero small,
+.library-explorer-hero span,
+.page-intro-card--admin p,
+.page-intro-card--admin small,
+.page-intro-card--admin span,
+.recipe-active-summary p,
+.recipe-active-summary small,
+.recipe-active-summary span,
+.report-command-center p,
+.report-command-center small,
+.report-command-center span,
+.admin-command-center p,
+.admin-command-center small,
+.admin-command-center span,
+.notification-command-center p,
+.notification-command-center small,
+.notification-command-center span,
+.public-catalog-highlight p,
+.public-catalog-highlight small,
+.public-catalog-highlight span,
+.analytics-command-center p,
+.analytics-command-center small,
+.analytics-command-center span {
+  color: var(--v34-inverse-soft) !important;
+  opacity: 1 !important;
+}
+
+/* Dark-card subpanels and metrics */
+.home-hero-panel .hero .metric,
+.home-hero-panel .hero .hero-card,
+.home-hero-panel .hero .auth-card,
+.library-explorer-hero .library-hero-signal {
+  color: var(--v34-inverse) !important;
+}
+
+.home-hero-panel .hero .metric strong,
+.home-hero-panel .hero .auth-card strong,
+.library-explorer-hero .library-hero-signal strong,
+.quality-score-ring strong {
+  color: var(--v34-inverse) !important;
+}
+
+.home-hero-panel .hero .metric span,
+.home-hero-panel .hero .auth-card small,
+.library-explorer-hero .library-hero-signal span,
+.library-explorer-hero .library-hero-signal small,
+.quality-score-ring span {
+  color: var(--v34-inverse-soft) !important;
+}
+
+/* Remove developer-facing route labels from all layouts. */
+.page-route-hint,
+.home-route-system-panel,
+.route-debug-note {
+  display: none !important;
+}
+
+
+/* Light-surface secondary actions keep dark text for sufficient contrast. */
+.topbar-signup-btn,
+.page-intro-card:not(.page-intro-card--admin) .page-intro-action.secondary {
+  color: var(--v34-text) !important;
+  text-shadow: none !important;
+}
+
+.page-intro-card--admin .page-intro-action.secondary {
+  color: var(--v34-inverse) !important;
+}

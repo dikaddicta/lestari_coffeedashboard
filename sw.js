@@ -1,4 +1,4 @@
-const CACHE_NAME = "coffee-brew-os-v34-stabilization";
+const CACHE_NAME = "coffee-brew-os-v34-1-contrast";
 const CORE_ASSETS = [
   "./",
   "./index.html",

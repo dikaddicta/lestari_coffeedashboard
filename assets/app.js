@@ -5499,7 +5499,6 @@
 
   function syncRouteHint(tab) {
     const route = routeFromTab(tab);
-    if ($("pageRouteHint")) $("pageRouteHint").textContent = `/#/${route}`;
     document.querySelectorAll("[data-route]").forEach(el => {
       el.classList.toggle("route-active", el.dataset.route === route);
     });
