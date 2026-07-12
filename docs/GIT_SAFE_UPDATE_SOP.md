@@ -1,40 +1,87 @@
-# Safe Git Update SOP
+# SOP Git Aman — Tanpa Rebase Otomatis
 
-Use this order for every ZIP update:
+## Penyebab masalah pada versi sebelumnya
 
-```bash
-git status
-git pull --rebase origin main
+Repository yang diaudit tidak sedang tertinggal dari `origin/main`, tetapi hampir semua file tampil berubah karena perbedaan akhir baris Windows `CRLF` dan Git `LF`. Project juga belum memiliki `.gitattributes`, sementara SOP lama selalu menjalankan `git pull --rebase`. Kombinasi tersebut membuat perubahan semu ikut masuk ke proses rebase dan meningkatkan risiko konflik.
+
+## Setup satu kali
+
+Jalankan dari root repository di PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-git-safe.ps1
 ```
 
-Then replace the ZIP files.
+Periksa hasil normalisasi:
 
-```bash
-git add .
-git commit -m "Your update message"
+```powershell
+git status
+git diff --check
+git add -A
+git commit -m "Stabilize line endings and Git workflow"
 git push origin main
 ```
 
-Do not start a new ZIP replacement while GitLens or terminal shows:
+## Alur harian yang direkomendasikan
 
-- `rebase in progress`
-- `Interactive Rebase`
-- `.git/rebase-merge`
+Sebelum mulai bekerja:
 
-If it appears, finish it first:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\git-safe-update.ps1
+```
 
-```bash
-git add .
+Script hanya melakukan `fetch` dan `merge --ff-only`. Git tidak akan memulai rebase secara otomatis. Jika repository sudah divergen, proses dihentikan agar perubahan dapat diperiksa secara sadar.
+
+Setelah selesai bekerja:
+
+```powershell
+git status
+git diff --check
+git add -A
+git commit -m "Deskripsi perubahan"
+git push origin main
+```
+
+## Jika rebase sudah telanjur aktif
+
+Periksa status:
+
+```powershell
+git status
+```
+
+Lanjutkan hanya setelah konflik diperbaiki:
+
+```powershell
+git add -A
 git rebase --continue
 ```
 
-If there are conflicts and the ZIP version is the version you want to keep:
+Atau kembalikan repository ke kondisi sebelum rebase:
 
-```bash
-git checkout --theirs index.html
-git checkout --theirs assets/app.js
-git checkout --theirs assets/styles.css
-git checkout --theirs assets/data.js
-git add .
-git rebase --continue
+```powershell
+git rebase --abort
 ```
+
+Jangan menjalankan `git pull`, mengganti seluruh isi ZIP, atau menghapus file `.git` ketika rebase masih aktif.
+
+## Jika branch lokal dan remote divergen
+
+Buat pengaman terlebih dahulu:
+
+```powershell
+git branch backup-before-sync
+git fetch origin
+```
+
+Setelah semua perubahan lokal sudah di-commit, pilih salah satu secara sadar:
+
+```powershell
+# Menyusun commit lokal di atas remote
+git rebase origin/main
+
+# atau membuat merge commit
+git merge origin/main
+```
+
+Jangan gunakan `git push --force` pada `main`. Bila benar-benar diperlukan pada branch pribadi, gunakan `--force-with-lease`, bukan `--force`.

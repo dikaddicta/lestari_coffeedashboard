@@ -1,47 +1,44 @@
 # Push ke GitHub
 
-Repo tujuan:
+Repository tujuan:
 
 ```text
 https://github.com/dikaddicta/lestari_coffeedashboard
 ```
 
-## Opsi aman: update repo yang sudah ada
+## Pertama kali memakai versi v34
 
-```bash
-git clone https://github.com/dikaddicta/lestari_coffeedashboard.git
-cd lestari_coffeedashboard
+Buka PowerShell dari folder repository, lalu jalankan:
 
-# Salin isi ZIP bersih ke folder repo ini, lalu cek perubahan:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-git-safe.ps1
 git status
-
-git add index.html README.md assets supabase docs .gitignore
-git status
-
-git commit -m "Clean project structure and consolidate Supabase schema"
-git push origin main
-```
-
-## Opsi overwrite isi repo dengan isi ZIP bersih
-
-Gunakan opsi ini hanya jika kamu yakin isi repo lokal boleh disamakan persis dengan ZIP bersih.
-
-```bash
-git clone https://github.com/dikaddicta/lestari_coffeedashboard.git
-cd lestari_coffeedashboard
-
-# Hapus isi lama kecuali folder .git
-find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
-
-# Salin seluruh isi folder coffee_dashboard dari ZIP bersih ke folder repo ini.
-
+git diff --check
 git add -A
-git commit -m "Clean project structure and consolidate Supabase schema"
+git commit -m "Release v34 dashboard stabilization"
 git push origin main
 ```
+
+## Update berikutnya
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\git-safe-update.ps1
+# lakukan perubahan di VS Code
+git status
+git diff --check
+git add -A
+git commit -m "Deskripsi perubahan"
+git push origin main
+```
+
+## Aturan penting
+
+- Jangan menyalin folder `.git` dari ZIP lain ke repository aktif.
+- Jangan menjalankan `git pull --rebase` sebagai kebiasaan default.
+- Jangan mengubah file ketika `git status` menampilkan rebase aktif.
+- Jangan melakukan `push --force` ke branch `main`.
+- Selalu commit perubahan lokal sebelum sinkronisasi yang memerlukan rebase manual.
 
 ## Setelah push
 
-- Cek tab Code di GitHub dan pastikan file utama ada di root: `index.html`, `assets/`, `supabase/`, `README.md`.
-- Jika memakai GitHub Pages, pilih branch `main` dan folder `/root` sebagai source.
-- Jika Supabase belum sinkron, jalankan SQL dari `supabase/schema.sql` untuk project baru atau migration yang belum dijalankan untuk project lama.
+Pastikan file utama berada di root repository: `index.html`, `assets/`, `supabase/`, `scripts/`, `docs/`, `README.md`, `.gitattributes`, dan `.editorconfig`.

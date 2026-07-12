@@ -1,6 +1,6 @@
 # Coffee Dashboard by Lestari
 
-Dashboard web statis untuk rekomendasi seduh kopi, manajemen stok, brew log, QA, feed hasil seduhan publik, kotak saran, dan pustaka data.
+Dashboard web statis untuk rekomendasi seduh kopi, manajemen stok, log seduh, QA, hasil seduhan publik, kotak saran, dan pustaka data berbasis referensi.
 
 ## Fitur
 
@@ -8,13 +8,13 @@ Dashboard web statis untuk rekomendasi seduh kopi, manajemen stok, brew log, QA,
 - Custom grinder untuk pengguna yang memakai grinder di luar daftar pustaka.
 - Rekomendasi biji kopi dari stok workspace.
 - Stok kopi privat per workspace, termasuk pengurangan otomatis ketika brew log memakai stok.
-- Brew Log & QA dengan status review dan detail eksperimen.
+- Log Seduh & QA dengan status peninjauan dan detail eksperimen.
 - Penghapusan brew log oleh Admin dengan pemulihan stok otomatis jika brew memakai stok.
 - Feed hasil seduhan publik untuk data yang lolos QA dan approval.
 - Role Admin Workspace, Brewer, dan QA.
 - Approval akses workspace untuk Brewer/QA.
 - Kotak Saran.
-- Pustaka data varietas, dripper, proses, roast profile, air mineral, dan grinder.
+- Pustaka data varietas, dripper/setup, filter kertas, proses pascapanen, profil sangrai, air, dan grinder.
 
 
 ## v19 Premium Experience
@@ -37,11 +37,18 @@ Versi ini menambahkan lapisan visual dan recipe engine yang lebih premium:
 │  ├─ app.js
 │  ├─ data.js
 │  ├─ styles.css
+│  ├─ styles-v34-stabilization.css
 │  └─ supabase-config.js
 ├─ supabase/
 │  ├─ schema.sql
 │  └─ migration_*.sql
+├─ scripts/
+│  ├─ audit-project.mjs
+│  ├─ setup-git-safe.ps1
+│  └─ git-safe-update.ps1
 └─ docs/
+   ├─ FULL_AUDIT_v34.md
+   ├─ GIT_SAFE_UPDATE_SOP.md
    └─ PUSH_TO_GITHUB.md
 ```
 
@@ -201,3 +208,25 @@ Menu Input Seduhan kini memiliki detail Pour 1–4, logika Switch Valve Mode ada
 - Deployment checklist added
 - Safe Git update SOP added
 - Home production readiness panel added
+
+
+## v34 Stabilization & Data Quality
+
+- Menambahkan lapisan CSS stabilisasi untuk font, kontras, focus state, tabel, form, dan responsive layout.
+- Menormalisasi istilah utama ke Bahasa Indonesia.
+- Menambahkan label aksesibel pada kontrol filter utama.
+- Memisahkan filter kertas dari jumlah dripper.
+- Menambahkan SOLO SPIN, SOLO WAVE HIFLUX 165, SOLO WAVE DAILY 155, dan Timemore Chestnut C3S.
+- Memperbaiki field metrik Pustaka Data dan alias typo proses pascapanen.
+- Menambahkan `.gitattributes`, `.editorconfig`, audit script, serta workflow Git tanpa rebase otomatis.
+
+Jalankan audit lokal sebelum commit:
+
+```powershell
+node .\scripts\audit-project.mjs
+node --check .\assets\app.js
+node --check .\assets\data.js
+git diff --check
+```
+
+Detail lengkap tersedia di `docs/FULL_AUDIT_v34.md`.

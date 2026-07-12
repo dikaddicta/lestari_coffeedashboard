@@ -1,8 +1,9 @@
-const CACHE_NAME = "coffee-brew-os-v32-8-production";
+const CACHE_NAME = "coffee-brew-os-v34-stabilization";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./assets/styles.css",
+  "./assets/styles-v34-stabilization.css",
   "./assets/app.js",
   "./assets/data.js",
   "./assets/latte-art-icon.png",

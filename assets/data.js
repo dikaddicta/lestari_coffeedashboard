@@ -2406,7 +2406,7 @@ window.COFFEE_DATA = {
       "Floral_Base": 2,
       "Fermentation_Tolerance": 3,
       "Notes": "USDA 762 adalah varietas arabika lama yang masuk ke sektor kopi Indonesia sekitar 1950-an dari seleksi Ethiopia/Mizan Tafari. Praktis diperlakukan sebagai varietas balanced untuk highland lots; tidak selalu punya flavor fingerprint kuat, tetapi sering muncul pada label kopi Indonesia.",
-      "SourceURL": "https://www.singleprofilecoffee.com/product-page/kintamani-indonesia"
+      "SourceURL": "https://sca.coffee/research/coffee-plants-of-the-world"
     },
     {
       "Variety": "Venecia",
@@ -2490,7 +2490,7 @@ window.COFFEE_DATA = {
       "Floral_Base": 2,
       "Fermentation_Tolerance": 3,
       "Notes": "Alias praktis untuk green bean yang hanya mencantumkan USDA. Di Indonesia label ini umumnya merujuk USDA 762, varietas arabika lama yang diperkenalkan sekitar 1950-an dan berasal dari seleksi Ethiopia; di beberapa daerah pernah tertukar persepsi dengan Geisha.",
-      "SourceURL": "https://www.singleprofilecoffee.com/product-page/kintamani-indonesia"
+      "SourceURL": "https://sca.coffee/research/coffee-plants-of-the-world"
     },
     {
       "Variety": "Kopyol",
@@ -2517,8 +2517,9 @@ window.COFFEE_DATA = {
       "Fruity_Base": 3,
       "Floral_Base": 2,
       "Fermentation_Tolerance": 3,
-      "Notes": "Gunakan pilihan ini ketika label kopi hanya menulis mix varietas atau mencantumkan beberapa varietas tanpa komposisi jelas. Untuk rekomendasi seduh, gunakan sebagai profil netral dan dial-in berdasarkan proses, roast, dripper, dan hasil cupping.",
-      "SourceURL": "internal-dashboard-reference"
+      "Notes": "Pilihan input untuk lot yang berisi dua atau lebih varietas, atau ketika produsen hanya mencantumkan mixed varieties. Bukan nama kultivar tunggal.",
+      "RecordType": "Input option / mixed lot label",
+      "Source": "Dashboard input convention"
     }
   ],
   "drippers": [
@@ -3661,10 +3662,10 @@ window.COFFEE_DATA = {
     {
       "DripperName": "SOLO Dripper",
       "Brand": "Mazelab / SOLO",
-      "Material": "PCTG / PP plastic",
+      "Material": "PCTG / PP plastic (varies by version)",
       "BrewFamily": "Percolation",
       "Geometry": "Conical-hybrid 40° internal angle; curved/sloped base; wide bottom opening",
-      "Filter": "SOLO HIFLUX Filter 165 / wave-style 165 filter",
+      "Filter": "SOLO WAVE / HIFLUX wave paper",
       "FlowSpeed_1slow_5fast": 5,
       "HeatRetention_1low_5high": 2,
       "Bypass": "Low-medium",
@@ -3672,39 +3673,39 @@ window.COFFEE_DATA = {
       "RecommendedFor": "clarity, clean cup, expressive aromatics, fast-flow control, travel/cafe workflow",
       "BasePouring": "medium-fine to medium grind; controlled center-to-spiral pours; avoid over-agitation because base is fast",
       "Notes": "Compact portable dripper designed around smooth flow and clean extraction. Use slightly finer than very fast flat-bottom recipes if cup is thin; reduce agitation for high-ferment coffees.",
-      "SourceURL": "https://www.slowpoursupply.co/pages/solo-by-mazelab-collection"
+      "SourceURL": "https://mazelabcoffee.com/pages/solo"
     },
     {
-      "DripperName": "SOLO Dripper 155",
+      "DripperName": "SOLO Dripper — 155 Setup",
       "Brand": "Mazelab / SOLO",
       "Material": "PCTG / PP plastic",
-      "BrewFamily": "Percolation",
+      "BrewFamily": "Percolation configuration",
       "Geometry": "Compact SOLO geometry; 40° angle; curved base; fast wide outlet",
-      "Filter": "SOLO HIFLUX 165 / Kalita-style 155 wave filter fit varies by batch",
+      "Filter": "155-size wave paper / SOLO WAVE DAILY",
       "FlowSpeed_1slow_5fast": 5,
       "HeatRetention_1low_5high": 2,
       "Bypass": "Low-medium",
       "CompatibleMethods": "Hot pour over; small dose 12–18g; clarity-forward recipes",
       "RecommendedFor": "single cup, compact travel setup, clean and bright coffee",
       "BasePouring": "start 12–15g; 1:15–1:16; 92–94°C washed, 88–92°C ferment/natural; keep pour height controlled",
-      "Notes": "Use as a small-dose SOLO profile. If drawdown is too fast, reduce grind by 1–2 steps finer or use slower pulse spacing.",
+      "Notes": "Dashboard setup profile for small-dose SOLO brewing with 155-size wave paper. Treat this as a filter/setup configuration, not a separate official dripper model.",
       "SourceURL": "https://mazelabcoffee.com/pages/solo"
     },
     {
-      "DripperName": "SOLO HIFLUX Filter 165",
-      "Brand": "HIFLUX x SOLO",
-      "Material": "Paper filter",
-      "BrewFamily": "Filter accessory",
-      "Geometry": "Wave-style 165 filter matched to SOLO geometry and flow characteristics",
-      "Filter": "SOLO HIFLUX 165",
-      "FlowSpeed_1slow_5fast": 5,
-      "HeatRetention_1low_5high": 1,
-      "Bypass": "Depends on seating",
-      "CompatibleMethods": "SOLO Dripper; fast-flow clarity recipes",
-      "RecommendedFor": "SOLO fit, consistent flow, clean cups",
-      "BasePouring": "rinse fully; seat filter evenly; avoid collapsing folds",
-      "Notes": "Custom-designed filter referenced for matching SOLO geometry and flow; treat as accessory/reference rather than dripper body.",
-      "SourceURL": "https://www.slowpoursupply.co/pages/solo-by-mazelab-collection"
+      "DripperName": "SOLO SPIN",
+      "Brand": "Mazelab / SOLO",
+      "Material": "Tritan dripper + silicone valve base",
+      "BrewFamily": "Hybrid immersion / percolation",
+      "Geometry": "Larger SOLO Tritan body with adjustable SPIN flow-control base",
+      "Filter": "Standard 185-size paper; SOLO wave paper",
+      "FlowSpeed_1slow_5fast": 3,
+      "HeatRetention_1low_5high": 2,
+      "Bypass": "Adjustable; supports immersion, restricted flow, and open-flow percolation",
+      "CompatibleMethods": "Percolation; immersion; hybrid valve recipes; zero-bypass paper placement option",
+      "RecommendedFor": "controlled flow, hybrid extraction, repeatable experiments, clarity-to-body adjustment",
+      "BasePouring": "Start with 14–15 g coffee and 1:15–1:16. Use the valve to pause, slow, or release flow; calibrate grind and valve opening together.",
+      "Notes": "Current official SOLO set. Numeric flow and heat scores are dashboard calibration baselines, not manufacturer specifications.",
+      "SourceURL": "https://mazelabcoffee.com/products/solo-spin"
     }
   ],
   "processes": [
@@ -3823,7 +3824,7 @@ window.COFFEE_DATA = {
       "SourceURL": "https://theroasterspack.com/blogs/news/catur-and-their-experimental-processing-inoculation"
     },
     {
-      "Process": "Anaerobic Natural Inokolum",
+      "Process": "Anaerobic Natural Inokulum",
       "Category": "Experimental Local",
       "Stage": "Alias spelling for Anaerobic Natural Inoculum / Inokulum",
       "AcidityMod": -1,
@@ -3839,7 +3840,10 @@ window.COFFEE_DATA = {
       "BrewTimeMod_sec": 25,
       "TransparencyNote": "Alias Indonesia for inoculum/inokulum-labeled anaerobic natural lots.",
       "BrewingCue": "treat like intense anaerobic natural; avoid over-agitation",
-      "SourceURL": "https://theroasterspack.com/blogs/news/catur-and-their-experimental-processing-inoculation"
+      "SourceURL": "https://theroasterspack.com/blogs/news/catur-and-their-experimental-processing-inoculation",
+      "Aliases": [
+        "Anaerobic Natural Inokolum"
+      ]
     },
     {
       "Process": "Anaerobic Natural Yeast Inoculated",
@@ -5781,6 +5785,26 @@ window.COFFEE_DATA = {
       "SourceURL": "https://honestcoffeeguide.com/timemore-c3-grind-settings/"
     },
     {
+      "Grinder": "Timemore Chestnut C3S",
+      "Type": "Hand grinder",
+      "Unit": "clicks from zero",
+      "V60_Min": 11,
+      "V60_Max": 18,
+      "Japanese_Min": 13,
+      "Japanese_Max": 20,
+      "Immersion_Min": 15,
+      "Immersion_Max": 21,
+      "ClicksPerRotation": 12,
+      "MicronMin": 400,
+      "MicronMax": 930,
+      "DisplayFormat": "{value} clicks",
+      "MicronPerClick": "0.0833 mm/click nominal adjustment step",
+      "Capacity_g": 20,
+      "Burr": "S2C660, 38 mm stainless-steel conical burr",
+      "Notes": "Official hardware supports espresso through French press. Method ranges here are dashboard starting points based on the existing C3 profile; recalibrate by bean, roast, zero point, and drawdown.",
+      "SourceURL": "https://www.timemore.com/products/c3-series"
+    },
+    {
       "Grinder": "Timemore Chestnut C3 Pro",
       "Type": "Hand grinder",
       "Unit": "clicks from zero",
@@ -6400,9 +6424,37 @@ window.COFFEE_DATA = {
   ],
   "meta": {
     "sourceWorkbook": "coffee_competition_dashboard_v13.xlsx",
-    "version": "web-v27-library-metrics-local-varieties-processes",
-    "lastLibraryExpansion": "v27: expanded Indonesian local varieties and experimental local processes; updated user metrics source handling.",
-    "lastDataRefresh": "2026-07-06",
-    "lastDataRefreshNotes": "Added Extended Natural and Fermented Natural process references; improved Pustaka hero contrast."
-  }
+    "version": "web-v34-stabilization-data-quality",
+    "lastLibraryExpansion": "v34: separated filter accessories from drippers; added SOLO SPIN, SOLO filter references, and Timemore C3S; corrected process alias.",
+    "lastDataRefresh": "2026-07-12",
+    "lastDataRefreshNotes": "Data-quality stabilization with official manufacturer and coffee-industry references. Water chemistry values remain indicative and should be measured per bottle/batch."
+  },
+  "filters": [
+    {
+      "FilterName": "SOLO WAVE HIFLUX 165",
+      "Brand": "Mazelab / HIFLUX",
+      "Format": "Wave paper",
+      "Size": "165",
+      "Material": "European pulp + Lyocell blend",
+      "FlowProfile": "High-flow; designed to reduce clogging and promote even flow",
+      "CompatibleDrippers": "SOLO Dripper and compatible wave-filter brewers",
+      "CupImpact": "Supports clarity, texture, and controlled extraction",
+      "PackSize": "15 pieces",
+      "Notes": "Paper accessory, separated from the dripper count so equipment metrics remain accurate.",
+      "SourceURL": "https://mazelabcoffee.com/products/solo-hiflux-wave"
+    },
+    {
+      "FilterName": "SOLO WAVE DAILY 155",
+      "Brand": "Mazelab / SOLO",
+      "Format": "Thin wave paper",
+      "Size": "155",
+      "Material": "Paper",
+      "FlowProfile": "Fast flow; supports a finer grind and shorter drawdown",
+      "CompatibleDrippers": "SOLO Dripper — 155 setup and compatible 155 wave brewers",
+      "CupImpact": "More oils and a smoother mouthfeel than thicker high-retention papers",
+      "PackSize": "50 pieces",
+      "Notes": "Daily-use filter reference; actual fit and flow should be calibrated per dripper and batch.",
+      "SourceURL": "https://mazelabcoffee.com/products/wave-filter-paper"
+    }
+  ]
 };

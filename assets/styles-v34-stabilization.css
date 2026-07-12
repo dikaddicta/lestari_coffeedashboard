@@ -1,0 +1,264 @@
+/* Coffee Brew OS v34 — stabilization layer
+   Loaded after the legacy stylesheet to normalize typography, contrast,
+   controls, accessibility, and responsive behavior without a full redesign. */
+
+:root {
+  --v34-bg: #f5f0e7;
+  --v34-surface: #fffdf8;
+  --v34-surface-soft: #f2eadf;
+  --v34-text: #2d2d2d;
+  --v34-text-muted: #62584f;
+  --v34-accent: #a58763;
+  --v34-accent-dark: #6f543b;
+  --v34-border: rgba(45, 45, 45, 0.14);
+  --v34-focus: rgba(111, 84, 59, 0.32);
+  --v34-font: "Segoe UI Variable", "Segoe UI", Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html { color-scheme: light; }
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--v34-font) !important;
+}
+
+body {
+  color: var(--v34-text) !important;
+  background-color: var(--v34-bg) !important;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font-size: 0.95rem;
+}
+
+button,
+[role="button"],
+select,
+input[type="checkbox"],
+input[type="radio"] {
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--v34-focus) !important;
+  outline-offset: 2px !important;
+}
+
+input,
+select,
+textarea {
+  background: var(--v34-surface) !important;
+  color: var(--v34-text) !important;
+  border-color: var(--v34-border) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #71675d !important;
+  opacity: 1;
+}
+
+select option {
+  color: var(--v34-text);
+  background: var(--v34-surface);
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.58 !important;
+}
+
+.dashboard-sidebar,
+.welcome-screen__card,
+.panel,
+.page-intro-card,
+.library-ref-card,
+.quality-card,
+.analytics-card,
+.report-preview-card {
+  border-color: var(--v34-border) !important;
+}
+
+.sidebar-nav .tab-btn {
+  min-height: 44px;
+  line-height: 1.25;
+}
+
+.sidebar-nav .tab-btn:not(.active) {
+  color: var(--v34-text) !important;
+}
+
+.lock-pill {
+  color: #4c3928 !important;
+  background: #eee1cf !important;
+  border: 1px solid rgba(111, 84, 59, 0.24) !important;
+}
+
+.sidebar-nav .tab-btn.active .lock-pill {
+  color: #fffdf8 !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.welcome-copy,
+.welcome-note,
+.welcome-onboarding-hint span,
+.welcome-account-path small,
+.welcome-feature-grid span,
+.panel p,
+.panel li,
+.panel small,
+.hint {
+  color: var(--v34-text-muted) !important;
+}
+
+.page-intro-card p,
+.page-intro-card small,
+.page-intro-card li {
+  max-width: 78ch;
+}
+
+.section-title {
+  flex-wrap: wrap;
+}
+
+.section-title h2 {
+  min-width: min(100%, 220px);
+}
+
+.table-wrap {
+  max-width: 100%;
+  overflow: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: stable;
+}
+
+table {
+  font-variant-numeric: tabular-nums;
+}
+
+th,
+td {
+  vertical-align: top;
+}
+
+.data-quality-notice {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.25fr) minmax(0, 1fr);
+  gap: 12px 18px;
+  align-items: start;
+  margin: 16px 0;
+  padding: 15px 17px;
+  border: 1px solid rgba(165, 135, 99, 0.32);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(214, 200, 173, 0.34), rgba(255, 253, 248, 0.88));
+  color: var(--v34-text);
+}
+
+.data-quality-notice strong {
+  color: var(--v34-accent-dark);
+}
+
+.data-quality-notice span {
+  color: var(--v34-text-muted);
+  line-height: 1.55;
+}
+
+.library-mini-metrics span {
+  min-width: 0;
+}
+
+.library-mini-metrics strong,
+.library-mini-metrics b {
+  overflow-wrap: anywhere;
+}
+
+.library-detail-line strong,
+.library-ref-card p,
+.library-cue-box,
+td,
+th {
+  overflow-wrap: anywhere;
+}
+
+.floating-mascot {
+  max-width: min(360px, calc(100vw - 24px));
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    padding-inline: 12px !important;
+  }
+
+  .panel,
+  .page-intro-card {
+    padding: 18px !important;
+  }
+
+  .welcome-screen__card {
+    width: min(100% - 20px, 680px) !important;
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+  }
+
+  .welcome-actions,
+  .page-intro-actions,
+  .inline-actions,
+  .button-stack {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .welcome-actions button,
+  .page-intro-actions button,
+  .inline-actions button,
+  .button-stack button {
+    width: 100%;
+  }
+
+  .data-quality-notice {
+    grid-template-columns: 1fr;
+  }
+
+  .floating-mascot:not(.is-minimized) {
+    transform: scale(0.88);
+    transform-origin: bottom left;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-mascot:not(.is-minimized) {
+    display: none !important;
+  }
+
+  .floating-mascot-launcher {
+    display: inline-flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

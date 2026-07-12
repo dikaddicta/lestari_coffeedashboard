@@ -557,7 +557,7 @@
     const roleStatusClass = roleCtx.status === "active" ? "approved" : roleCtx.status === "rejected" ? "rejected" : roleCtx.status === "pending" ? "pending" : roleCtx.status === "disabled" ? "disabled" : "";
     const roleStatusText = roleCtx.status === "pending" ? "Menunggu approval" : roleCtx.status === "rejected" ? "Ditolak" : roleCtx.status === "disabled" ? "Akses disuspend" : roleCtx.status === "active" ? "Aktif" : "Belum ada workspace";
 
-    if (title) title.textContent = isLoggedIn ? "Akun Pengguna" : "Login Pengguna";
+    if (title) title.textContent = isLoggedIn ? "Akun Pengguna" : "Masuk Pengguna";
     if (userLabel) userLabel.textContent = isLoggedIn ? (userProfile?.display_name || currentUser.email || "Akun Pengguna") : "Mode Tamu";
     if (roleLabel) roleLabel.textContent = isLoggedIn
       ? `${currentUser.email || "-"} · ${roleCtx.workspace || "-"} · ${roleCtx.role || "user"}`
@@ -1457,7 +1457,7 @@
     if (hint) {
       hint.textContent = stockBean
         ? `Menggunakan stok: ${stockBean.CoffeeName || "Kopi"}. Brew log akan mengurangi stok sebesar dosis seduh.`
-        : "Non Stock: isi nama kopi dan pilih varietas, pasca panen, serta roast profile secara manual.";
+        : "Non-stok: isi nama kopi, lalu pilih varietas, proses pascapanen, dan profil sangrai secara manual.";
     }
     return stockBean;
   }
@@ -1519,7 +1519,11 @@
   }
 
   function getBy(list, key, value) {
-    return (list || []).find(item => norm(item[key]) === norm(value)) || {};
+    const target = norm(value);
+    return (list || []).find(item => {
+      if (norm(item[key]) === target) return true;
+      return (item.Aliases || []).some(alias => norm(alias) === target);
+    }) || {};
   }
 
   function makeOptions(select, values, opts = {}) {
@@ -1656,11 +1660,12 @@
   function renderMetrics() {
     const userCountValue = Number.isFinite(Number(dashboardUserCount)) ? Number(dashboardUserCount) : localDashboardUserCount();
     const metrics = [
-      { value: DATA.varieties?.length || 0, label: "Varietas", hint: "Jumlah varietas/kultivar di pustaka data lokal dashboard." },
-      { value: DATA.processes?.length || 0, label: "Proses Pasca Panen", hint: "Jumlah metode pasca panen di pustaka data lokal dashboard." },
-      { value: DATA.roasts?.length || 0, label: "Roast Profile", hint: "Jumlah profil roasting di pustaka data lokal dashboard." },
-      { value: DATA.drippers?.length || 0, label: "Dripper", hint: "Jumlah dripper di pustaka data lokal dashboard." },
-      { value: DATA.waters?.length || 0, label: "Jenis Air", hint: "Jumlah profil air/mineral di pustaka data lokal dashboard." },
+      { value: DATA.varieties?.length || 0, label: "Entri Varietas", hint: "Jumlah record varietas, alias, dan opsi mixed lot di pustaka lokal." },
+      { value: DATA.processes?.length || 0, label: "Proses Pascapanen", hint: "Jumlah metode pascapanen di pustaka data lokal dashboard." },
+      { value: DATA.roasts?.length || 0, label: "Profil Sangrai", hint: "Jumlah profil sangrai di pustaka data lokal dashboard." },
+      { value: DATA.drippers?.length || 0, label: "Dripper / Setup", hint: "Jumlah dripper dan konfigurasi setup; aksesori filter dihitung terpisah." },
+      { value: DATA.filters?.length || 0, label: "Filter Kertas", hint: "Jumlah referensi filter kertas yang dipisahkan dari dripper." },
+      { value: DATA.waters?.length || 0, label: "Profil Air", hint: "Jumlah profil air/mineral indikatif di pustaka lokal." },
       { value: DATA.grinders?.length || 0, label: "Grinder", hint: "Jumlah grinder di pustaka data lokal dashboard." },
       { value: userCountValue, label: "Akun Terdaftar", hint: "Jumlah akun/kontributor yang terbaca dari Supabase atau fallback lokal." }
     ];
@@ -5141,7 +5146,8 @@
       processes: ["Process", "Category", "Stage", "FermentRisk_1low_5high", "TempMod_C", "GrindMod_coarser", "RatioMod_ml_per_g", "BrewingCue", "Source"],
       roasts: ["RoastVisual", "RoastProfile", "Level", "AgtronApprox", "EndTempC", "DTR", "Solubility", "BestUse", "Notes", "Source"],
       waters: ["Water", "Type", "TDS_ppm", "pH", "MineralProfile", "BrewImpact", "RecommendedUse", "Source"],
-      grinders: ["Grinder", "Type", "Unit", "V60_Min", "V60_Max", "Japanese_Min", "Japanese_Max", "Immersion_Min", "Immersion_Max", "Notes", "Source"]
+      grinders: ["Grinder", "Type", "Unit", "V60_Min", "V60_Max", "Japanese_Min", "Japanese_Max", "Immersion_Min", "Immersion_Max", "Notes", "Source"],
+      filters: ["FilterName", "Brand", "Format", "Size", "Material", "FlowProfile", "CompatibleDrippers", "CupImpact", "PackSize", "Notes", "Source"]
     };
     const labelMap = {
       Variety: "Nama Varietas", Species: "Spesies", Genetic_Market_Group: "Genetik", Typical_Regions: "Wilayah", Acidity_Base: "Acid", Sweetness_Base: "Sweet", Body_Base: "Body", Notes: "Catatan", Source: "Source",
@@ -5149,7 +5155,8 @@
       Process: "Proses", Category: "Kategori", Stage: "Tahap Proses", FermentRisk_1low_5high: "Risk", TempMod_C: "Temp Δ", GrindMod_coarser: "Grind Δ", RatioMod_ml_per_g: "Ratio Δ", BrewingCue: "Brew Cue",
       RoastVisual: "Visual", RoastProfile: "Roast", Level: "Level", AgtronApprox: "Agtron", EndTempC: "End °C", DTR: "Development Ratio", Solubility: "Solubility", BestUse: "Best Use",
       Water: "Nama Air", Type: "Jenis", TDS_ppm: "TDS", pH: "pH", MineralProfile: "Mineral", BrewImpact: "Impact", RecommendedUse: "Use",
-      Grinder: "Nama Grinder", Unit: "Satuan Setting", V60_Min: "V60 Min", V60_Max: "V60 Max", Japanese_Min: "JP Min", Japanese_Max: "JP Max", Immersion_Min: "Imm Min", Immersion_Max: "Imm Max"
+      Grinder: "Nama Grinder", Unit: "Satuan Setting", V60_Min: "V60 Min", V60_Max: "V60 Max", Japanese_Min: "JP Min", Japanese_Max: "JP Max", Immersion_Min: "Imm Min", Immersion_Max: "Imm Max",
+      FilterName: "Nama Filter", Format: "Format", Size: "Ukuran", FlowProfile: "Profil Aliran", CompatibleDrippers: "Kompatibilitas", CupImpact: "Dampak Cangkir", PackSize: "Isi Kemasan"
     };
     return { columnsByDataset, labelMap };
   }
@@ -5161,12 +5168,13 @@
       processes: "Proses",
       roasts: "Roast Profile",
       waters: "Air",
-      grinders: "Grinder"
+      grinders: "Grinder",
+      filters: "Filter Kertas"
     }[dataset] || "Data";
   }
 
   function libraryRowTitle(row, dataset = libraryCurrentDataset) {
-    return row.Variety || row.DripperName || row.Process || row.RoastProfile || row.Water || row.Grinder || row.Brand || libraryDatasetLabel(dataset);
+    return row.Variety || row.DripperName || row.FilterName || row.Process || row.RoastProfile || row.Water || row.Grinder || row.Brand || libraryDatasetLabel(dataset);
   }
 
   function libraryRowSubtitle(row, dataset = libraryCurrentDataset) {
@@ -5176,6 +5184,7 @@
     if (dataset === "roasts") return [row.Level, row.AgtronApprox, row.BestUse].filter(Boolean).join(" · ");
     if (dataset === "waters") return [row.Type, row.TDS_ppm ? `${row.TDS_ppm} ppm` : "", row.MineralProfile].filter(Boolean).join(" · ");
     if (dataset === "grinders") return [row.Type, row.Unit, row.Notes].filter(Boolean).join(" · ");
+    if (dataset === "filters") return [row.Brand, row.Format, row.Size, row.Material].filter(Boolean).join(" · ");
     return "";
   }
 
@@ -5186,6 +5195,7 @@
     if (dataset === "roasts") return row.Notes || row.Solubility || row.BestUse || "-";
     if (dataset === "waters") return row.BrewImpact || row.RecommendedUse || row.MineralProfile || "-";
     if (dataset === "grinders") return row.Notes || `V60 ${row.V60_Min || "-"}–${row.V60_Max || "-"}`;
+    if (dataset === "filters") return row.CupImpact || row.FlowProfile || row.CompatibleDrippers || "-";
     return "-";
   }
 
@@ -5293,22 +5303,29 @@
     if (dataset === "processes") {
       return [
         metric("Risk", row.FermentRisk_1low_5high),
-        metric("Temp", row.TempMod_C ? `${row.TempMod_C}°C` : ""),
-        metric("Agit", row.AgitationCue)
+        metric("Temp", row.TempMod_C !== undefined && row.TempMod_C !== null ? `${row.TempMod_C}°C` : ""),
+        metric("Cue", row.BrewingCue)
       ].join("");
     }
     if (dataset === "drippers") {
       return [
         metric("Flow", row.FlowSpeed_1slow_5fast),
         metric("Heat", row.HeatRetention_1low_5high),
-        metric("Bypass", row.BypassRisk_1low_5high)
+        metric("Bypass", row.Bypass)
       ].join("");
     }
     if (dataset === "waters") {
       return [
-        metric("TDS", row.TDS_ppm ? `${row.TDS_ppm}` : ""),
+        metric("TDS", row.TDS_ppm !== undefined && row.TDS_ppm !== null ? `${row.TDS_ppm}` : ""),
         metric("pH", row.pH),
-        metric("Type", row.Type)
+        metric("Jenis", row.Type)
+      ].join("");
+    }
+    if (dataset === "filters") {
+      return [
+        metric("Ukuran", row.Size),
+        metric("Format", row.Format),
+        metric("Isi", row.PackSize)
       ].join("");
     }
     return "";
@@ -5520,15 +5537,15 @@
     brew: { title: "Rekomendasi Seduh", subtitle: "Titik awal resep seduh berbasis data beans, proses, alat, dan target rasa." },
     "input-seduhan": { title: "Input Seduhan", subtitle: "Masukkan parameter eksperimen seduh untuk dibandingkan dan disimpan." },
     "public-brews": { title: "Hasil Seduhan Publik", subtitle: "Lihat hasil seduhan yang sudah dipublikasikan dan lolos proses review." },
-    beans: { title: "Beans", subtitle: "Kelola referensi beans, origin, dan atribut pendukung untuk workflow internal." },
-    stock: { title: "Stock", subtitle: "Pantau stock kopi, status bahan, dan ketersediaan untuk eksperimen berikutnya." },
-    qa: { title: "Brew Log & QA", subtitle: "Catat hasil seduhan, validasi kualitas, dan bangun histori evaluasi internal." },
-    analytics: { title: "Data Analytics", subtitle: "Executive insight untuk membaca performa seduhan, tren QA, dan pola eksperimen." },
-    quality: { title: "Notification", subtitle: "Pusat notifikasi issue, warning, dan action item untuk menjaga kualitas workflow." },
-    reports: { title: "Export / Report", subtitle: "Ekspor data dan rangkum hasil seduhan menjadi laporan yang lebih siap dibagikan." },
-    admin: { title: "Akun & Role", subtitle: "Kelola akun, peran, dan workspace untuk membuka seluruh modul dashboard." },
+    beans: { title: "Biji Kopi", subtitle: "Kelola referensi biji, asal, dan atribut pendukung untuk alur kerja internal." },
+    stock: { title: "Stok", subtitle: "Pantau stok kopi, status bahan, dan ketersediaan untuk eksperimen berikutnya." },
+    qa: { title: "Log Seduh & QA", subtitle: "Catat hasil seduhan, validasi kualitas, dan bangun histori evaluasi internal." },
+    analytics: { title: "Analitik Data", subtitle: "Baca performa seduhan, tren QA, dan pola eksperimen secara ringkas." },
+    quality: { title: "Notifikasi", subtitle: "Pusat peringatan dan tindakan untuk menjaga kualitas data dan alur kerja." },
+    reports: { title: "Ekspor & Laporan", subtitle: "Ekspor data dan rangkum hasil seduhan menjadi laporan yang siap dibagikan." },
+    admin: { title: "Akun & Peran", subtitle: "Kelola akun, peran, dan workspace untuk membuka seluruh modul dashboard." },
     suggestion: { title: "Saran", subtitle: "Kirim masukan untuk membantu pengembangan Coffee Brew OS." },
-    library: { title: "Pustaka Data", subtitle: "Jelajahi referensi dripper, varietas, proses, roast, air, dan grinder." }
+    library: { title: "Pustaka Data", subtitle: "Jelajahi referensi dripper, filter, varietas, proses, profil sangrai, air, dan grinder." }
   };
 
   function updatePageHeading(name) {
@@ -5546,7 +5563,7 @@
   function syncAccessChrome() {
     const loggedIn = Boolean(currentUser);
     const mode = document.body?.dataset.accessMode || (loggedIn ? "login" : "guest");
-    $("sidebarModeLabel") && ($("sidebarModeLabel").textContent = loggedIn ? (userProfile?.display_name || currentUser.email || "Pengguna") : (mode === "login" ? "Login Mode" : "Guest"));
+    $("sidebarModeLabel") && ($("sidebarModeLabel").textContent = loggedIn ? (userProfile?.display_name || currentUser.email || "Pengguna") : (mode === "login" ? "Mode Masuk" : "Tamu"));
     $("sidebarModeHint") && ($("sidebarModeHint").textContent = loggedIn ? `Masuk sebagai ${displayRoleContext().roleLabel}.` : (mode === "login" ? "Silakan login untuk membuka seluruh fitur." : "Akses terbatas hingga kamu login."));
     if (document.body) {
       document.body.classList.toggle("is-authenticated", loggedIn);
@@ -5555,7 +5572,7 @@
     setElementHidden($("topbarSignupBtn"), loggedIn);
     const topbarBtn = $("topbarAccessBtn");
     if (topbarBtn) {
-      topbarBtn.textContent = loggedIn ? "Akun & Role" : "Login";
+      topbarBtn.textContent = loggedIn ? "Akun & Peran" : "Masuk";
     }
   }
 
@@ -5627,7 +5644,7 @@
     const authIntent = document.body?.dataset.accessMode === "login";
     const allowAuthPanel = String(name || "") === "admin" && !currentUser && authIntent;
     if (isGuestPrivateTab(name) && !allowAuthPanel) {
-      showMessage("Login untuk membuka Beranda, Beans, Stock, Brew Log & QA, Data Analytics, Notification, Export / Report, dan Akun & Role.", "info");
+      showMessage("Masuk untuk membuka Beranda, Biji Kopi, Stok, Log Seduh & QA, Analitik Data, Notifikasi, Ekspor & Laporan, serta Akun & Peran.", "info");
       name = "guide";
     }
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
@@ -6088,7 +6105,7 @@
       ["Rata-rata QA", qaValues.length ? fmt(avg(qaValues), 2) : "-", "Rata-rata QA dari data yang terbaca."],
       ["Best Cup", best ? `${best.BeanName || best.BrewID || "-"} · ${fmt(best.QA_Final, 2)}` : "-", "Seduhan dengan QA tertinggi."],
       ["Top Dripper", dripperBest ? `${dripperBest.key} · ${fmt(dripperBest.avgQA, 2)}` : "-", "Dripper dengan average QA terbaik."],
-      ["Top Process", processBest ? `${processBest.key} · ${fmt(processBest.avgQA, 2)}` : "-", "Proses pasca panen dengan average QA terbaik."],
+      ["Top Process", processBest ? `${processBest.key} · ${fmt(processBest.avgQA, 2)}` : "-", "Proses pascapanen dengan rata-rata QA terbaik."],
       ["Recipe Ready", rows.filter(log => recipeCompletenessScore(log) >= 8).length, "Brew log dengan parameter resep cukup lengkap."]
     ];
     grid.innerHTML = metrics.map(([label, value, desc], idx) => `
@@ -6253,7 +6270,7 @@
       qa: allQA() || [],
       stock: workspaceStock() || [],
       public: typeof publicApprovedRows === "function" ? publicApprovedRows() : [],
-      library: ["varieties", "drippers", "processes", "roasts", "waters", "grinders"].flatMap(key => (DATA[key] || []).map(row => ({ ...row, __dataset: key })))
+      library: ["varieties", "drippers", "filters", "processes", "roasts", "waters", "grinders"].flatMap(key => (DATA[key] || []).map(row => ({ ...row, __dataset: key })))
     };
   }
 
@@ -6276,7 +6293,7 @@
       const required = [
         ["BeanName", "nama kopi"],
         ["Variety", "varietas"],
-        ["Process", "pasca panen"],
+        ["Process", "proses pascapanen"],
         ["RoastProfile", "roast profile"],
         ["Dripper", "dripper"],
         ["Method", "metode"],
@@ -6387,7 +6404,7 @@
     });
 
     src.library.forEach(row => {
-      const title = libraryRowTitle ? libraryRowTitle(row, row.__dataset) : (row.Variety || row.DripperName || row.Process || row.RoastProfile || row.Water || row.Grinder || "Library row");
+      const title = libraryRowTitle ? libraryRowTitle(row, row.__dataset) : (row.Variety || row.DripperName || row.FilterName || row.Process || row.RoastProfile || row.Water || row.Grinder || "Baris pustaka");
       if (!sourceUrl(row)) pushQualityIssue(issues, {
         severity: "info",
         module: "library",
@@ -6922,7 +6939,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
       $("systemCacheStatus").textContent = supported ? "PWA Ready" : "Browser Cache";
     }
     if ($("systemDataStatus")) {
-      const total = (DATA.varieties?.length || 0) + (DATA.processes?.length || 0) + (DATA.drippers?.length || 0) + (DATA.roasts?.length || 0) + (DATA.waters?.length || 0) + (DATA.grinders?.length || 0);
+      const total = (DATA.varieties?.length || 0) + (DATA.processes?.length || 0) + (DATA.drippers?.length || 0) + (DATA.filters?.length || 0) + (DATA.roasts?.length || 0) + (DATA.waters?.length || 0) + (DATA.grinders?.length || 0);
       $("systemDataStatus").textContent = document.body?.classList.contains("demo-mode-active") ? "Demo Active" : `${total} Data`;
     }
   }
@@ -7211,10 +7228,10 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
       : status === "rejected" ? "Rejected"
       : status === "disabled" ? "Disabled"
       : status === "active" ? "Active"
-      : "Guest";
+      : "Tamu";
 
-    if ($("adminModeMetric")) $("adminModeMetric").textContent = loggedIn ? "Login" : "Guest";
-    if ($("adminModeHint")) $("adminModeHint").textContent = loggedIn ? (currentUser.email || "User aktif") : "Login untuk membuka fitur premium.";
+    if ($("adminModeMetric")) $("adminModeMetric").textContent = loggedIn ? "Login" : "Tamu";
+    if ($("adminModeHint")) $("adminModeHint").textContent = loggedIn ? (currentUser.email || "User aktif") : "Masuk untuk membuka seluruh fitur.";
     if ($("adminRoleMetric")) $("adminRoleMetric").textContent = roleCtx.role || "-";
     if ($("adminRoleHint")) $("adminRoleHint").textContent = loggedIn ? "Role mengikuti workspace aktif." : "Role tersedia setelah login.";
     if ($("adminWorkspaceMetric")) $("adminWorkspaceMetric").textContent = roleCtx.workspace || "-";
