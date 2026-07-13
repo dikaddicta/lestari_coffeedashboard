@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-13T16:33:18.473Z",
-  "version": "42.1.0",
+  "generatedAt": "2026-07-13T16:46:38.842Z",
+  "version": "42.2.0",
   "summary": {
-    "pass": 100,
+    "pass": 103,
     "fail": 0
   },
   "results": [
@@ -238,8 +238,23 @@
     },
     {
       "status": "PASS",
-      "message": "Application version is 42.1.0",
-      "detail": "42.1.0"
+      "message": "Welcome screen visibility helper exists",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Browser title follows welcome visibility state",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Root landing title remains product title",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Application version is 42.2.0",
+      "detail": "42.2.0"
     },
     {
       "status": "PASS",
@@ -254,7 +269,7 @@
     {
       "status": "PASS",
       "message": "package.json version matches app config",
-      "detail": "42.1.0"
+      "detail": "42.2.0"
     },
     {
       "status": "PASS",
@@ -263,7 +278,7 @@
     },
     {
       "status": "PASS",
-      "message": "Service-worker cache name matches v42.1 release",
+      "message": "Service-worker cache name matches v42.2 release",
       "detail": ""
     },
     {

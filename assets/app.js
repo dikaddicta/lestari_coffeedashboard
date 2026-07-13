@@ -6015,16 +6015,24 @@
     })])
   ));
 
+  function isWelcomeScreenVisible() {
+    const screen = $("welcomeScreen");
+    return Boolean(screen && !screen.classList.contains("is-hidden"));
+  }
+
   function updatePageHeading(name) {
     const key = String(name || "home");
     const meta = PAGE_META[key] || PAGE_META.home;
+    const welcomeVisible = isWelcomeScreenVisible();
     $("pageTitle") && ($("pageTitle").textContent = meta.title);
     $("pageSubtitle") && ($("pageSubtitle").textContent = meta.subtitle);
     $("pageBreadcrumb") && ($("pageBreadcrumb").textContent = `Workspace Kopi / ${meta.title}`);
-    document.title = `${meta.title} — Coffee Brew OS`;
+    document.title = welcomeVisible
+      ? "Coffee Brew OS — Dashboard Seduh Kopi"
+      : `${meta.title} — Coffee Brew OS`;
     syncRouteHint(key);
     if (document.body) {
-      document.body.dataset.page = key;
+      document.body.dataset.page = welcomeVisible ? "welcome" : key;
     }
   }
 
@@ -8325,8 +8333,8 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
   function applyReleaseMetadata() {
-    const version = APP_CONFIG.version || "42.1.0";
-    const release = APP_CONFIG.release || "Landing Route Hotfix";
+    const version = APP_CONFIG.version || "42.2.0";
+    const release = APP_CONFIG.release || "Browser Title Hotfix";
     document.documentElement.dataset.appVersion = version;
     document.documentElement.dataset.appRelease = release;
     const buildLabel = document.querySelector(".sidebar-build-version");

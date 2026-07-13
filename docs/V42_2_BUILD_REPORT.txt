@@ -1,0 +1,12 @@
+Coffee Brew OS v42.2.0 — Browser Title Hotfix
+
+Scope:
+- Fix stale browser-tab title on root landing page.
+- Preserve clean root URL and product title while welcome screen is visible.
+- Keep route-specific titles after entering the dashboard.
+- Refresh PWA cache version.
+
+Expected behavior:
+- Root `/lestari_coffeedashboard/` -> `Coffee Brew OS — Dashboard Seduh Kopi`
+- `/cara-pakai/` after entering guest mode -> `Cara Pakai — Coffee Brew OS`
+- Other clean routes -> matching page title.

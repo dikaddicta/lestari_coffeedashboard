@@ -1,4 +1,4 @@
-const CACHE_NAME = "coffee-brew-os-v42-1-landing-route";
+const CACHE_NAME = "coffee-brew-os-v42-2-browser-title";
 const ROUTE_ENTRIES = [
   "beranda",
   "cara-pakai",

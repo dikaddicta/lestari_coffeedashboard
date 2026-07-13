@@ -1,8 +1,8 @@
 {
   "name": "coffee-brew-os",
-  "version": "42.1.0",
+  "version": "42.2.0",
   "private": true,
-  "description": "Lestari Coffee Dashboard — landing route hotfix, security, audit trail, and brew analytics",
+  "description": "Lestari Coffee Dashboard — browser title hotfix, security, audit trail, and brew analytics",
   "scripts": {
     "build": "node scripts/build-pages.mjs",
     "audit": "node scripts/functional-audit.mjs",
