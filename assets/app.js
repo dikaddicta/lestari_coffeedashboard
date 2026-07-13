@@ -3,7 +3,8 @@
 
   const APP_CONFIG = window.COFFEE_APP_CONFIG || {};
   const RUNTIME = window.COFFEE_RUNTIME || {};
-  const SAFE_STORAGE = RUNTIME.storage || {
+  const SERVICES = window.COFFEE_SERVICES || {};
+  const SAFE_STORAGE = SERVICES.storage || RUNTIME.storage || {
     get(key, fallback = null, kind = "local") {
       try {
         const storage = kind === "session" ? window.sessionStorage : window.localStorage;
@@ -40,11 +41,12 @@
       try { return this.set(key, JSON.stringify(value), kind); } catch (_error) { return false; }
     }
   };
-  const AUTH_STORAGE_ADAPTER = {
+  const AUTH_STORAGE_ADAPTER = SERVICES.storage?.authAdapter || {
     getItem: key => SAFE_STORAGE.get(key, null),
     setItem: (key, value) => { SAFE_STORAGE.set(key, value); },
     removeItem: key => { SAFE_STORAGE.remove(key); }
   };
+  const SUPABASE_SERVICE = SERVICES.supabase || null;
 
   const DATA = window.COFFEE_DATA || {};
   const STORAGE_KEY = "coffeeDashboardWebV1";
@@ -144,29 +146,32 @@
 
 
   function getSupabaseProjectUrl() {
+    if (SUPABASE_SERVICE) return SUPABASE_SERVICE.getProjectUrl(SUPABASE_CONFIG);
     const raw = String(SUPABASE_CONFIG.url || "").trim();
     if (!raw) return "";
     let parsed;
     try {
       parsed = new URL(raw);
     } catch (_err) {
-      throw new Error("Supabase URL tidak valid. Gunakan Project URL dari Supabase, contoh: https://xxxxx.supabase.co");
+      throw new Error("Supabase URL tidak valid. Gunakan Project URL utama, misalnya https://xxxxx.supabase.co.");
     }
-    if (parsed.protocol !== "https:") {
-      throw new Error("Supabase URL harus diawali https://");
-    }
+    if (parsed.protocol !== "https:") throw new Error("Supabase URL harus menggunakan https://.");
     if (parsed.pathname && parsed.pathname !== "/") {
-      throw new Error("Supabase URL harus Project URL utama, tanpa tambahan path seperti /rest/v1 atau /auth/v1.");
+      throw new Error("Supabase URL harus berupa Project URL utama tanpa path tambahan seperti /rest/v1 atau /auth/v1.");
     }
     return parsed.origin;
   }
 
   function getSupabaseAnonKey() {
-    return String(SUPABASE_CONFIG.anonKey || "").trim();
+    return SUPABASE_SERVICE
+      ? SUPABASE_SERVICE.getAnonKey(SUPABASE_CONFIG)
+      : String(SUPABASE_CONFIG.anonKey || "").trim();
   }
 
   function isSupabaseConfigured() {
-    return Boolean(SUPABASE_CONFIG.enabled !== false && String(SUPABASE_CONFIG.url || "").trim() && getSupabaseAnonKey());
+    return SUPABASE_SERVICE
+      ? SUPABASE_SERVICE.isConfigured(SUPABASE_CONFIG)
+      : Boolean(SUPABASE_CONFIG.enabled !== false && String(SUPABASE_CONFIG.url || "").trim() && getSupabaseAnonKey());
   }
 
   function updateDbStatus(kind, title, detail = "") {
@@ -1271,19 +1276,28 @@
     let clientCreated = false;
     try {
       updateDbStatus("syncing", "Menghubungkan ke Supabase...", "Membaca sesi pengguna, workspace, dan data publik yang sudah disetujui.");
-      const projectUrl = getSupabaseProjectUrl();
-      const anonKey = getSupabaseAnonKey();
-      supabaseClient = window.supabase.createClient(projectUrl, anonKey, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
-          storage: AUTH_STORAGE_ADAPTER
-        },
-        global: {
-          headers: { "x-coffee-dashboard-client": "stable-v8" }
-        }
-      });
+      if (SUPABASE_SERVICE) {
+        supabaseClient = SUPABASE_SERVICE.createClient({
+          config: SUPABASE_CONFIG,
+          library: window.supabase,
+          storageAdapter: AUTH_STORAGE_ADAPTER,
+          clientHeader: "v38-services"
+        });
+      } else {
+        const projectUrl = getSupabaseProjectUrl();
+        const anonKey = getSupabaseAnonKey();
+        supabaseClient = window.supabase.createClient(projectUrl, anonKey, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            storage: AUTH_STORAGE_ADAPTER
+          },
+          global: {
+            headers: { "x-coffee-dashboard-client": "v38-services" }
+          }
+        });
+      }
       clientCreated = true;
       cloudReady = true;
       await initAuth();
@@ -5496,6 +5510,8 @@
   
 
   const PAGE_REGISTRY = window.COFFEE_PAGES;
+  const NAVIGATION = window.COFFEE_NAVIGATION;
+  const PAGE_MODULES = window.COFFEE_PAGE_MODULES;
   const PAGE_ROUTES = Object.freeze(Object.fromEntries(
     (PAGE_REGISTRY?.pages || []).map(page => [page.tab, page.route])
   ));
@@ -5505,6 +5521,7 @@
   let routeSyncLock = false;
 
   function currentRouteSlug() {
+    if (NAVIGATION?.currentRoute) return NAVIGATION.currentRoute();
     return String(location.hash || "").replace(/^#\/?/, "").replace(/^\/+/, "").trim();
   }
 
@@ -5518,6 +5535,12 @@
 
   function writeRoute(tab, replace = false) {
     const route = routeFromTab(tab);
+    if (NAVIGATION?.navigate) {
+      routeSyncLock = true;
+      NAVIGATION.navigate(route, { replace });
+      queueMicrotask(() => { routeSyncLock = false; });
+      return;
+    }
     const nextHash = `#/${route}`;
     if (location.hash === nextHash) return;
     routeSyncLock = true;
@@ -5538,17 +5561,27 @@
     });
   }
 
-  function navigateByRoute(route, replace = true) {
+  function navigateByRoute(route) {
     const tab = tabFromRoute(route) || (currentUser ? "home" : "guide");
-    showTab(tab, { replaceRoute: replace });
+    if (!currentUser && GUEST_PRIVATE_TABS.includes(tab)) {
+      if (tab === "admin") {
+        document.body.dataset.accessMode = "login";
+        document.body.classList.add("experience-entered", "access-login");
+        document.body.classList.remove("access-guest");
+        showTab("admin", { skipRoute: true });
+      } else {
+        showTab("guide", { replaceRoute: true });
+      }
+      return;
+    }
+    showTab(tab, { skipRoute: true });
   }
-
 
   function safeShowInitialRoute() {
     const route = currentRouteSlug();
     const tab = tabFromRoute(route);
     if (tab) {
-      navigateByRoute(route, true);
+      navigateByRoute(route);
       return;
     }
     showTab(currentUser ? "home" : "guide", { replaceRoute: true });
@@ -5557,10 +5590,19 @@
   function initPageRouter() {
     if (document.body?.dataset.pageRouterReady === "true") return;
     if (document.body) document.body.dataset.pageRouterReady = "true";
-    window.addEventListener("hashchange", () => {
-      if (routeSyncLock) return;
-      safeShowInitialRoute();
-    });
+    NAVIGATION?.migrateLegacyHash?.();
+    if (NAVIGATION?.listen) {
+      NAVIGATION.listen(() => {
+        if (routeSyncLock) return;
+        safeShowInitialRoute();
+      });
+    } else {
+      window.addEventListener("hashchange", () => {
+        if (routeSyncLock) return;
+        safeShowInitialRoute();
+      });
+    }
+    safeShowInitialRoute();
   }
 
 
@@ -5675,10 +5717,11 @@
     document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.toggle("active", panel.id === `tab-${name}`));
     syncMobileTabSelect(name);
     updatePageHeading(name);
-    if (!options.replaceRoute) writeRoute(name);
+    if (!options.skipRoute) writeRoute(name, options.replaceRoute === true);
     const onboardingStep = tabToOnboardingStep(name);
     if (onboardingStep) markOnboardingStep(onboardingStep);
     updateGuestPrivateNavigation();
+    renderPageModule(name);
     document.dispatchEvent(new CustomEvent("coffee:pagechange", {
       detail: Object.freeze({ tab: name, route: routeFromTab(name), meta: PAGE_META[name] || PAGE_META.home })
     }));
@@ -6997,7 +7040,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     });
 
     if (APP_CONFIG.features?.pwa !== false && "serviceWorker" in navigator && location.protocol !== "file:") {
-      navigator.serviceWorker.register("./sw.js")
+      navigator.serviceWorker.register(new URL("sw.js", document.baseURI).href)
         .then(registration => {
           if ($("systemCacheStatus")) $("systemCacheStatus").textContent = "Cached";
           registration.update().catch(() => null);
@@ -7359,24 +7402,25 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
 
-  function renderAll() {
-    if (currentUser) { document.body.dataset.accessMode = "login"; document.body.classList.add("experience-entered", "access-login"); document.body.classList.remove("access-guest"); }
-    renderMetrics();
-    renderAccessUI();
-    renderBrew();
-    renderBeansTable();
-    renderStockTable();
-    renderQAPreview();
-    renderManualBrewPreview();
-    renderBrewLogTable();
-    renderQABrewOptions();
-    renderPublicBrewTable();
-    renderAnalytics();
-    renderDataQuality();
-    updateNotificationSummary();
-    renderReportPreview();
-    renderLibrary();
-    renderOnboardingCoach();
+  const PAGE_RENDERERS = Object.freeze({
+    metrics: renderMetrics,
+    brew: renderBrew,
+    manualBrewPreview: renderManualBrewPreview,
+    beansTable: renderBeansTable,
+    stockTable: renderStockTable,
+    qaPreview: renderQAPreview,
+    brewLogTable: renderBrewLogTable,
+    qaBrewOptions: renderQABrewOptions,
+    publicBrewTable: renderPublicBrewTable,
+    analytics: renderAnalytics,
+    dataQuality: renderDataQuality,
+    notificationSummary: updateNotificationSummary,
+    reportPreview: renderReportPreview,
+    library: renderLibrary,
+    adminWorkspace: renderAdminWorkspaceModule
+  });
+
+  function renderAdminWorkspaceModule() {
     renderWorkspaceUI();
     renderAdminProDashboard();
     if (canModerate()) loadModerationRows().catch(console.warn);
@@ -7391,6 +7435,59 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
       renderSuggestionInbox?.();
     }
   }
+
+  function renderNamedPagePart(name) {
+    const renderer = PAGE_RENDERERS[String(name || "")];
+    if (typeof renderer !== "function") {
+      RUNTIME.warn("Page renderer tidak ditemukan", name);
+      return false;
+    }
+    renderer();
+    return true;
+  }
+
+  function activePageTab() {
+    return document.querySelector(".tab-btn.active")?.dataset.tab || document.body?.dataset.page || (currentUser ? "home" : "guide");
+  }
+
+  function renderPageModule(tab = activePageTab()) {
+    const context = Object.freeze({
+      tab,
+      route: routeFromTab(tab),
+      render: renderNamedPagePart,
+      currentUser: Boolean(currentUser),
+      role: currentRole,
+      workspaceId: currentWorkspace?.id || ""
+    });
+    if (PAGE_MODULES?.activate?.(tab, context)) return;
+    const fallback = {
+      home: ["metrics"],
+      brew: ["brew"],
+      "input-seduhan": ["manualBrewPreview"],
+      beans: ["beansTable"],
+      stock: ["stockTable"],
+      qa: ["qaPreview", "brewLogTable", "qaBrewOptions"],
+      "public-brews": ["publicBrewTable"],
+      analytics: ["analytics"],
+      quality: ["dataQuality", "notificationSummary"],
+      reports: ["reportPreview"],
+      admin: ["adminWorkspace"],
+      library: ["library"]
+    };
+    (fallback[tab] || []).forEach(renderNamedPagePart);
+  }
+
+  function renderAll() {
+    if (currentUser) {
+      document.body.dataset.accessMode = "login";
+      document.body.classList.add("experience-entered", "access-login");
+      document.body.classList.remove("access-guest");
+    }
+    renderAccessUI();
+    renderOnboardingCoach();
+    renderPageModule(activePageTab());
+  }
+
 
 
   function initFloatingMascot() {
@@ -7547,7 +7644,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
   function applyReleaseMetadata() {
-    const version = APP_CONFIG.version || "35.1.0";
+    const version = APP_CONFIG.version || "38.0.0";
     const release = APP_CONFIG.release || "Functional Stabilization";
     document.documentElement.dataset.appVersion = version;
     document.documentElement.dataset.appRelease = release;

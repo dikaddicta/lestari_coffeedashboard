@@ -1,14 +1,17 @@
 {
   "name": "coffee-brew-os",
-  "version": "36.0.0",
+  "version": "38.0.0",
   "private": true,
-  "description": "Lestari Coffee Dashboard — modular pages architecture release",
+  "description": "Lestari Coffee Dashboard — service-layer foundation and refined welcome experience",
   "scripts": {
     "build": "node scripts/build-pages.mjs",
     "audit": "node scripts/functional-audit.mjs",
     "audit:pages": "node scripts/modular-pages-audit.mjs",
     "check": "node scripts/release-check.mjs",
-    "serve": "node scripts/serve-local.mjs"
+    "serve": "node scripts/serve-local.mjs",
+    "audit:routes": "node scripts/clean-url-audit.mjs",
+    "audit:modules": "node scripts/page-modules-audit.mjs",
+    "audit:services": "node scripts/service-layer-audit.mjs"
   },
   "engines": {
     "node": ">=18"

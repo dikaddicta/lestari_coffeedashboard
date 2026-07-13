@@ -23,11 +23,19 @@ function checkSyntax(file) {
 for (const file of [
   "assets/app-config.js",
   "assets/core/routes.js",
+  "assets/core/navigation.js",
   "assets/core/runtime.js",
+  "assets/services/storage-service.js",
+  "assets/core/page-modules.js",
+  "assets/services/supabase-service.js",
   "assets/data.js",
   "assets/app.js",
   "sw.js"
 ]) checkSyntax(file);
+
+for (const page of JSON.parse(read("src/routes.json")).pages) {
+  checkSyntax(`assets/pages/${page.route}.js`);
+}
 
 const html = read("index.html");
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
@@ -61,9 +69,15 @@ const scriptSources = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/scr
 const expectedScriptOrder = [
   "assets/app-config.js",
   "assets/core/routes.js",
+  "assets/core/navigation.js",
   "assets/core/runtime.js",
+  "assets/services/storage-service.js",
+  "assets/core/page-modules.js",
+  "assets/pages/beranda.js",
+  "assets/pages/pustaka-data.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
   "assets/supabase-config.js",
+  "assets/services/supabase-service.js",
   "assets/data.js",
   "assets/app.js"
 ];
@@ -78,14 +92,14 @@ const configContext = { window: {} };
 vm.createContext(configContext);
 vm.runInContext(read("assets/app-config.js"), configContext, { filename: "assets/app-config.js" });
 const appConfig = configContext.window.COFFEE_APP_CONFIG || {};
-record(appConfig.version === "36.0.0", "Application version is 36.0.0", String(appConfig.version || "missing"));
+record(appConfig.version === "38.0.0", "Application version is 38.0.0", String(appConfig.version || "missing"));
 record(appConfig.features?.debugTools === false, "Production debug tools are disabled");
 record(appConfig.features?.mascot === false, "Production mascot is disabled");
 
 const packageJson = JSON.parse(read("package.json"));
 record(packageJson.version === appConfig.version, "package.json version matches app config", String(packageJson.version || "missing"));
 record(html.includes(`v${appConfig.version} · ${appConfig.release}`), "Visible release label matches app config");
-record(read("sw.js").includes("coffee-brew-os-v36-modular-pages"), "Service-worker cache name matches v36 release");
+record(read("sw.js").includes("coffee-brew-os-v38-services-welcome"), "Service-worker cache name matches v38 release");
 record(exists("supabase/schema.sql"), "Canonical Supabase schema exists");
 record(exists("supabase/README.md"), "Supabase setup guide exists");
 
@@ -109,8 +123,13 @@ record(missingCoreAssets.length === 0, `${coreAssets.length} service-worker core
 for (const critical of [
   "assets/app-config.js",
   "assets/core/routes.js",
+  "assets/core/navigation.js",
   "assets/core/runtime.js",
+  "assets/services/storage-service.js",
+  "assets/core/page-modules.js",
   "assets/styles-v35-1-functional.css",
+  "assets/css/welcome.css",
+  "assets/services/supabase-service.js",
   "assets/app.js",
   "assets/data.js"
 ]) {
@@ -166,6 +185,6 @@ const report = {
   },
   results
 };
-fs.writeFileSync(path.join(root, "docs/V36_AUDIT_RESULT.json"), JSON.stringify(report, null, 2));
+fs.writeFileSync(path.join(root, "docs/V38_AUDIT_RESULT.json"), JSON.stringify(report, null, 2));
 console.log(`\nAudit summary: ${report.summary.pass} passed, ${report.summary.fail} failed.`);
 if (failed) process.exit(1);

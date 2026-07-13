@@ -1,0 +1,36 @@
+Coffee Brew OS v38.0.0 — Build Report
+=====================================
+
+Release: Services & Welcome Refinement
+
+Changes
+-------
+- Rebuilt welcome screen layout and Indonesian copy.
+- Replaced repetitive onboarding sections with three clear access paths.
+- Moved welcome ownership to assets/css/welcome.css.
+- Added browser storage service.
+- Added Supabase configuration/client service.
+- Updated application integration, PWA cache, build metadata, and audits.
+
+Automated checks
+----------------
+- Modular pages audit: 37/37 passed.
+- Clean URL audit: 64/64 passed.
+- Page modules audit: 46/46 passed.
+- Service-layer audit: 18/18 passed.
+- Functional audit: 73 passed, 0 failed.
+
+Reference data retained
+-----------------------
+- 180 varieties
+- 81 post-harvest processes
+- 74 drippers/setups
+- 2 paper filters
+- 18 roast profiles
+- 15 water profiles
+- 16 grinders
+
+Remaining scope
+---------------
+- End-to-end Supabase login, role, CRUD, and sync testing requires an active browser session and database environment.
+- Domain business logic remains in assets/app.js and should be extracted gradually in later releases.

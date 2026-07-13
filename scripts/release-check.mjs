@@ -3,6 +3,9 @@ import { spawnSync } from "node:child_process";
 const steps = [
   ["Build modular pages", ["scripts/build-pages.mjs"]],
   ["Audit modular pages", ["scripts/modular-pages-audit.mjs"]],
+  ["Audit clean URLs", ["scripts/clean-url-audit.mjs"]],
+  ["Audit page modules", ["scripts/page-modules-audit.mjs"]],
+  ["Audit service layer", ["scripts/service-layer-audit.mjs"]],
   ["Functional audit", ["scripts/functional-audit.mjs"]]
 ];
 
@@ -18,4 +21,4 @@ for (const [label, args] of steps) {
   }
 }
 
-console.log("\nRelease check passed. Modular source, generated index, and dashboard functionality are consistent.");
+console.log("\nRelease check passed. Modular source, clean URLs, page modules, service layer, welcome screen, and dashboard functionality are consistent.");

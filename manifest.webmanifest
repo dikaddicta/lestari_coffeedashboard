@@ -2,7 +2,7 @@
   "name": "Coffee Brew OS — Lestari Coffee Dashboard",
   "short_name": "Coffee Brew OS",
   "description": "Workspace seduh kopi untuk rekomendasi, pencatatan, QA, analitik, laporan, dan pustaka referensi.",
-  "start_url": "./index.html",
+  "start_url": "./cara-pakai/",
   "scope": "./",
   "display": "standalone",
   "background_color": "#F3F1EC",
@@ -33,7 +33,7 @@
       "name": "Rekomendasi Seduh",
       "short_name": "Brew",
       "description": "Buka modul rekomendasi seduh.",
-      "url": "./index.html#/rekomendasi-seduh",
+      "url": "./rekomendasi-seduh/",
       "icons": [
         {
           "src": "assets/latte-art-icon.png",
@@ -46,7 +46,7 @@
       "name": "Pustaka Data",
       "short_name": "Pustaka",
       "description": "Buka knowledge base kopi.",
-      "url": "./index.html#/pustaka-data",
+      "url": "./pustaka-data/",
       "icons": [
         {
           "src": "assets/latte-art-icon.png",

@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
+  <base href="{{BASE_HREF}}" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Coffee Brew OS — Dashboard Seduh Kopi</title>
   <meta name="description" content="Dashboard seduh kopi untuk rekomendasi resep, pencatatan, QA, analitik, laporan, dan pustaka data berbasis referensi." />
@@ -13,56 +14,96 @@
   <meta property="og:title" content="Coffee Brew OS — Dashboard Seduh Kopi" />
   <meta property="og:description" content="Dashboard untuk rekomendasi seduh, log seduh, QA, analitik, laporan, dan pustaka data kopi." />
   <meta property="og:type" content="website" />
-  <link rel="manifest" href="manifest.webmanifest?v=20260713-v36-modular" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260713-v38-services-welcome" />
   <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
   <link rel="preload" href="assets/latte-art-icon.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260713-v36-modular" />
-  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v36-modular" />
-  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v36-modular" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v36-modular" />
-  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v36-modular" />
-  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v36-modular" />
-  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v36-modular" />
-  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v36-modular" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260713-v38-services-welcome" />
+  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v38-services-welcome" />
+  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v38-services-welcome" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v38-services-welcome" />
+  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v38-services-welcome" />
+  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v38-services-welcome" />
+  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v38-services-welcome" />
+  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v38-services-welcome" />
+  <link rel="stylesheet" href="assets/css/welcome.css?v=20260713-v38-services-welcome" />
 </head>
-<body class="quiet-luxury-ui modular-pages-ui">
+<body class="quiet-luxury-ui modular-pages-ui modular-scripts-ui" data-initial-route="{{INITIAL_ROUTE}}">
 
-  <section id="welcomeScreen" class="welcome-screen">
-    <div class="welcome-screen__backdrop"></div>
+  <section id="welcomeScreen" class="welcome-screen" aria-labelledby="welcomeTitle">
+    <div class="welcome-screen__backdrop" aria-hidden="true"></div>
     <div class="welcome-screen__card">
-      <div class="welcome-brand">
-        <span class="welcome-brand__icon"><img src="assets/latte-art-icon.png" alt="" /></span>
-        <div>
-          <p class="welcome-eyebrow">Coffee Brew OS</p>
-          <h1>Ruang kerja seduh yang lebih terukur.</h1>
+      <div class="welcome-primary">
+        <div class="welcome-brand">
+          <span class="welcome-brand__icon"><img src="assets/latte-art-icon.png" alt="" /></span>
+          <div>
+            <p class="welcome-eyebrow">Coffee Brew OS</p>
+            <span class="welcome-product-note">Dashboard seduh untuk homebrewer dan barista</span>
+          </div>
+        </div>
+
+        <div class="welcome-hero-copy">
+          <h1 id="welcomeTitle">Seduh lebih rapi.<br />Hasil lebih konsisten.</h1>
+          <p class="welcome-copy">
+            Susun resep, catat setiap percobaan, pantau stok, dan evaluasi hasil seduh dalam satu dashboard.
+          </p>
+        </div>
+
+        <div class="welcome-access-block" aria-label="Pilihan akses dashboard">
+          <div class="welcome-actions welcome-actions--primary">
+            <button id="welcomeLoginBtn" class="primary welcome-btn" type="button">Masuk ke Dashboard</button>
+            <button id="welcomeSignupBtn" class="secondary welcome-btn welcome-signup-btn" type="button">Buat Akun</button>
+          </div>
+          <div class="welcome-actions welcome-actions--secondary">
+            <button id="welcomeGuestBtn" class="welcome-text-btn" type="button">Jelajahi sebagai Tamu</button>
+            <button id="welcomeDemoBtn" class="welcome-text-btn welcome-demo-btn" type="button">Lihat Data Demo</button>
+          </div>
+          <p class="welcome-note">Masuk untuk menyimpan data, mengelola stok, dan membuka seluruh fitur workspace.</p>
+        </div>
+
+        <div class="welcome-capabilities" aria-label="Fitur utama">
+          <span>Resep &amp; QA</span>
+          <span>Stok Biji</span>
+          <span>Analitik</span>
+          <span>Pustaka Kopi</span>
         </div>
       </div>
-      <p class="welcome-copy">
-        Rancang resep, kelola stok, simpan log seduh, lakukan evaluasi QA, dan jelajahi pustaka kopi dalam satu alur kerja yang konsisten.
-      </p>
-      <div class="welcome-actions">
-        <button id="welcomeLoginBtn" class="primary welcome-btn" type="button">Masuk</button>
-        <button id="welcomeSignupBtn" class="secondary welcome-btn welcome-signup-btn" type="button">Daftar</button>
-        <button id="welcomeGuestBtn" class="secondary welcome-btn" type="button">Masuk sebagai Tamu</button>
-        <button id="welcomeDemoBtn" class="secondary welcome-btn welcome-demo-btn" type="button">Coba Demo</button>
-      </div>
-      <p class="welcome-note">Masuk untuk menyimpan data dan membuka seluruh modul workspace.</p>
-      <div class="welcome-onboarding-hint">
-        <strong>Pengguna baru?</strong>
-        <span>Pilih Daftar untuk membuat akun, atau masuk sebagai Tamu lalu ikuti Panduan Cepat dalam lima langkah.</span>
-      </div>
-      <div class="welcome-account-path">
-        <article>
-          <span>Akun Baru</span>
-          <strong>Daftar untuk membuka seluruh fitur</strong>
-          <small>Akun aktif membuka pengelolaan stok, log seduh, QA, analitik, laporan, dan kolaborasi workspace.</small>
-        </article>
-      </div>
-      <div class="welcome-feature-grid">
-        <article><strong>Alur Kerja Rapi</strong><span>Resep, log, dan QA tersusun lebih terstruktur.</span></article>
-        <article><strong>Berbasis Data</strong><span>Keputusan seduh didukung referensi yang dapat ditelusuri.</span></article>
-        <article><strong>Berbagi Resep</strong><span>Publikasikan hasil seduhan yang sudah lolos peninjauan.</span></article>
-      </div>
+
+      <aside class="welcome-guide" aria-label="Panduan memilih akses">
+        <div class="welcome-guide__header">
+          <p class="welcome-guide__eyebrow">Mulai dari sini</p>
+          <h2>Pilih cara masuk yang paling sesuai.</h2>
+          <p>Semua pilihan dapat digunakan tanpa mengubah data utama dashboard.</p>
+        </div>
+
+        <div class="welcome-path-list">
+          <article class="welcome-path-item">
+            <span class="welcome-path-number">01</span>
+            <div>
+              <strong>Sudah punya akun?</strong>
+              <p>Masuk untuk melanjutkan data, stok, log seduh, QA, dan laporan yang pernah disimpan.</p>
+            </div>
+          </article>
+          <article class="welcome-path-item">
+            <span class="welcome-path-number">02</span>
+            <div>
+              <strong>Baru ingin mencoba?</strong>
+              <p>Gunakan mode Tamu untuk melihat alur dashboard dan mencoba rekomendasi seduh.</p>
+            </div>
+          </article>
+          <article class="welcome-path-item">
+            <span class="welcome-path-number">03</span>
+            <div>
+              <strong>Perlu contoh yang sudah terisi?</strong>
+              <p>Buka Data Demo untuk melihat contoh resep dan hasil seduh tanpa mengisi dari awal.</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="welcome-guide__footer">
+          <span class="welcome-guide__status-dot" aria-hidden="true"></span>
+          <p><strong>Data lokal tetap aman.</strong> Mode Tamu dan Demo tidak mengubah akun atau workspace milik pengguna lain.</p>
+        </div>
+      </aside>
     </div>
   </section>
 
@@ -129,7 +170,7 @@
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v36.0.0 · Modular Pages Architecture</small>
+          <small class="sidebar-build-version">v38.0.0 · Services & Welcome Refinement</small>
         </div>
       </aside>
 
@@ -201,12 +242,30 @@
 
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
-  <script src="assets/app-config.js?v=20260713-v36-modular"></script>
-  <script src="assets/core/routes.js?v=20260713-v36-modular"></script>
-  <script src="assets/core/runtime.js?v=20260713-v36-modular"></script>
+  <script src="assets/app-config.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/core/routes.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/core/navigation.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/core/runtime.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/services/storage-service.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/core/page-modules.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/beranda.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/cara-pakai.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/rekomendasi-seduh.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/input-seduhan.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/beans.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/stock.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/brew-log-qa.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/hasil-seduhan-publik.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/data-analytics.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/notification.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/export-report.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/saran.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/akun-role.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/pages/pustaka-data.js?v=20260713-v38-services-welcome"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
-  <script src="assets/data.js?v=20260713-v36-modular"></script>
-  <script src="assets/app.js?v=20260713-v36-modular"></script>
+  <script src="assets/services/supabase-service.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/data.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/app.js?v=20260713-v38-services-welcome"></script>
 </body>
 </html>

@@ -1,0 +1,35 @@
+Coffee Brew OS v37.0.0 — Build Report
+======================================
+Release: Clean URLs & Modular Scripts
+
+Build output
+- Root index: generated
+- GitHub Pages 404 fallback: generated
+- Clean route entry points: 14
+- HTML page fragments: 14
+- JavaScript page modules: 14
+
+Automated checks
+- Modular pages audit: 37/37 passed
+- Clean URL audit: 64/64 passed
+- Page modules audit: 46/46 passed
+- Functional audit: 68 passed, 0 failed
+- HTML IDs: 378 unique
+- Tab routes: 14/14 matched with panels
+- Buttons with explicit type: 124/124
+- Missing referenced local assets: 0
+- JavaScript syntax errors: 0
+
+Reference data retained
+- Varieties: 180
+- Post-harvest processes: 81
+- Drippers/setups: 74
+- Paper filters: 2
+- Roast profiles: 18
+- Water profiles: 15
+- Grinders: 16
+
+Runtime scope
+- HTTP checks returned 200 for root, clean route, and navigation asset.
+- End-to-end Supabase authentication, role, CRUD, and RLS were not executed because an active browser session and database test account are required.
+- Chromium visual automation was not used as a release gate in this environment; visual review should still be performed locally before production push.

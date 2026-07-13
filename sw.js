@@ -1,10 +1,50 @@
-const CACHE_NAME = "coffee-brew-os-v36-modular-pages";
+const CACHE_NAME = "coffee-brew-os-v38-services-welcome";
+const ROUTE_ENTRIES = [
+  "beranda",
+  "cara-pakai",
+  "rekomendasi-seduh",
+  "input-seduhan",
+  "beans",
+  "stock",
+  "brew-log-qa",
+  "hasil-seduhan-publik",
+  "data-analytics",
+  "notification",
+  "export-report",
+  "saran",
+  "akun-role",
+  "pustaka-data"
+].map(route => `./${route}/`);
+
+const PAGE_MODULES = [
+  "beranda",
+  "cara-pakai",
+  "rekomendasi-seduh",
+  "input-seduhan",
+  "beans",
+  "stock",
+  "brew-log-qa",
+  "hasil-seduhan-publik",
+  "data-analytics",
+  "notification",
+  "export-report",
+  "saran",
+  "akun-role",
+  "pustaka-data"
+].map(name => `./assets/pages/${name}.js`);
+
 const CORE_ASSETS = [
   "./",
   "./index.html",
+  "./404.html",
+  ...ROUTE_ENTRIES,
   "./assets/app-config.js",
   "./assets/core/routes.js",
+  "./assets/core/navigation.js",
   "./assets/core/runtime.js",
+  "./assets/services/storage-service.js",
+  "./assets/core/page-modules.js",
+  ...PAGE_MODULES,
   "./assets/styles.css",
   "./assets/styles-v35-quiet-luxury.css",
   "./assets/styles-v35-1-functional.css",
@@ -13,9 +53,11 @@ const CORE_ASSETS = [
   "./assets/css/layout.css",
   "./assets/css/components.css",
   "./assets/css/pages.css",
+  "./assets/css/welcome.css",
   "./assets/app.js",
   "./assets/data.js",
   "./assets/supabase-config.js",
+  "./assets/services/supabase-service.js",
   "./assets/latte-art-icon.png",
   "./manifest.webmanifest"
 ];
@@ -71,10 +113,12 @@ self.addEventListener("fetch", event => {
     event.respondWith((async () => {
       try {
         const response = await fetch(request);
-        await putInCache(new Request(new URL("./index.html", self.location.href)), response);
+        await putInCache(request, response);
         return response;
       } catch (_error) {
-        return (await matchCache(new Request(new URL("./index.html", self.location.href)))) || Response.error();
+        return (await matchCache(request))
+          || (await matchCache(new Request(new URL("./index.html", self.location.href))))
+          || Response.error();
       }
     })());
     return;

@@ -1,20 +1,21 @@
 # Coffee Brew OS — Lestari Coffee Dashboard
 
-Coffee Brew OS adalah dashboard web untuk merancang rekomendasi seduh, mencatat eksperimen, mengelola stok biji kopi, melakukan QA, membaca analitik, mengekspor laporan, dan menjelajahi pustaka referensi kopi.
+Coffee Brew OS adalah dashboard web untuk menyusun rekomendasi seduh, mencatat eksperimen, mengelola stok biji kopi, melakukan QA, membaca analitik, mengekspor laporan, dan menjelajahi pustaka referensi kopi.
 
 ## Release aktif
 
-**v36.0.0 — Modular Pages Architecture**
+**v38.0.0 — Services & Welcome Refinement**
 
-v36 mempertahankan fungsi dan visual Quiet Luxury dari v35.1, lalu memisahkan sumber setiap menu menjadi file tersendiri. `index.html` sekarang dihasilkan dari shell, manifest route, dan 14 page fragment.
+Release ini melanjutkan clean URL dan modular page v37 dengan dua fokus:
 
-Dokumen perubahan:
+1. halaman pembuka dibangun ulang agar lebih rapi, natural, dan mudah dipahami;
+2. akses browser storage dan inisialisasi Supabase mulai dipindahkan ke service layer.
 
-```text
-docs/CHANGELOG_v36.md
-docs/V36_ARCHITECTURE.md
-docs/V36_BUILD_REPORT.txt
-```
+Judul pembuka sekarang menggunakan kalimat yang lebih natural:
+
+> Seduh lebih rapi. Hasil lebih konsisten.
+
+Pilihan akses juga disederhanakan menjadi Masuk ke Dashboard, Buat Akun, Jelajahi sebagai Tamu, dan Lihat Data Demo.
 
 ## Fitur utama
 
@@ -26,7 +27,7 @@ docs/V36_BUILD_REPORT.txt
 - Log Seduh & QA, moderasi, analitik, notifikasi kualitas, ekspor, dan laporan.
 - Role Admin, QA, Brewer, serta mode Guest.
 - Pustaka data varietas, proses, dripper/setup, filter kertas, profil sangrai, air, dan grinder.
-- PWA untuk cache asset dasar dan pengalaman offline terbatas.
+- PWA dengan cache untuk seluruh clean route, page module, dan service layer.
 
 ## Data referensi
 
@@ -44,39 +45,46 @@ docs/V36_BUILD_REPORT.txt
 
 ```text
 .
-├─ index.html                    # hasil build
+├─ index.html                    # hasil build untuk root
+├─ 404.html                      # fallback GitHub Pages
+├─ beranda/index.html            # clean URL entry point
+├─ cara-pakai/index.html
+├─ ...                           # 14 clean URL entry points
 ├─ src/
-│  ├─ shell.html                 # kerangka aplikasi
+│  ├─ shell.html                 # kerangka aplikasi dan welcome screen
 │  ├─ routes.json                # manifest halaman
 │  └─ pages/                     # 14 menu, satu file per menu
 ├─ assets/
 │  ├─ app-config.js
-│  ├─ app.js
+│  ├─ app.js                     # business logic utama, masih dalam proses refactor
 │  ├─ data.js
 │  ├─ supabase-config.js
 │  ├─ core/
 │  │  ├─ routes.js               # hasil build
+│  │  ├─ navigation.js           # History API dan clean URL
+│  │  ├─ page-modules.js         # registry lifecycle halaman
 │  │  └─ runtime.js
+│  ├─ services/
+│  │  ├─ storage-service.js      # penyimpanan browser dan auth adapter
+│  │  └─ supabase-service.js     # validasi config dan pembuatan client
+│  ├─ pages/                     # renderer orchestration per menu
 │  └─ css/
-│     ├─ tokens.css
-│     ├─ base.css
-│     ├─ layout.css
-│     ├─ components.css
-│     └─ pages.css
+│     ├─ welcome.css             # seluruh layout halaman pembuka v38
+│     └─ ...
 ├─ scripts/
 │  ├─ build-pages.mjs
-│  ├─ modular-pages-audit.mjs
+│  ├─ clean-url-audit.mjs
+│  ├─ page-modules-audit.mjs
+│  ├─ service-layer-audit.mjs
 │  ├─ functional-audit.mjs
-│  ├─ release-check.mjs
-│  └─ serve-local.mjs
+│  └─ release-check.mjs
 ├─ supabase/
-├─ docs/
-└─ .github/workflows/quality-check.yml
+└─ docs/
 ```
 
 ## Mengubah halaman
 
-Edit menu melalui file pada:
+Edit konten menu melalui:
 
 ```text
 src/pages/
@@ -88,7 +96,14 @@ Ubah route atau metadata melalui:
 src/routes.json
 ```
 
-Jangan menjadikan `index.html` sebagai sumber utama karena file tersebut akan dihasilkan ulang.
+Ubah halaman pembuka melalui:
+
+```text
+src/shell.html
+assets/css/welcome.css
+```
+
+Jangan mengedit `index.html` atau folder route hasil build secara manual karena semuanya dibuat ulang oleh `npm run build`.
 
 ## Menjalankan secara lokal
 
@@ -104,7 +119,7 @@ npm run serve
 Buka:
 
 ```text
-http://127.0.0.1:4173
+http://127.0.0.1:4173/
 ```
 
 ## Audit sebelum release
@@ -116,21 +131,22 @@ git diff --check
 
 `npm run check` menjalankan:
 
-1. build page modular;
-2. audit manifest dan fragment halaman;
-3. functional audit aplikasi, asset, PWA, Supabase browser config, dan dataset.
+1. build halaman dan clean route;
+2. audit page fragment;
+3. audit clean URL;
+4. audit page module;
+5. audit service layer;
+6. functional audit aplikasi, asset, PWA, Supabase browser config, dan dataset.
 
 Hasil audit mesin disimpan pada:
 
 ```text
-docs/V36_AUDIT_RESULT.json
+docs/V38_AUDIT_RESULT.json
 ```
 
 ## Konfigurasi Supabase
 
 Konfigurasi browser berada pada `assets/supabase-config.js`. Gunakan hanya Project URL dan anon/public key. Jangan menaruh `service_role` key di frontend atau repository. Keamanan data harus ditegakkan melalui Row Level Security.
-
-Database baru menggunakan `supabase/schema.sql`. Untuk database lama, baca `supabase/README.md` dan lakukan backup sebelum menjalankan repair atau migration.
 
 ## Workflow Git yang aman
 
@@ -138,7 +154,7 @@ Database baru menggunakan `supabase/schema.sql`. Untuk database lama, baca `supa
 powershell -ExecutionPolicy Bypass -File .\scripts\git-safe-update.ps1
 npm run check
 git add -A
-git commit -m "Deskripsi perubahan"
+git commit -m "Release v38 services and welcome refinement"
 git push origin main
 ```
 
@@ -146,17 +162,17 @@ Project menggunakan `fetch` dan `merge --ff-only`, bukan rebase otomatis. Jangan
 
 ## PWA dan cache
 
-v36 menggunakan cache:
+v38 menggunakan cache:
 
 ```text
-coffee-brew-os-v36-modular-pages
+coffee-brew-os-v38-services-welcome
 ```
 
-Setelah deployment besar, uji website melalui Incognito. Clear site data hanya diperlukan bila browser mempertahankan service worker lama.
+Setelah deployment besar, uji website melalui Incognito. Clear site data diperlukan bila browser masih mempertahankan service worker versi lama.
 
 ## Batasan release
 
-- Source halaman sudah terpisah, tetapi runtime JavaScript utama masih berada di `assets/app.js` demi kompatibilitas fungsi.
-- Navigasi produksi masih menggunakan hash route; clean URL akan dikerjakan setelah lifecycle modul stabil.
-- Pengujian otomatis bersifat statis dan tidak menggantikan uji end-to-end dengan session Supabase aktif.
+- Storage dan Supabase client creation sudah dipisahkan, tetapi sebagian besar business logic masih berada di `assets/app.js` untuk menjaga kompatibilitas fungsi.
+- Pengujian otomatis belum menggantikan uji end-to-end login, role, CRUD, dan sinkronisasi dengan session Supabase aktif.
+- Clean route dibuat sebagai static entry point agar kompatibel dengan GitHub Pages tanpa server rewrite.
 - Rekomendasi grinder, air, dan resep adalah titik awal dial-in, bukan jaminan hasil rasa yang sama pada setiap alat dan biji kopi.

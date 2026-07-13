@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
@@ -7,8 +7,11 @@ const srcDir = path.join(root, "src");
 const shellPath = path.join(srcDir, "shell.html");
 const manifestPath = path.join(srcDir, "routes.json");
 const outputPath = path.join(root, "index.html");
+const notFoundPath = path.join(root, "404.html");
 const routesOutputPath = path.join(root, "assets", "core", "routes.js");
-const placeholder = "<!-- PAGE_CONTENT: generated from src/pages via npm run build -->";
+const pagePlaceholder = "<!-- PAGE_CONTENT: generated from src/pages via npm run build -->";
+const basePlaceholder = "{{BASE_HREF}}";
+const routePlaceholder = "{{INITIAL_ROUTE}}";
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -16,6 +19,13 @@ function assert(condition, message) {
 
 function jsString(value) {
   return JSON.stringify(value, null, 2);
+}
+
+function renderDocument(shell, pageContent, { baseHref, initialRoute }) {
+  return shell
+    .replace(pagePlaceholder, `${pagePlaceholder}\n${pageContent}`)
+    .replaceAll(basePlaceholder, baseHref)
+    .replaceAll(routePlaceholder, initialRoute || "");
 }
 
 async function main() {
@@ -26,7 +36,9 @@ async function main() {
   const manifest = JSON.parse(manifestRaw);
   const pages = [...(manifest.pages || [])].sort((a, b) => a.order - b.order);
 
-  assert(shell.includes(placeholder), `Placeholder tidak ditemukan di ${path.relative(root, shellPath)}.`);
+  assert(shell.includes(pagePlaceholder), `Placeholder tidak ditemukan di ${path.relative(root, shellPath)}.`);
+  assert(shell.includes(basePlaceholder), `Base placeholder tidak ditemukan di ${path.relative(root, shellPath)}.`);
+  assert(shell.includes(routePlaceholder), `Route placeholder tidak ditemukan di ${path.relative(root, shellPath)}.`);
   assert(pages.length > 0, "Manifest halaman kosong.");
 
   const seenTabs = new Set();
@@ -50,9 +62,21 @@ async function main() {
     fragments.push(fragment);
   }
 
-  const pageContent = fragments.map(fragment => fragment.split("\n").map(line => `          ${line}`).join("\n")).join("\n\n");
-  const builtHtml = shell.replace(placeholder, `${placeholder}\n${pageContent}`);
-  await writeFile(outputPath, builtHtml, "utf8");
+  const pageContent = fragments
+    .map(fragment => fragment.split("\n").map(line => `          ${line}`).join("\n"))
+    .join("\n\n");
+
+  const rootHtml = renderDocument(shell, pageContent, { baseHref: "./", initialRoute: "" });
+  await writeFile(outputPath, rootHtml, "utf8");
+  await writeFile(notFoundPath, rootHtml, "utf8");
+
+  for (const page of pages) {
+    const routeDir = path.join(root, page.route);
+    await rm(routeDir, { recursive: true, force: true });
+    await mkdir(routeDir, { recursive: true });
+    const routeHtml = renderDocument(shell, pageContent, { baseHref: "../", initialRoute: page.route });
+    await writeFile(path.join(routeDir, "index.html"), routeHtml, "utf8");
+  }
 
   const routes = pages.map(({ order, tab, route, sectionId, title, subtitle, access }) => ({
     order,
@@ -68,6 +92,7 @@ async function main() {
   await writeFile(routesOutputPath, routesJs, "utf8");
 
   console.log(`Built ${pages.length} modular pages into index.html.`);
+  console.log(`Generated ${pages.length} clean URL entry points and 404 fallback.`);
   console.log(`Generated route registry: ${path.relative(root, routesOutputPath)}.`);
 }
 
