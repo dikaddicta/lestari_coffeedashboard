@@ -5963,6 +5963,18 @@
     showTab(tab, { skipRoute: true });
   }
 
+  function showRootWelcome() {
+    showTab("guide", { skipRoute: true });
+    $("welcomeScreen")?.classList.remove("is-hidden");
+    document.title = "Coffee Brew OS — Dashboard Seduh Kopi";
+    if (document.body) document.body.dataset.page = "welcome";
+  }
+
+  function replaceUrlWithAppRoot() {
+    const rootPath = NAVIGATION?.basePath || "/";
+    window.history.replaceState({ coffeeRoute: "" }, "", rootPath);
+  }
+
   function safeShowInitialRoute() {
     const route = currentRouteSlug();
     const tab = tabFromRoute(route);
@@ -5970,7 +5982,11 @@
       navigateByRoute(route);
       return;
     }
-    showTab(currentUser ? "home" : "guide", { replaceRoute: true });
+    if (currentUser) {
+      showTab("home", { replaceRoute: true });
+      return;
+    }
+    showRootWelcome();
   }
 
   function initPageRouter() {
@@ -6053,7 +6069,8 @@
     $("welcomeLoginBtn")?.addEventListener("click", openLoginFlow);
     $("welcomeGuestBtn")?.addEventListener("click", () => enterExperience("guest"));
     $("returnWelcomeBtn")?.addEventListener("click", () => {
-      $("welcomeScreen")?.classList.remove("is-hidden");
+      replaceUrlWithAppRoot();
+      showRootWelcome();
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
     $("topbarAccessBtn")?.addEventListener("click", openLoginFlow);
@@ -8308,8 +8325,8 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
   function applyReleaseMetadata() {
-    const version = APP_CONFIG.version || "42.0.0";
-    const release = APP_CONFIG.release || "Access Security & Audit Trail";
+    const version = APP_CONFIG.version || "42.1.0";
+    const release = APP_CONFIG.release || "Landing Route Hotfix";
     document.documentElement.dataset.appVersion = version;
     document.documentElement.dataset.appRelease = release;
     const buildLabel = document.querySelector(".sidebar-build-version");

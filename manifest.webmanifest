@@ -2,7 +2,7 @@
   "name": "Coffee Brew OS — Lestari Coffee Dashboard",
   "short_name": "Coffee Brew OS",
   "description": "Workspace seduh kopi dengan rekomendasi, QA, analitik, pembagian peran, dan riwayat aktivitas.",
-  "start_url": "./cara-pakai/",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#F3F1EC",

@@ -120,7 +120,7 @@ const keyMatches = config.match(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-
 check(keyMatches.length <= 1, "Browser configuration exposes at most one public Supabase token");
 
 const sw = read("sw.js");
-check(sw.includes("coffee-brew-os-v42-security-audit"), "Service worker uses the v42 cache name");
+check(sw.includes("coffee-brew-os-v42-1-landing-route"), "Service worker uses the v42.1 cache name");
 check(sw.includes("assets/services/security-service.js") && sw.includes("assets/services/audit-service.js"), "Service worker precaches security services");
 check(sw.includes("assets/css/security-audit.css"), "Service worker precaches security styles");
 

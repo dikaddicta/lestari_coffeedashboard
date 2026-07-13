@@ -1,0 +1,14 @@
+Coffee Brew OS v42.1.0 — Landing Route Hotfix
+
+Issue:
+Root URL untuk pengguna yang belum login otomatis diganti menjadi /cara-pakai/ walaupun welcome screen masih tampil.
+
+Cause:
+Fallback router menjalankan tab Cara Pakai dengan replaceRoute=true saat pathname root tidak memiliki route.
+
+Fix:
+- Root guest menampilkan welcome screen tanpa menulis route.
+- Login aktif tetap diarahkan ke /beranda/.
+- Guest/Cara Pakai tetap diarahkan ke /cara-pakai/ setelah interaksi pengguna.
+- Return to Welcome kembali ke root.
+- PWA start_url kembali ke root.

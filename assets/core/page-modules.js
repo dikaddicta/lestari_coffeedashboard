@@ -41,7 +41,7 @@
   }
 
   window.COFFEE_PAGE_MODULES = Object.freeze({
-    version: "42.0.0",
+    version: "42.1.0",
     register,
     activate,
     has,

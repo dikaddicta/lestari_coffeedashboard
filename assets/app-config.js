@@ -23,9 +23,9 @@
   });
 
   window.COFFEE_APP_CONFIG = Object.freeze({
-    version: "42.0.0",
-    release: "Access Security & Audit Trail",
-    build: "20260713-v42-security-audit",
+    version: "42.1.0",
+    release: "Landing Route Hotfix",
+    build: "20260713-v42-1-landing-route",
     environment: "production",
     features
   });

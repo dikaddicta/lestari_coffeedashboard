@@ -1,4 +1,4 @@
-const CACHE_NAME = "coffee-brew-os-v42-security-audit";
+const CACHE_NAME = "coffee-brew-os-v42-1-landing-route";
 const ROUTE_ENTRIES = [
   "beranda",
   "cara-pakai",

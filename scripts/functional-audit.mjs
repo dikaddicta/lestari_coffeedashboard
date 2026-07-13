@@ -116,14 +116,14 @@ const configContext = { window: {} };
 vm.createContext(configContext);
 vm.runInContext(read("assets/app-config.js"), configContext, { filename: "assets/app-config.js" });
 const appConfig = configContext.window.COFFEE_APP_CONFIG || {};
-record(appConfig.version === "42.0.0", "Application version is 42.0.0", String(appConfig.version || "missing"));
+record(appConfig.version === "42.1.0", "Application version is 42.1.0", String(appConfig.version || "missing"));
 record(appConfig.features?.debugTools === false, "Production debug tools are disabled");
 record(appConfig.features?.mascot === false, "Production mascot is disabled");
 
 const packageJson = JSON.parse(read("package.json"));
 record(packageJson.version === appConfig.version, "package.json version matches app config", String(packageJson.version || "missing"));
 record(html.includes(`v${appConfig.version} · ${appConfig.release}`), "Visible release label matches app config");
-record(read("sw.js").includes("coffee-brew-os-v42-security-audit"), "Service-worker cache name matches v42 release");
+record(read("sw.js").includes("coffee-brew-os-v42-1-landing-route"), "Service-worker cache name matches v42.1 release");
 record(exists("supabase/schema.sql"), "Canonical Supabase schema exists");
 record(exists("supabase/README.md"), "Supabase setup guide exists");
 

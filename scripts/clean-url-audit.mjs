@@ -22,7 +22,7 @@ check(!index.includes("{{BASE_HREF}}") && !index.includes("{{INITIAL_ROUTE}}"), 
 check(notFound.includes('<base href="./"'), "404 fallback harus menunjuk ke root assets");
 check(navigation.includes("pushState") && navigation.includes("replaceState"), "Navigation module harus memakai History API");
 check(navigation.includes("legacy-hash-migration"), "Navigation module harus memigrasikan hash route lama");
-check(webManifest.start_url === "./cara-pakai/", "PWA start_url harus memakai clean URL");
+check(webManifest.start_url === "./", "PWA start_url harus membuka landing page root");
 check((webManifest.shortcuts || []).every(item => !String(item.url || "").includes("#")), "PWA shortcuts tidak boleh memakai hash route");
 
 for (const page of manifest.pages || []) {

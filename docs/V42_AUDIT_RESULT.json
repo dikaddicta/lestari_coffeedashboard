@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-13T15:25:00.415Z",
-  "version": "42.0.0",
+  "generatedAt": "2026-07-13T16:33:18.473Z",
+  "version": "42.1.0",
   "summary": {
     "pass": 100,
     "fail": 0
@@ -238,8 +238,8 @@
     },
     {
       "status": "PASS",
-      "message": "Application version is 42.0.0",
-      "detail": "42.0.0"
+      "message": "Application version is 42.1.0",
+      "detail": "42.1.0"
     },
     {
       "status": "PASS",
@@ -254,7 +254,7 @@
     {
       "status": "PASS",
       "message": "package.json version matches app config",
-      "detail": "42.0.0"
+      "detail": "42.1.0"
     },
     {
       "status": "PASS",
@@ -263,7 +263,7 @@
     },
     {
       "status": "PASS",
-      "message": "Service-worker cache name matches v42 release",
+      "message": "Service-worker cache name matches v42.1 release",
       "detail": ""
     },
     {
