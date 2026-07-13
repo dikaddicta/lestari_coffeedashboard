@@ -17,6 +17,8 @@ function check(ok, message) {
 
 const serviceFiles = [
   "assets/services/storage-service.js",
+  "assets/services/security-service.js",
+  "assets/services/audit-service.js",
   "assets/services/supabase-service.js",
   "assets/services/auth-service.js",
   "assets/services/stock-service.js",
@@ -54,15 +56,18 @@ const context = {
       }
     }
   },
+  navigator: { userAgent: "audit" },
   URL
 };
 vm.createContext(context);
 vm.runInContext(read("assets/services/storage-service.js"), context, { filename: "storage-service.js" });
+vm.runInContext(read("assets/services/security-service.js"), context, { filename: "security-service.js" });
 vm.runInContext(read("assets/services/supabase-service.js"), context, { filename: "supabase-service.js" });
 vm.runInContext(read("assets/services/analytics-service.js"), context, { filename: "analytics-service.js" });
 
 const services = context.window.COFFEE_SERVICES || {};
 check(Boolean(services.storage), "Storage service registers globally");
+check(Boolean(services.security), "Security service registers globally");
 check(typeof services.storage?.readJSON === "function", "Storage service exposes JSON helpers");
 check(typeof services.storage?.authAdapter?.getItem === "function", "Storage service exposes Supabase auth adapter");
 check(Boolean(services.supabase), "Supabase service registers globally");

@@ -1,5 +1,5 @@
 {
-  "version": "41.0.0",
+  "version": "42.0.0",
   "pages": [
     {
       "order": 1,
@@ -127,8 +127,8 @@
       "route": "akun-role",
       "sectionId": "tab-admin",
       "file": "pages/13-akun-role.html",
-      "title": "Akun & Peran",
-      "subtitle": "Kelola akun, peran, dan workspace untuk membuka seluruh modul dashboard.",
+      "title": "Akses & Keamanan",
+      "subtitle": "Kelola sesi, anggota, pembagian peran, dan riwayat aktivitas workspace.",
       "access": "private"
     },
     {

@@ -1,4 +1,4 @@
-const CACHE_NAME = "coffee-brew-os-v41-analytics-cost";
+const CACHE_NAME = "coffee-brew-os-v42-security-audit";
 const ROUTE_ENTRIES = [
   "beranda",
   "cara-pakai",
@@ -43,6 +43,8 @@ const CORE_ASSETS = [
   "./assets/core/navigation.js",
   "./assets/core/runtime.js",
   "./assets/services/storage-service.js",
+  "./assets/services/security-service.js",
+  "./assets/services/audit-service.js",
   "./assets/core/event-bus.js",
   "./assets/core/validation.js",
   "./assets/core/app-state.js",
@@ -60,6 +62,7 @@ const CORE_ASSETS = [
   "./assets/css/workflow.css",
   "./assets/css/intelligence.css",
   "./assets/css/analytics-insight.css",
+  "./assets/css/security-audit.css",
   "./assets/app.js",
   "./assets/data.js",
   "./assets/supabase-config.js",

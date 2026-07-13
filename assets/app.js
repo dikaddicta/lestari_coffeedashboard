@@ -15,6 +15,8 @@
   const QA_SERVICE = SERVICES.qa || null;
   const ANALYTICS_SERVICE = SERVICES.analytics || null;
   const NOTIFICATION_SERVICE = SERVICES.notification || null;
+  const SECURITY_SERVICE = SERVICES.security || null;
+  const AUDIT_SERVICE = SERVICES.audit || null;
   const SAFE_STORAGE = SERVICES.storage || RUNTIME.storage || {
     get(key, fallback = null, kind = "local") {
       try {
@@ -87,6 +89,11 @@
   let pendingMemberRows = [];
   let workspaceMemberRows = [];
   let suggestionRows = [];
+  let auditRows = [];
+  let auditCloudAvailable = false;
+  let auditLastError = null;
+  let auditLoading = false;
+  let auditLoadedWorkspaceId = null;
   let dashboardUserCount = null;
   let dashboardUserCountSource = "local";
   let libraryCurrentRows = [];
@@ -116,7 +123,8 @@
   const isSwitch = (dripperName) => /switch/i.test(dripperName || "");
   const html = (s) => String(s ?? "").replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;","\"":"&quot;"}[ch]));
   const statusLabel = (status) => ({ pending: "Menunggu review", approved: "Disetujui", rejected: "Ditolak" }[String(status || "").toLowerCase()] || status || "-");
-  const memberStatusLabel = (status) => ({ pending: "Menunggu approval", active: "Aktif", rejected: "Ditolak", disabled: "Suspend" }[String(status || "").toLowerCase()] || status || "-");
+  const memberStatusLabel = (status) => ({ pending: "Menunggu persetujuan", active: "Aktif", rejected: "Ditolak", disabled: "Ditangguhkan" }[String(status || "").toLowerCase()] || status || "-");
+  const roleDisplayLabel = (role) => SECURITY_SERVICE?.roleLabel?.(role) || ({ admin: "Admin", qa: "QA", brewer: "Brewer", guest: "Tamu", viewer: "Viewer" }[String(role || "").toLowerCase()] || role || "-");
   const emptyRow = (colspan, title, detail = "", icon = "✦") => `<tr class="empty-state-row"><td colspan="${colspan}"><div class="empty-state"><span class="empty-icon">${html(icon)}</span><strong>${html(title)}</strong>${detail ? `<small>${html(detail)}</small>` : ""}</div></td></tr>`;
 
 
@@ -234,6 +242,56 @@
 
   function activeWorkspaceId() {
     return currentWorkspace?.id || null;
+  }
+
+  async function recordAuditEvent(action, options = {}) {
+    if (!AUDIT_SERVICE || !currentUser) return null;
+    return AUDIT_SERVICE.record({
+      client: supabaseClient,
+      workspaceId: options.workspaceId === undefined ? activeWorkspaceId() : options.workspaceId,
+      action,
+      category: options.category || "system",
+      entityType: options.entityType || null,
+      entityId: options.entityId || null,
+      outcome: options.outcome || "success",
+      severity: options.severity || "info",
+      message: options.message || "",
+      metadata: options.metadata || {},
+      userAgent: navigator.userAgent
+    });
+  }
+
+  function bindAuditEventCapture() {
+    if (document.body?.dataset.auditCaptureReady === "true") return;
+    if (document.body) document.body.dataset.auditCaptureReady = "true";
+    EVENT_BUS.on("auth:login", payload => recordAuditEvent("auth.login", {
+      workspaceId: payload?.workspace?.id || null,
+      category: "auth",
+      entityType: "user",
+      entityId: payload?.user?.id || null,
+      message: "Pengguna berhasil masuk ke dashboard.",
+      metadata: { role: payload?.role || "guest", workspace: payload?.workspace?.name || null }
+    }));
+    EVENT_BUS.on("stock:saved", payload => recordAuditEvent(payload?.editing ? "stock.updated" : "stock.created", {
+      category: "stock", entityType: "stock_bean", entityId: payload?.bean?.CloudID || payload?.bean?.BeanID || null,
+      message: payload?.editing ? "Data stok diperbarui." : "Data stok ditambahkan."
+    }));
+    EVENT_BUS.on("stock:deleted", payload => recordAuditEvent("stock.deleted", {
+      category: "stock", entityType: "stock_bean", entityId: payload?.bean?.CloudID || payload?.bean?.BeanID || null,
+      severity: "warning", message: "Data stok dihapus."
+    }));
+    EVENT_BUS.on("stock:consumed", payload => recordAuditEvent("stock.consumed", {
+      category: "stock", entityType: "stock_bean", entityId: payload?.bean?.CloudID || payload?.bean?.BeanID || null,
+      message: "Stok digunakan untuk seduhan.", metadata: { amount_g: Number(payload?.amount || 0) }
+    }));
+    EVENT_BUS.on("brew:saved", payload => recordAuditEvent("brew.saved", {
+      category: "brew", entityType: "brew_log", entityId: payload?.brew?.CloudID || payload?.brew?.BrewID || null,
+      message: "Log seduhan disimpan.", metadata: { source: payload?.source || "unknown" }
+    }));
+    EVENT_BUS.on("qa:saved", payload => recordAuditEvent("qa.saved", {
+      category: "qa", entityType: "qa_score", entityId: payload?.qa?.CloudID || payload?.qa?.QAID || null,
+      message: "Evaluasi QA disimpan.", metadata: { final: Number(payload?.final || 0), approved: Boolean(payload?.approved) }
+    }));
   }
 
   function publicStatusForInsert() {
@@ -584,9 +642,39 @@
           ? `Menunggu approval: ${pending.map(ws => `${ws.name} (${ws.role})`).join(", ")}`
           : "Belum ada workspace aktif.";
     }
+    const securitySettings = $("workspaceSecuritySettings");
+    if (securitySettings) setElementHidden(securitySettings, !(currentWorkspace && canAdmin()));
+    if ($("workspaceVisibilitySetting") && currentWorkspace) $("workspaceVisibilitySetting").value = currentWorkspace.visibility || "private";
+
     renderAuthUI();
     renderAccessUI();
     renderSignupRoleUI();
+  }
+
+  async function saveWorkspaceVisibility() {
+    if (!supabaseClient || !currentUser || !currentWorkspace || !canAdmin()) return showMessage("Aksi ini memerlukan peran Admin Workspace.", "error");
+    const visibility = $("workspaceVisibilitySetting")?.value || "private";
+    const button = $("saveWorkspaceVisibilityBtn");
+    const original = button?.textContent || "Simpan Visibilitas";
+    if (button) { button.disabled = true; button.textContent = "Menyimpan..."; }
+    try {
+      await prepareCloudWrite("Simpan visibilitas workspace");
+      const { data, error } = await withTimeout(
+        supabaseClient.from("workspaces").update({ visibility }).eq("id", currentWorkspace.id).select("id,name,slug,visibility,description,status").single(),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Simpan visibilitas workspace"
+      );
+      if (error || !data) throw error || new Error("Workspace tidak ditemukan.");
+      currentWorkspace = { ...currentWorkspace, ...data };
+      joinedWorkspaces = joinedWorkspaces.map(ws => ws.id === data.id ? { ...ws, ...data } : ws);
+      renderWorkspaceUI();
+      await loadAuditTrail().catch(console.warn);
+      showMessage(visibility === "public" ? "Workspace sekarang dapat dipilih saat pendaftaran." : "Workspace sekarang hanya terlihat oleh anggota aktif.", "success");
+    } catch (error) {
+      showMessage(`Gagal menyimpan visibilitas: ${error.message || error}`, "error");
+    } finally {
+      if (button) { button.disabled = false; button.textContent = original; }
+    }
   }
 
   async function setActiveWorkspace(id) {
@@ -600,11 +688,17 @@
     renderWorkspaceUI();
     await syncFromCloud(true).catch(console.warn);
     if (canModerate()) await loadModerationRows().catch(console.warn);
+    auditRows = [];
+    auditCloudAvailable = false;
+    auditLastError = null;
+    auditLoadedWorkspaceId = null;
     if (canAdmin()) {
       await loadMemberRequests().catch(console.warn);
       await loadWorkspaceMembers().catch(console.warn);
       await loadSuggestionRows().catch(console.warn);
+      await loadAuditTrail().catch(console.warn);
     }
+    renderSecurityAuditModule();
   }
 
   function setElementHidden(el, hidden) {
@@ -627,14 +721,14 @@
 
     const roleCtx = displayRoleContext();
     const roleStatusClass = roleCtx.status === "active" ? "approved" : roleCtx.status === "rejected" ? "rejected" : roleCtx.status === "pending" ? "pending" : roleCtx.status === "disabled" ? "disabled" : "";
-    const roleStatusText = roleCtx.status === "pending" ? "Menunggu approval" : roleCtx.status === "rejected" ? "Ditolak" : roleCtx.status === "disabled" ? "Akses disuspend" : roleCtx.status === "active" ? "Aktif" : "Belum ada workspace";
+    const roleStatusText = roleCtx.status === "pending" ? "Menunggu persetujuan" : roleCtx.status === "rejected" ? "Ditolak" : roleCtx.status === "disabled" ? "Akses ditangguhkan" : roleCtx.status === "active" ? "Aktif" : "Belum ada workspace";
 
-    if (title) title.textContent = isLoggedIn ? "Akun Pengguna" : "Masuk Pengguna";
+    if (title) title.textContent = isLoggedIn ? "Akun yang sedang digunakan" : "Masuk ke dashboard";
     if (userLabel) userLabel.textContent = isLoggedIn ? (userProfile?.display_name || currentUser.email || "Akun Pengguna") : "Mode Tamu";
     const avatarLabel = isLoggedIn ? (userProfile?.display_name || currentUser.email || "A") : "T";
     if ($("authAvatar")) $("authAvatar").textContent = String(avatarLabel).trim().charAt(0).toUpperCase() || "A";
     if (roleLabel) roleLabel.textContent = isLoggedIn
-      ? `${currentUser.email || "-"} · ${roleCtx.workspace || "-"} · ${roleCtx.role || "user"}`
+      ? `${currentUser.email || "-"} · ${roleCtx.workspace || "-"} · ${roleDisplayLabel(roleCtx.role || "guest")}`
       : "Masuk untuk menyimpan dan membagikan data.";
 
     if (accountBox) {
@@ -731,6 +825,8 @@
     const requestedRole = $("signupRole")?.value || "admin";
     const requestedWorkspaceId = $("signupWorkspace")?.value || "";
     if (!email || !password) return showMessage("Isi email dan kata sandi untuk daftar akun baru.", "error");
+    if (password.length < 8) return showMessage("Gunakan kata sandi minimal 8 karakter.", "error");
+    if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) return showMessage("Kata sandi perlu memuat huruf dan angka.", "error");
     if (["brewer", "qa"].includes(requestedRole) && !requestedWorkspaceId) {
       return showMessage("Pilih workspace/company untuk mendaftar sebagai Brewer atau QA.", "error");
     }
@@ -940,6 +1036,10 @@
     }
 
     try {
+      await recordAuditEvent("auth.logout", {
+        category: "auth", entityType: "user", entityId: currentUser?.id || null,
+        message: "Pengguna keluar dari dashboard."
+      }).catch(console.warn);
       if (supabaseClient) {
         const logoutRequest = AUTH_SERVICE
           ? AUTH_SERVICE.signOut(supabaseClient)
@@ -985,7 +1085,7 @@
       const payload = {
         name,
         slug,
-        visibility: "private",
+        visibility: $("workspaceVisibility")?.value || "public",
         description: $("workspaceDescription").value,
         created_by: currentUser.id
       };
@@ -1318,7 +1418,7 @@
           config: SUPABASE_CONFIG,
           library: window.supabase,
           storageAdapter: AUTH_STORAGE_ADAPTER,
-          clientHeader: "v41-analytics-cost"
+          clientHeader: "v42-security-audit"
         });
       } else {
         const projectUrl = getSupabaseProjectUrl();
@@ -1331,7 +1431,7 @@
             storage: AUTH_STORAGE_ADAPTER
           },
           global: {
-            headers: { "x-coffee-dashboard-client": "v41-analytics-cost" }
+            headers: { "x-coffee-dashboard-client": "v42-security-audit" }
           }
         });
       }
@@ -4845,6 +4945,7 @@
     pendingMemberRows = (data || []).map(row => ({ ...row, profile: profiles.find(p => p.id === row.user_id) || {} }));
     renderMemberRequests();
     renderAdminProDashboard();
+    renderSecurityOverview();
   }
 
   function renderMemberRequests(message = "") {
@@ -4867,8 +4968,8 @@
       const display = row.profile?.display_name || row.profile?.email || row.user_id;
       return `<tr>
         <td><strong>${html(display)}</strong><br><small>${html(row.profile?.email || row.user_id)}</small></td>
-        <td>${html(row.role)}</td>
-        <td><span class="status-pill pending">Menunggu approval</span></td>
+        <td>${html(roleDisplayLabel(row.role))}</td>
+        <td><span class="status-pill pending">Menunggu persetujuan</span></td>
         <td>${html((row.created_at || "").slice(0, 10))}</td>
         <td><div class="moderation-actions"><button class="secondary" data-member-action="approve" data-user-id="${html(row.user_id)}">Setujui</button><button class="danger" data-member-action="reject" data-user-id="${html(row.user_id)}">Tolak</button></div></td>
       </tr>`;
@@ -4894,7 +4995,8 @@
     if (error || !data) return showMessage(`Gagal memproses request: ${(error && error.message) || "row tidak ditemukan"}`, "error");
     await loadMemberRequests();
     await loadWorkspaceMembers();
-    showMessage(action === "approve" ? "Request akses disetujui. User sekarang bisa mengakses workspace." : "Request akses ditolak.", action === "approve" ? "success" : "info");
+    await loadAuditTrail().catch(console.warn);
+    showMessage(action === "approve" ? "Permintaan akses disetujui. Pengguna sekarang dapat mengakses workspace." : "Permintaan akses ditolak.", action === "approve" ? "success" : "info");
   }
 
   async function loadWorkspaceMembers(message = "") {
@@ -4924,6 +5026,7 @@
     workspaceMemberRows = (data || []).map(row => ({ ...row, profile: profiles.find(p => p.id === row.user_id) || {} }));
     renderWorkspaceMembers();
     renderAdminProDashboard();
+    renderSecurityOverview();
   }
 
   function renderWorkspaceMembers(message = "") {
@@ -4931,7 +5034,7 @@
     if (!table) return;
     const tbody = table.querySelector("tbody");
     if (!canAdmin()) {
-      tbody.innerHTML = emptyRow(6, "Panel khusus Admin Workspace", "Masuk dengan role admin untuk mengelola pengguna workspace.", "🔒");
+      tbody.innerHTML = emptyRow(6, "Panel khusus Admin Workspace", "Masuk sebagai admin untuk mengelola anggota workspace.", "🔒");
       return;
     }
     if (message) {
@@ -4939,7 +5042,7 @@
       return;
     }
     if (!workspaceMemberRows.length) {
-      tbody.innerHTML = emptyRow(6, "Belum ada pengguna aktif", "Setujui request akses atau undang tim untuk mulai berkolaborasi.", "👥");
+      tbody.innerHTML = emptyRow(6, "Belum ada anggota aktif", "Setujui permintaan akses untuk mulai berkolaborasi.", "👥");
       return;
     }
     const activeAdminCount = workspaceMemberRows.filter(row => row.role === "admin" && row.status === "active").length;
@@ -4948,38 +5051,71 @@
       const email = row.profile?.email || row.user_id;
       const statusClass = row.status === "active" ? "approved" : row.status === "disabled" ? "disabled" : row.status === "rejected" ? "rejected" : "pending";
       const isSelf = row.user_id === currentUser?.id;
-      const protectLastAdmin = row.role === "admin" && activeAdminCount <= 1;
-      const disableDanger = isSelf || protectLastAdmin;
-      let actions = `<span class="member-self-note">${isSelf ? "Akun admin aktif" : protectLastAdmin ? "Admin terakhir tidak bisa diubah" : "-"}</span>`;
-      if (!disableDanger) {
-        const firstAction = row.status === "disabled"
+      const protectLastAdmin = row.role === "admin" && row.status === "active" && activeAdminCount <= 1;
+      const disableManagement = isSelf || protectLastAdmin;
+      let actions = `<span class="member-self-note">${isSelf ? "Akun yang sedang digunakan" : protectLastAdmin ? "Admin aktif terakhir" : "-"}</span>`;
+      if (!disableManagement) {
+        const statusAction = row.status === "disabled"
           ? `<button class="secondary" data-workspace-user-action="activate" data-user-id="${html(row.user_id)}">Aktifkan</button>`
-          : `<button class="ghost" data-workspace-user-action="suspend" data-user-id="${html(row.user_id)}">Suspend</button>`;
-        actions = `${firstAction}<button class="danger" data-workspace-user-action="delete" data-user-id="${html(row.user_id)}">Hapus</button>`;
+          : `<button class="ghost" data-workspace-user-action="suspend" data-user-id="${html(row.user_id)}">Tangguhkan</button>`;
+        const roleSelect = `<label class="member-role-control"><span class="sr-only">Peran ${html(display)}</span><select data-workspace-user-role="${html(row.user_id)}" aria-label="Ubah peran ${html(display)}">
+          ${["brewer", "qa", "admin"].map(role => `<option value="${role}"${row.role === role ? " selected" : ""}>${html(roleDisplayLabel(role))}</option>`).join("")}
+        </select><button class="secondary" data-workspace-user-action="role" data-user-id="${html(row.user_id)}">Simpan Peran</button></label>`;
+        actions = `${roleSelect}${statusAction}<button class="danger" data-workspace-user-action="delete" data-user-id="${html(row.user_id)}">Lepas Akses</button>`;
       }
       return `<tr>
         <td><strong>${html(display)}</strong><br><small>${html(email)}</small></td>
-        <td>${html(row.role)}</td>
+        <td>${html(roleDisplayLabel(row.role))}</td>
         <td><span class="status-pill ${html(statusClass)}">${html(memberStatusLabel(row.status))}</span></td>
         <td>${html((row.created_at || "").slice(0, 10))}</td>
         <td>${html((row.updated_at || "").slice(0, 10))}</td>
-        <td><div class="moderation-actions">${actions}</div></td>
+        <td><div class="moderation-actions member-management-actions">${actions}</div></td>
       </tr>`;
     }).join("");
   }
 
   async function updateWorkspaceMember(userId, action) {
-    if (!supabaseClient || !canAdmin() || !currentWorkspace) return showMessage("Butuh role Admin Workspace.", "error");
+    if (!supabaseClient || !canAdmin() || !currentWorkspace) return showMessage("Aksi ini memerlukan peran Admin Workspace.", "error");
     const row = workspaceMemberRows.find(member => member.user_id === userId);
     if (!row) return showMessage("Data pengguna tidak ditemukan. Muat ulang tabel pengguna.", "error");
-    if (userId === currentUser?.id) return showMessage("Admin tidak bisa mengubah akses akunnya sendiri dari panel ini.", "error");
+    if (userId === currentUser?.id) return showMessage("Peran atau akses akun yang sedang digunakan tidak dapat diubah dari panel ini.", "error");
     const activeAdminCount = workspaceMemberRows.filter(member => member.role === "admin" && member.status === "active").length;
-    if (row.role === "admin" && activeAdminCount <= 1) return showMessage("Admin terakhir tidak bisa disuspend atau dihapus.", "error");
+
+    if (action === "role") {
+      const nextRole = document.querySelector(`[data-workspace-user-role="${CSS.escape(userId)}"]`)?.value || row.role;
+      if (!["brewer", "qa", "admin"].includes(nextRole)) return showMessage("Peran yang dipilih tidak valid.", "error");
+      if (nextRole === row.role) return showMessage("Peran pengguna tidak berubah.", "info");
+      if (row.role === "admin" && row.status === "active" && activeAdminCount <= 1 && nextRole !== "admin") {
+        return showMessage("Admin aktif terakhir tidak dapat diturunkan perannya.", "error");
+      }
+      if (!confirm(`Ubah peran ${row.profile?.display_name || row.profile?.email || userId} dari ${roleDisplayLabel(row.role)} menjadi ${roleDisplayLabel(nextRole)}?`)) return;
+      await prepareCloudWrite("Ubah peran pengguna");
+      const { data, error } = await withTimeout(
+        supabaseClient
+          .from("workspace_members")
+          .update({ role: nextRole, updated_at: new Date().toISOString() })
+          .eq("workspace_id", currentWorkspace.id)
+          .eq("user_id", userId)
+          .select("workspace_id,user_id,role")
+          .single(),
+        CLOUD_WRITE_TIMEOUT_MS,
+        "Ubah peran pengguna"
+      );
+      if (error || !data) return showMessage(`Gagal mengubah peran: ${(error && error.message) || "row tidak ditemukan"}`, "error");
+      await loadWorkspaceMembers();
+      await loadAuditTrail().catch(console.warn);
+      showMessage(`Peran pengguna diubah menjadi ${roleDisplayLabel(nextRole)}.`, "success");
+      return;
+    }
+
+    if (row.role === "admin" && row.status === "active" && activeAdminCount <= 1) {
+      return showMessage("Admin aktif terakhir tidak dapat ditangguhkan atau dilepas.", "error");
+    }
 
     if (action === "delete") {
       const label = row.profile?.display_name || row.profile?.email || row.user_id;
-      if (!confirm(`Hapus akses ${label} dari workspace ${currentWorkspace.name}? Akun Supabase user tidak dihapus.`)) return;
-      await prepareCloudWrite("Hapus akses user");
+      if (!confirm(`Lepas akses ${label} dari workspace ${currentWorkspace.name}? Akun pengguna tidak akan dihapus.`)) return;
+      await prepareCloudWrite("Lepas akses pengguna");
       const { data, error } = await withTimeout(
         supabaseClient
           .from("workspace_members")
@@ -4989,18 +5125,19 @@
           .select("workspace_id,user_id")
           .single(),
         CLOUD_WRITE_TIMEOUT_MS,
-        "Hapus akses user"
+        "Lepas akses pengguna"
       );
-      if (error || !data) return showMessage(`Gagal menghapus akses: ${(error && error.message) || "row tidak ditemukan"}`, "error");
+      if (error || !data) return showMessage(`Gagal melepas akses: ${(error && error.message) || "row tidak ditemukan"}`, "error");
       await loadWorkspaceMembers();
-      showMessage("Akses user ke workspace berhasil dihapus.", "success");
+      await loadAuditTrail().catch(console.warn);
+      showMessage("Akses pengguna ke workspace berhasil dilepas.", "success");
       return;
     }
 
     const status = action === "activate" ? "active" : "disabled";
     const verb = status === "active" ? "mengaktifkan kembali" : "menangguhkan akses";
-    showMessage(`Sedang ${verb} user...`, "info");
-    await prepareCloudWrite("Update akses user");
+    showMessage(`Sedang ${verb} pengguna...`, "info");
+    await prepareCloudWrite("Perbarui akses pengguna");
     const { data, error } = await withTimeout(
       supabaseClient
         .from("workspace_members")
@@ -5010,11 +5147,12 @@
         .select("workspace_id,user_id,status")
         .single(),
       CLOUD_WRITE_TIMEOUT_MS,
-      "Update akses user"
+      "Perbarui akses pengguna"
     );
     if (error || !data) return showMessage(`Gagal memperbarui akses: ${(error && error.message) || "row tidak ditemukan"}`, "error");
     await loadWorkspaceMembers();
-    showMessage(status === "active" ? "Akses user diaktifkan kembali." : "Akses user disuspend sementara.", status === "active" ? "success" : "info");
+    await loadAuditTrail().catch(console.warn);
+    showMessage(status === "active" ? "Akses pengguna diaktifkan kembali." : "Akses pengguna ditangguhkan sementara.", status === "active" ? "success" : "info");
   }
 
   async function submitSuggestion(e) {
@@ -6275,6 +6413,7 @@
     });
     $("logoutBtn")?.addEventListener("click", handleLogout);
     $("workspaceForm")?.addEventListener("submit", createWorkspace);
+    $("saveWorkspaceVisibilityBtn")?.addEventListener("click", saveWorkspaceVisibility);
     $("joinWorkspaceBtn")?.addEventListener("click", joinWorkspace);
     $("activeWorkspaceSelect")?.addEventListener("change", e => setActiveWorkspace(e.target.value));
     $("adminWorkspaceSelect")?.addEventListener("change", e => setActiveWorkspace(e.target.value));
@@ -6919,21 +7058,21 @@
     const workflow = $("adminWorkflowGrid");
     if (!metrics || !workflow) return;
 
-    const roleText = currentRole || "guest";
     const workspaceName = currentWorkspace?.name || "Belum ada workspace";
     const mod = adminModerationCounts();
     const activeUsers = workspaceMemberRows.filter(row => row.status === "active").length;
     const disabledUsers = workspaceMemberRows.filter(row => row.status === "disabled").length;
     const pendingAccess = pendingMemberRows.length;
     const openSuggestions = (suggestionRows || []).filter(row => ["open", "new", "reviewed"].includes(String(row.status || "open").toLowerCase())).length;
+    const warningAudit = (auditRows || []).filter(row => ["warning", "critical"].includes(row.severity)).length;
 
     const cards = [
-      ["Workspace", workspaceName, `${roleText} · ${canAdmin() ? "Admin controls active" : canModerate() ? "Moderation access" : "Limited access"}`],
-      ["Request Pending", pendingAccess, "Permintaan akses Brewer/QA yang menunggu keputusan."],
-      ["Active Users", activeUsers, disabledUsers ? `${disabledUsers} user disabled.` : "Pengguna aktif di workspace."],
-      ["Moderation Queue", mod.pending, `${mod.approved} approved · ${mod.rejected} rejected.`],
-      ["Suggestions", openSuggestions, "Masukan yang masih perlu ditinjau."],
-      ["Role Guard", canAdmin() ? "Admin" : canModerate() ? "QA" : "Viewer", canAdmin() ? "Bisa kelola user dan data." : canModerate() ? "Bisa moderasi data." : "Masuk sebagai admin/QA untuk aksi."]
+      ["Workspace Aktif", workspaceName, `${roleDisplayLabel(currentRole)} · ${canAdmin() ? "kontrol admin aktif" : canModerate() ? "akses moderasi aktif" : "akses terbatas"}`],
+      ["Menunggu Persetujuan", pendingAccess, "Permintaan anggota yang belum diputuskan."],
+      ["Anggota Aktif", activeUsers, disabledUsers ? `${disabledUsers} akses sedang ditangguhkan.` : "Tidak ada akses yang ditangguhkan."],
+      ["Antrean Moderasi", mod.pending, `${mod.approved} disetujui · ${mod.rejected} ditolak.`],
+      ["Masukan Terbuka", openSuggestions, "Masukan yang masih perlu ditinjau."],
+      ["Peringatan Keamanan", warningAudit, auditCloudAvailable ? "Dihitung dari riwayat aktivitas." : "Aktif setelah migration audit diterapkan."]
     ];
 
     metrics.innerHTML = cards.map(([label, value, desc], idx) => `
@@ -6945,10 +7084,10 @@
     `).join("");
 
     const steps = [
-      ["1", "Access intake", pendingAccess ? `${pendingAccess} request menunggu approval.` : "Tidak ada request pending.", canAdmin() ? "Cek Request Akses Workspace." : "Butuh Admin Workspace."],
-      ["2", "Workspace users", activeUsers ? `${activeUsers} user aktif.` : "Belum ada user aktif terbaca.", canAdmin() ? "Review role/status pengguna." : "Panel user khusus admin."],
-      ["3", "Moderation", mod.pending ? `${mod.pending} data menunggu review.` : "Tidak ada data pending.", canModerate() ? "Setujui/tolak data yang valid." : "Butuh QA/Admin."],
-      ["4", "Suggestions", openSuggestions ? `${openSuggestions} masukan terbuka.` : "Tidak ada masukan terbuka.", canAdmin() ? "Review dan tutup masukan." : "Panel masukan khusus admin."]
+      ["1", "Tinjau permintaan anggota", pendingAccess ? `${pendingAccess} permintaan menunggu keputusan.` : "Tidak ada permintaan baru.", canAdmin() ? "Periksa peran sebelum menyetujui." : "Memerlukan peran Admin."],
+      ["2", "Periksa anggota dan peran", activeUsers ? `${activeUsers} anggota aktif.` : "Belum ada anggota aktif terbaca.", canAdmin() ? "Pastikan izin sesuai tanggung jawab." : "Panel anggota khusus Admin."],
+      ["3", "Selesaikan moderasi", mod.pending ? `${mod.pending} data menunggu tinjauan.` : "Tidak ada data yang menunggu.", canModerate() ? "Setujui atau tolak dengan catatan yang jelas." : "Memerlukan peran QA atau Admin."],
+      ["4", "Tinjau riwayat aktivitas", auditRows.length ? `${auditRows.length} aktivitas terbaru tersedia.` : "Belum ada riwayat yang terbaca.", canAdmin() ? "Periksa perubahan akses dan tindakan penting." : "Riwayat workspace khusus Admin."]
     ];
 
     workflow.innerHTML = steps.map(([num, title, desc, action], idx) => `
@@ -7069,6 +7208,236 @@
     } catch (err) {
       showMessage(`Bulk masukan gagal: ${err.message || err}`, "error");
     }
+  }
+
+  function auditActionLabel(action) {
+    const labels = {
+      "auth.login": "Masuk ke dashboard",
+      "auth.logout": "Keluar dari dashboard",
+      "security.session_refreshed": "Sesi diperbarui",
+      "member.requested": "Permintaan akses dibuat",
+      "member.added": "Anggota ditambahkan",
+      "member.removed": "Anggota dilepas",
+      "member.role_changed": "Peran anggota diubah",
+      "member.status_changed": "Status anggota diubah",
+      "workspace.created": "Workspace dibuat",
+      "workspace.updated": "Workspace diperbarui",
+      "workspace.status_changed": "Status workspace diubah",
+      "workspace.deleted": "Workspace dihapus",
+      "moderation.status_changed": "Status moderasi diubah",
+      "stock.created": "Stok ditambahkan",
+      "stock.updated": "Stok diperbarui",
+      "stock.deleted": "Stok dihapus",
+      "stock.consumed": "Stok digunakan",
+      "brew.saved": "Log seduhan disimpan",
+      "qa.saved": "Evaluasi QA disimpan"
+    };
+    return labels[String(action || "")] || String(action || "Aktivitas sistem").replaceAll(".", " · ");
+  }
+
+  function auditCategoryLabel(category) {
+    return ({
+      auth: "Autentikasi", access: "Akses", workspace: "Workspace", moderation: "Moderasi",
+      stock: "Stok", brew: "Seduhan", qa: "QA", suggestion: "Masukan",
+      security: "Keamanan", system: "Sistem"
+    }[String(category || "").toLowerCase()] || category || "Sistem");
+  }
+
+  function auditOutcomeLabel(outcome) {
+    return ({ success: "Berhasil", failure: "Gagal", blocked: "Diblokir", info: "Informasi" }[String(outcome || "").toLowerCase()] || outcome || "-");
+  }
+
+  function formatAuditTime(value) {
+    const date = new Date(value || 0);
+    if (Number.isNaN(date.getTime())) return "-";
+    return new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short" }).format(date);
+  }
+
+  function filteredAuditRows() {
+    const category = $("auditCategoryFilter")?.value || "all";
+    const severity = $("auditSeverityFilter")?.value || "all";
+    const days = Number($("auditPeriodFilter")?.value || 0);
+    const floor = days ? Date.now() - days * 86400000 : 0;
+    return (auditRows || []).filter(row => {
+      if (category !== "all" && row.category !== category) return false;
+      if (severity !== "all" && row.severity !== severity) return false;
+      if (floor && new Date(row.created_at || 0).getTime() < floor) return false;
+      return true;
+    });
+  }
+
+  function renderPermissionMatrix() {
+    const tbody = $("permissionMatrixTable")?.querySelector("tbody");
+    if (!tbody) return;
+    const rows = SECURITY_SERVICE?.permissionRows?.() || [];
+    if (!rows.length) {
+      tbody.innerHTML = emptyRow(5, "Matriks izin belum tersedia", "Service keamanan belum dimuat.", "i");
+      return;
+    }
+    const marker = value => value
+      ? '<span class="permission-marker allowed" aria-label="Diizinkan">Ya</span>'
+      : '<span class="permission-marker denied" aria-label="Tidak diizinkan">Tidak</span>';
+    tbody.innerHTML = rows.map(row => `<tr>
+      <td><strong>${html(row.label)}</strong></td>
+      <td>${marker(row.guest)}</td>
+      <td>${marker(row.brewer)}</td>
+      <td>${marker(row.qa)}</td>
+      <td>${marker(row.admin)}</td>
+    </tr>`).join("");
+  }
+
+  function renderSecurityOverview() {
+    const session = SECURITY_SERVICE?.sessionSummary?.({
+      user: currentUser,
+      role: currentRole,
+      workspace: currentWorkspace,
+      cloudReady,
+      lastSync: cloudLastSync
+    }) || {};
+    const posture = SECURITY_SERVICE?.posture?.({
+      role: currentRole,
+      workspace: currentWorkspace,
+      members: workspaceMemberRows,
+      auditAvailable: auditCloudAvailable,
+      cloudReady
+    }) || { score: 0, checks: [] };
+
+    if ($("securityScoreMetric")) $("securityScoreMetric").textContent = posture.score || 0;
+    if ($("securityScoreRing")) $("securityScoreRing").style.setProperty("--security-score", `${posture.score || 0}%`);
+    if ($("securityScoreHint")) {
+      $("securityScoreHint").textContent = !currentUser
+        ? "Masuk untuk memeriksa sesi dan akses workspace."
+        : posture.score >= 80
+          ? "Kontrol utama aktif. Tetap tinjau riwayat perubahan secara berkala."
+          : "Masih ada kontrol yang perlu diselesaikan sebelum workspace siap digunakan bersama tim.";
+    }
+
+    const sessionList = $("securitySessionList");
+    if (sessionList) {
+      const values = [
+        ["Akun", session.email || "-"],
+        ["Peran", session.roleLabel || roleDisplayLabel(currentRole)],
+        ["Workspace", session.workspace || "-"],
+        ["Supabase", session.cloudReady ? "Terhubung" : "Belum terhubung"],
+        ["Masuk Terakhir", session.lastSignIn ? formatAuditTime(session.lastSignIn) : "-"],
+        ["Sinkron Terakhir", session.lastSync ? formatAuditTime(session.lastSync) : "-"]
+      ];
+      sessionList.innerHTML = values.map(([label, value]) => `<div><dt>${html(label)}</dt><dd>${html(value)}</dd></div>`).join("");
+    }
+
+    const checkList = $("securityCheckList");
+    if (checkList) {
+      checkList.innerHTML = (posture.checks || []).map(item => `<article class="security-check-item ${item.ok ? "is-ok" : "needs-action"}">
+        <span aria-hidden="true">${item.ok ? "✓" : "!"}</span>
+        <div><strong>${html(item.label)}</strong><small>${html(item.detail)}</small></div>
+      </article>`).join("");
+    }
+  }
+
+  function renderAuditTrail(message = "") {
+    const tbody = $("auditTrailTable")?.querySelector("tbody");
+    const notice = $("auditAvailabilityNotice");
+    if (!tbody) return;
+    if (!currentUser || !canAdmin()) {
+      tbody.innerHTML = emptyRow(6, "Riwayat khusus Admin Workspace", "Masuk sebagai admin untuk melihat aktivitas workspace.", "🔒");
+      if (notice) notice.innerHTML = '<span class="status-pill pending">Akses terbatas</span><p>Riwayat workspace hanya dapat dibaca oleh Admin.</p>';
+      return;
+    }
+    if (auditLoading) {
+      tbody.innerHTML = emptyRow(6, "Memuat riwayat aktivitas", "Mengambil catatan terbaru dari Supabase.", "…");
+      return;
+    }
+    if (message) {
+      tbody.innerHTML = emptyRow(6, "Riwayat aktivitas", message, "i");
+      return;
+    }
+
+    const rows = filteredAuditRows();
+    if (notice) {
+      notice.innerHTML = auditCloudAvailable
+        ? '<span class="status-pill approved">Audit Supabase aktif</span><p>Riwayat tersimpan sebagai data append-only dan dilindungi RLS.</p>'
+        : `<span class="status-pill pending">Fallback lokal</span><p>${html(auditLastError?.message || "Jalankan migration_v42_security_audit_rls.sql agar riwayat tersimpan di Supabase.")}</p>`;
+    }
+    if (!rows.length) {
+      tbody.innerHTML = emptyRow(6, "Belum ada aktivitas pada filter ini", "Ubah periode atau kategori, lalu perbarui riwayat.", "◇");
+      return;
+    }
+    tbody.innerHTML = rows.map(row => {
+      const actor = row.actor_email || (row.actor_id === currentUser?.id ? currentUser.email : row.actor_id) || "Sistem";
+      const sourceLabel = row.source === "local" ? "Browser" : "Supabase";
+      return `<tr>
+        <td><strong>${html(formatAuditTime(row.created_at))}</strong></td>
+        <td><small>${html(actor)}</small></td>
+        <td><strong>${html(auditActionLabel(row.action))}</strong>${row.message ? `<br><small>${html(row.message)}</small>` : ""}</td>
+        <td><span class="audit-category-pill ${html(row.category)}">${html(auditCategoryLabel(row.category))}</span></td>
+        <td><span class="audit-outcome-pill ${html(row.outcome)} ${html(row.severity)}">${html(auditOutcomeLabel(row.outcome))}</span></td>
+        <td><small>${html(sourceLabel)}</small></td>
+      </tr>`;
+    }).join("");
+  }
+
+  async function loadAuditTrail() {
+    if (!AUDIT_SERVICE || !currentUser || !currentWorkspace || !canAdmin()) {
+      auditRows = [];
+      auditCloudAvailable = false;
+      auditLastError = null;
+      renderAuditTrail();
+      renderSecurityOverview();
+      return;
+    }
+    auditLoading = true;
+    renderAuditTrail();
+    const result = await AUDIT_SERVICE.list({ client: supabaseClient, workspaceId: currentWorkspace.id, limit: 250 });
+    auditRows = result.rows || [];
+    auditCloudAvailable = Boolean(result.cloudAvailable);
+    auditLoadedWorkspaceId = currentWorkspace.id;
+    auditLastError = result.error || null;
+    auditLoading = false;
+    renderAuditTrail();
+    renderSecurityOverview();
+  }
+
+  async function refreshSecuritySession() {
+    const button = $("refreshSecuritySessionBtn");
+    const original = button?.textContent || "Perbarui Sesi";
+    if (button) { button.disabled = true; button.textContent = "Memeriksa..."; }
+    try {
+      if (!currentUser || !supabaseClient) {
+        showMessage("Masuk terlebih dahulu untuk memeriksa sesi.", "info");
+        return;
+      }
+      await refreshCurrentSession("Pemeriksaan sesi keamanan");
+      await loadWorkspaces().catch(console.warn);
+      if (canAdmin()) await loadWorkspaceMembers().catch(console.warn);
+      await recordAuditEvent("security.session_refreshed", {
+        category: "security", entityType: "session", entityId: currentUser.id,
+        message: "Sesi pengguna diperbarui dari panel keamanan."
+      });
+      await loadAuditTrail();
+      renderAuthUI();
+      renderSecurityOverview();
+      showMessage("Sesi dan akses berhasil diperbarui.", "success");
+    } catch (error) {
+      showMessage(`Pemeriksaan sesi gagal: ${error.message || error}`, "error");
+    } finally {
+      if (button) { button.disabled = false; button.textContent = original; }
+    }
+  }
+
+  function bindSecurityAuditPolish() {
+    if (document.body?.dataset.securityAuditReady === "true") return;
+    if (document.body) document.body.dataset.securityAuditReady = "true";
+    $("refreshSecuritySessionBtn")?.addEventListener("click", refreshSecuritySession);
+    $("refreshAuditTrail")?.addEventListener("click", loadAuditTrail);
+    ["auditCategoryFilter", "auditSeverityFilter", "auditPeriodFilter"].forEach(id => $(id)?.addEventListener("change", renderAuditTrail));
+    bindAuditEventCapture();
+  }
+
+  function renderSecurityAuditModule() {
+    renderPermissionMatrix();
+    renderSecurityOverview();
+    renderAuditTrail();
+    if (currentUser && currentWorkspace && canAdmin() && !auditLoading && auditLoadedWorkspaceId !== currentWorkspace.id) loadAuditTrail().catch(console.warn);
   }
 
   function reportRows(scope = $("reportScope")?.value || "workspace") {
@@ -7602,22 +7971,22 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     const loggedIn = Boolean(currentUser);
     const roleCtx = displayRoleContext();
     const status = roleCtx.status || (loggedIn ? "active" : "guest");
-    const statusText = status === "pending" ? "Pending"
-      : status === "rejected" ? "Rejected"
-      : status === "disabled" ? "Disabled"
-      : status === "active" ? "Active"
+    const statusText = status === "pending" ? "Menunggu"
+      : status === "rejected" ? "Ditolak"
+      : status === "disabled" ? "Ditangguhkan"
+      : status === "active" ? "Aktif"
       : "Tamu";
 
     if ($("adminModeMetric")) $("adminModeMetric").textContent = loggedIn ? "Login" : "Tamu";
     if ($("adminModeHint")) $("adminModeHint").textContent = loggedIn ? (currentUser.email || "User aktif") : "Masuk untuk membuka seluruh fitur.";
-    if ($("adminRoleMetric")) $("adminRoleMetric").textContent = roleCtx.role || "-";
-    if ($("adminRoleHint")) $("adminRoleHint").textContent = loggedIn ? "Role mengikuti workspace aktif." : "Role tersedia setelah login.";
+    if ($("adminRoleMetric")) $("adminRoleMetric").textContent = roleDisplayLabel(roleCtx.role || "guest");
+    if ($("adminRoleHint")) $("adminRoleHint").textContent = loggedIn ? "Peran mengikuti workspace aktif." : "Peran tersedia setelah login.";
     if ($("adminWorkspaceMetric")) $("adminWorkspaceMetric").textContent = roleCtx.workspace || "-";
     if ($("adminWorkspaceHint")) $("adminWorkspaceHint").textContent = currentWorkspace?.slug || "Pilih atau buat workspace.";
     if ($("adminStatusMetric")) $("adminStatusMetric").textContent = statusText;
-    if ($("adminStatusHint")) $("adminStatusHint").textContent = status === "pending" ? "Menunggu approval admin."
-      : status === "rejected" ? "Akses ditolak."
-      : status === "disabled" ? "Akses disuspend."
+    if ($("adminStatusHint")) $("adminStatusHint").textContent = status === "pending" ? "Menunggu persetujuan admin."
+      : status === "rejected" ? "Permintaan akses ditolak."
+      : status === "disabled" ? "Akses sedang ditangguhkan."
       : status === "active" ? "Akses workspace aktif."
       : "Mode tamu aktif.";
   }
@@ -7710,12 +8079,14 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     notificationSummary: updateNotificationSummary,
     reportPreview: renderReportPreview,
     library: renderLibrary,
-    adminWorkspace: renderAdminWorkspaceModule
+    adminWorkspace: renderAdminWorkspaceModule,
+    securityAudit: renderSecurityAuditModule
   });
 
   function renderAdminWorkspaceModule() {
     renderWorkspaceUI();
     renderAdminProDashboard();
+    renderSecurityAuditModule();
     if (canModerate()) loadModerationRows().catch(console.warn);
     else renderModerationTable?.();
     if (canAdmin()) {
@@ -7764,7 +8135,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
       analytics: ["analytics"],
       quality: ["dataQuality", "notificationSummary"],
       reports: ["reportPreview"],
-      admin: ["adminWorkspace"],
+      admin: ["adminWorkspace", "securityAudit"],
       library: ["library"]
     };
     (fallback[tab] || []).forEach(renderNamedPagePart);
@@ -7937,8 +8308,8 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
   function applyReleaseMetadata() {
-    const version = APP_CONFIG.version || "41.0.0";
-    const release = APP_CONFIG.release || "Core Workflow Modules";
+    const version = APP_CONFIG.version || "42.0.0";
+    const release = APP_CONFIG.release || "Access Security & Audit Trail";
     document.documentElement.dataset.appVersion = version;
     document.documentElement.dataset.appRelease = release;
     const buildLabel = document.querySelector(".sidebar-build-version");
@@ -7964,6 +8335,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     bindNotificationCenter();
     bindReportSuitePolish();
     bindAccountRolePolish();
+    bindSecurityAuditPolish();
     bindCustomProcessInputs();
     bindUxAuditButtonSafety();
     bindMobileExperiencePolish();

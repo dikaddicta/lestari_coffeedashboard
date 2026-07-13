@@ -9,6 +9,7 @@ const steps = [
   ["Audit core workflow modules", ["scripts/workflow-modules-audit.mjs"]],
   ["Audit recommendation and QA engine", ["scripts/recommendation-qa-audit.mjs"]],
   ["Audit analytics and cost insight", ["scripts/analytics-insight-audit.mjs"]],
+  ["Audit roles, RLS, and activity trail", ["scripts/security-audit.mjs"]],
   ["Functional audit", ["scripts/functional-audit.mjs"]]
 ];
 
@@ -24,4 +25,4 @@ for (const [label, args] of steps) {
   }
 }
 
-console.log("\nRelease check passed. Modular source, clean URLs, page modules, service layer, core workflow modules, recommendation reasoning, QA diagnostics, analytics insight, cost estimation, validation feedback, and dashboard functionality are consistent.");
+console.log("\nRelease check passed. Modular source, clean URLs, page modules, service layer, core workflow modules, recommendation reasoning, QA diagnostics, analytics insight, cost estimation, role safeguards, RLS hardening, append-only audit trail, validation feedback, and dashboard functionality are consistent.");

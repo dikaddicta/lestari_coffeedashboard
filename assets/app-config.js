@@ -16,13 +16,16 @@
     recommendationEngine: true,
     qaDiagnostics: true,
     analyticsInsight: true,
-    costPerCup: true
+    costPerCup: true,
+    securityHardening: true,
+    auditTrail: true,
+    roleManagement: true
   });
 
   window.COFFEE_APP_CONFIG = Object.freeze({
-    version: "41.0.0",
-    release: "Analytics & Cost Insight",
-    build: "20260713-v41-analytics-cost",
+    version: "42.0.0",
+    release: "Access Security & Audit Trail",
+    build: "20260713-v42-security-audit",
     environment: "production",
     features
   });

@@ -115,8 +115,8 @@
     "tab": "admin",
     "route": "akun-role",
     "sectionId": "tab-admin",
-    "title": "Akun & Peran",
-    "subtitle": "Kelola akun, peran, dan workspace untuk membuka seluruh modul dashboard.",
+    "title": "Akses & Keamanan",
+    "subtitle": "Kelola sesi, anggota, pembagian peran, dan riwayat aktivitas workspace.",
     "access": "private"
   },
   {
@@ -133,7 +133,7 @@
   const byRoute = Object.fromEntries(pages.map(page => [page.route, byTab[page.tab]]));
 
   window.COFFEE_PAGES = Object.freeze({
-    version: "41.0.0",
+    version: "42.0.0",
     pages: Object.freeze(pages.map(page => byTab[page.tab])),
     byTab: Object.freeze(byTab),
     byRoute: Object.freeze(byRoute),

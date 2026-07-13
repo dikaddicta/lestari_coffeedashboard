@@ -1,0 +1,99 @@
+{
+  "version": "42.0.0",
+  "base_url": "http://127.0.0.1:4173",
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 152086,
+      "passed": true
+    },
+    {
+      "path": "/akun-role/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 152096,
+      "passed": true
+    },
+    {
+      "path": "/beranda/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 152094,
+      "passed": true
+    },
+    {
+      "path": "/stock/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 152092,
+      "passed": true
+    },
+    {
+      "path": "/brew-log-qa/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 152098,
+      "passed": true
+    },
+    {
+      "path": "/data-analytics/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 152101,
+      "passed": true
+    },
+    {
+      "path": "/assets/services/security-service.js",
+      "status": 200,
+      "content_type": "text/javascript; charset=utf-8",
+      "bytes": 5619,
+      "passed": true
+    },
+    {
+      "path": "/assets/services/audit-service.js",
+      "status": 200,
+      "content_type": "text/javascript; charset=utf-8",
+      "bytes": 4734,
+      "passed": true
+    },
+    {
+      "path": "/assets/css/security-audit.css",
+      "status": 200,
+      "content_type": "text/css; charset=utf-8",
+      "bytes": 6431,
+      "passed": true
+    },
+    {
+      "path": "/assets/app.js",
+      "status": 200,
+      "content_type": "text/javascript; charset=utf-8",
+      "bytes": 394921,
+      "passed": true
+    },
+    {
+      "path": "/assets/core/routes.js",
+      "status": 200,
+      "content_type": "text/javascript; charset=utf-8",
+      "bytes": 4376,
+      "passed": true
+    },
+    {
+      "path": "/manifest.webmanifest",
+      "status": 200,
+      "content_type": "application/manifest+json; charset=utf-8",
+      "bytes": 1400,
+      "passed": true
+    },
+    {
+      "path": "/sw.js",
+      "status": 200,
+      "content_type": "text/javascript; charset=utf-8",
+      "bytes": 4373,
+      "passed": true
+    }
+  ],
+  "passed": 13,
+  "failed": 0
+}

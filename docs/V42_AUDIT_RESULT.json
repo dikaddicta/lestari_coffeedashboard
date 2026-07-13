@@ -1,0 +1,510 @@
+{
+  "generatedAt": "2026-07-13T15:25:00.415Z",
+  "version": "42.0.0",
+  "summary": {
+    "pass": 100,
+    "fail": 0
+  },
+  "results": [
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/app-config.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/routes.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/navigation.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/runtime.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/services/storage-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/services/security-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/services/audit-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/event-bus.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/validation.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/app-state.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/page-modules.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/services/supabase-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/services/auth-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/services/stock-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/services/brew-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/services/recommendation-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/services/qa-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/services/analytics-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/services/notification-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/data.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/app.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: sw.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/beranda.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/cara-pakai.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/rekomendasi-seduh.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/input-seduhan.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/beans.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/stock.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/brew-log-qa.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/hasil-seduhan-publik.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/data-analytics.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/notification.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/export-report.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/saran.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/akun-role.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/pages/pustaka-data.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "411 unique HTML IDs",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "14 tab routes have panels",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Sidebar navigation buttons use type=button",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "126 buttons have explicit type",
+      "detail": "0 missing"
+    },
+    {
+      "status": "PASS",
+      "message": "Referenced local assets exist",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "3 images include alt text",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "External new-tab links use rel=noopener",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Runtime scripts load in safe order",
+      "detail": "assets/app-config.js → assets/core/routes.js → assets/core/navigation.js → assets/core/runtime.js → assets/services/storage-service.js → assets/services/security-service.js → assets/services/audit-service.js → assets/core/event-bus.js → assets/core/validation.js → assets/core/app-state.js → assets/core/page-modules.js → assets/pages/beranda.js → assets/pages/cara-pakai.js → assets/pages/rekomendasi-seduh.js → assets/pages/input-seduhan.js → assets/pages/beans.js → assets/pages/stock.js → assets/pages/brew-log-qa.js → assets/pages/hasil-seduhan-publik.js → assets/pages/data-analytics.js → assets/pages/notification.js → assets/pages/export-report.js → assets/pages/saran.js → assets/pages/akun-role.js → assets/pages/pustaka-data.js → https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2 → assets/supabase-config.js → assets/services/supabase-service.js → assets/services/auth-service.js → assets/services/stock-service.js → assets/services/brew-service.js → assets/services/recommendation-service.js → assets/services/qa-service.js → assets/services/analytics-service.js → assets/services/notification-service.js → assets/data.js → assets/app.js"
+    },
+    {
+      "status": "PASS",
+      "message": "Application code uses safe storage adapter",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Debug tools are production-gated",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Application version is 42.0.0",
+      "detail": "42.0.0"
+    },
+    {
+      "status": "PASS",
+      "message": "Production debug tools are disabled",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Production mascot is disabled",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "package.json version matches app config",
+      "detail": "42.0.0"
+    },
+    {
+      "status": "PASS",
+      "message": "Visible release label matches app config",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service-worker cache name matches v42 release",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Canonical Supabase schema exists",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Supabase setup guide exists",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Supabase browser key uses anon role",
+      "detail": "anon"
+    },
+    {
+      "status": "PASS",
+      "message": "No Supabase service-role key marker in browser config",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "40 service-worker core assets exist",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/app-config.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/core/routes.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/core/navigation.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/core/runtime.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/storage-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/security-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/audit-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/core/event-bus.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/core/validation.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/core/app-state.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/core/page-modules.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/styles-v35-1-functional.css",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/css/welcome.css",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/css/workflow.css",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/css/intelligence.css",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/css/analytics-insight.css",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/supabase-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/auth-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/stock-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/brew-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/recommendation-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/qa-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/analytics-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/notification-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/app.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/data.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Asset failures no longer fall back to HTML",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "COFFEE_DATA loads successfully",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "varieties: 180 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "drippers: 74 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "filters: 2 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "processes: 81 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "roasts: 18 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "waters: 15 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "grinders: 16 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Paper filters are not counted as drippers",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "varieties count remains 180",
+      "detail": "180"
+    },
+    {
+      "status": "PASS",
+      "message": "processes count remains 81",
+      "detail": "81"
+    },
+    {
+      "status": "PASS",
+      "message": "drippers count remains 74",
+      "detail": "74"
+    },
+    {
+      "status": "PASS",
+      "message": "filters count remains 2",
+      "detail": "2"
+    },
+    {
+      "status": "PASS",
+      "message": "roasts count remains 18",
+      "detail": "18"
+    },
+    {
+      "status": "PASS",
+      "message": "waters count remains 15",
+      "detail": "15"
+    },
+    {
+      "status": "PASS",
+      "message": "grinders count remains 16",
+      "detail": "16"
+    }
+  ]
+}

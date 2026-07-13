@@ -14,21 +14,22 @@
   <meta property="og:title" content="Coffee Brew OS — Dashboard Seduh Kopi" />
   <meta property="og:description" content="Dashboard untuk rekomendasi seduh, log seduh, QA, analitik, laporan, dan pustaka data kopi." />
   <meta property="og:type" content="website" />
-  <link rel="manifest" href="manifest.webmanifest?v=20260713-v41-analytics-cost" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260713-v42-security-audit" />
   <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
   <link rel="preload" href="assets/latte-art-icon.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260713-v41-analytics-cost" />
-  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v41-analytics-cost" />
-  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v41-analytics-cost" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v41-analytics-cost" />
-  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v41-analytics-cost" />
-  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v41-analytics-cost" />
-  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v41-analytics-cost" />
-  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v41-analytics-cost" />
-  <link rel="stylesheet" href="assets/css/welcome.css?v=20260713-v41-analytics-cost" />
-  <link rel="stylesheet" href="assets/css/workflow.css?v=20260713-v41-analytics-cost" />
-  <link rel="stylesheet" href="assets/css/intelligence.css?v=20260713-v41-analytics-cost" />
-  <link rel="stylesheet" href="assets/css/analytics-insight.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/css/welcome.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/css/workflow.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/css/intelligence.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/css/analytics-insight.css?v=20260713-v42-security-audit" />
+  <link rel="stylesheet" href="assets/css/security-audit.css?v=20260713-v42-security-audit" />
 </head>
 <body class="quiet-luxury-ui modular-pages-ui modular-scripts-ui" data-initial-route="notification">
 
@@ -173,7 +174,7 @@
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v41.0.0 · Analytics & Cost Insight</small>
+          <small class="sidebar-build-version">v42.0.0 · Access Security & Audit Trail</small>
         </div>
       </aside>
 
@@ -1791,191 +1792,268 @@
                 </section>
 
           <section id="tab-admin" class="tab-panel">
-                    <section class="panel page-intro-card page-intro-card--admin">
-                      <div>
-                        <span class="page-intro-eyebrow">Kontrol Akses</span>
-                        <h2>Akun & Peran</h2>
-                        <p>Kelola akses akun, workspace, role, approval member, dan administrasi dasar untuk membuka seluruh fitur Coffee Brew OS.</p>
-                        <div class="page-intro-chips"><span>Masuk</span>
-          <span>Workspace</span>
-          <span>Berbasis Peran</span></div>
-                      </div>
-                      <div class="page-intro-actions">
-                        <button class="secondary page-intro-action" type="button" data-jump-tab="home">Kembali Beranda</button>
-                      </div>
-                    </section>
+            <section class="panel page-intro-card page-intro-card--admin">
+              <div>
+                <span class="page-intro-eyebrow">Akses &amp; Keamanan</span>
+                <h2>Akun, Akses &amp; Keamanan</h2>
+                <p>Kelola sesi akun, anggota workspace, pembagian peran, persetujuan akses, dan riwayat aktivitas dari satu tempat.</p>
+                <div class="page-intro-chips">
+                  <span>Sesi Aman</span>
+                  <span>Peran Terukur</span>
+                  <span>Riwayat Aktivitas</span>
+                </div>
+              </div>
+              <div class="page-intro-actions">
+                <button class="secondary page-intro-action" type="button" data-jump-tab="home">Kembali ke Beranda</button>
+              </div>
+            </section>
           
-                    <section class="panel admin-command-center">
-                      <div>
-                        <span class="mini-label">Pusat Kontrol Akses</span>
-                        <h2>Kelola akun, role, dan workspace dari satu halaman</h2>
-                        <p>Gunakan halaman ini untuk login, daftar akun, memilih workspace, membuat company, dan memantau status akses user.</p>
-                      </div>
-                      <div class="admin-command-actions">
-                        <button id="adminQuickLoginBtn" class="secondary" type="button">Masuk</button>
-                        <button id="adminQuickSignupBtn" class="secondary" type="button">Daftar</button>
-                        <button id="adminQuickWorkspaceBtn" class="secondary" type="button">Workspace</button>
-                        <button class="primary" type="button" data-jump-tab="home">Beranda</button>
-                      </div>
-                    </section>
+            <section class="panel admin-command-center security-command-center">
+              <div>
+                <span class="mini-label">Ringkasan Akses</span>
+                <h2>Pastikan orang yang tepat mendapat akses yang tepat</h2>
+                <p>Periksa sesi aktif, workspace, peran pengguna, dan catatan perubahan sebelum melakukan tindakan administratif.</p>
+              </div>
+              <div class="admin-command-actions">
+                <button id="adminQuickLoginBtn" class="secondary" type="button">Masuk</button>
+                <button id="adminQuickSignupBtn" class="secondary" type="button">Buat Akun</button>
+                <button id="adminQuickWorkspaceBtn" class="secondary" type="button">Pilih Workspace</button>
+                <button id="refreshSecuritySessionBtn" class="primary" type="button">Perbarui Sesi</button>
+              </div>
+            </section>
           
-                    <section class="admin-status-strip" id="adminStatusStrip" aria-live="polite">
-                      <article><span>Mode Akses</span><strong id="adminModeMetric">Tamu</strong><small id="adminModeHint">Masuk untuk membuka seluruh fitur.</small></article>
-                      <article><span>Role</span><strong id="adminRoleMetric">-</strong><small id="adminRoleHint">Belum ada role aktif.</small></article>
-                      <article><span>Workspace</span><strong id="adminWorkspaceMetric">-</strong><small id="adminWorkspaceHint">Pilih atau buat workspace.</small></article>
-                      <article><span>Status</span><strong id="adminStatusMetric">-</strong><small id="adminStatusHint">Status akses user.</small></article>
-                    </section>
+            <section class="admin-status-strip" id="adminStatusStrip" aria-live="polite">
+              <article><span>Mode</span><strong id="adminModeMetric">Tamu</strong><small id="adminModeHint">Masuk untuk membuka fitur privat.</small></article>
+              <article><span>Peran Aktif</span><strong id="adminRoleMetric">-</strong><small id="adminRoleHint">Peran mengikuti workspace yang dipilih.</small></article>
+              <article><span>Workspace</span><strong id="adminWorkspaceMetric">-</strong><small id="adminWorkspaceHint">Pilih atau buat workspace.</small></article>
+              <article><span>Status Akses</span><strong id="adminStatusMetric">-</strong><small id="adminStatusHint">Belum ada akses aktif.</small></article>
+            </section>
           
+            <section class="security-overview-grid" aria-live="polite">
+              <article class="panel security-score-card">
+                <span class="mini-label">Kesiapan Keamanan</span>
+                <div class="security-score-ring" id="securityScoreRing"><strong id="securityScoreMetric">0</strong><small>/100</small></div>
+                <p id="securityScoreHint">Masuk dan pilih workspace untuk menjalankan pemeriksaan.</p>
+              </article>
+              <article class="panel security-session-card">
+                <div class="section-title"><span>Sesi Saat Ini</span><h2>Informasi sesi</h2></div>
+                <dl class="security-session-list" id="securitySessionList"></dl>
+              </article>
+              <article class="panel security-check-card">
+                <div class="section-title"><span>Pemeriksaan</span><h2>Kontrol utama</h2></div>
+                <div class="security-check-list" id="securityCheckList"></div>
+              </article>
+            </section>
           
-                  <div class="grid two-col top-align">
-                    <section class="panel account-auth-panel">
-                      <div class="section-title"><span>Akun &amp; Peran</span><h2 id="authPanelTitle">Login Pengguna</h2></div>
-                      <div id="authSignupShortcut" class="auth-signup-shortcut hidden">
-                        <div>
-                          <span class="mini-label">Daftar Akun</span>
-                          <strong>Buat akun baru untuk membuka semua fitur.</strong>
-                          <small>Isi email, password, display name, role, dan workspace sesuai kebutuhan.</small>
-                        </div>
-                        <button id="openSignupDetailsBtn" class="secondary" type="button">Buka Form Daftar</button>
-                      </div>
-                      <div id="authLoggedOutArea">
-                        <form id="loginForm" class="form-grid compact">
-                          <label>Email<input id="authEmail" autocomplete="email" inputmode="email" type="email" placeholder="nama@email.com" autocomplete="email" /></label>
-                          <label>Kata Sandi<input id="authPassword" autocomplete="current-password" type="password" placeholder="Kata sandi akun" autocomplete="current-password" /></label>
-                          <div class="span-2 inline-actions">
-                            <button class="primary" id="loginBtn" type="button">Masuk</button>
-                          </div>
-                        </form>
-          
-                        <hr class="soft-line" />
-          
-                        <details class="signup-details" id="signupDetails">
-                          <summary>Belum punya akun? Daftar di sini</summary>
-                          <form id="signupForm" class="form-grid compact signup-form">
-                            <label>Email<input id="signupEmail" autocomplete="email" inputmode="email" type="email" placeholder="nama@email.com" autocomplete="email" /></label>
-                            <label>Kata Sandi<input id="signupPassword" autocomplete="new-password" type="password" placeholder="Minimal 6 karakter" autocomplete="new-password" /></label>
-                            <label>Nama Tampilan<input id="authDisplayName" autocomplete="name" placeholder="Nama / brand" /></label>
-                            <label>Daftar sebagai
-                              <select id="signupRole">
-                                <option value="admin">Admin Workspace</option>
-                                <option value="brewer">Brewer</option>
-                                <option value="qa">QA</option>
-                              </select>
-                            </label>
-                            <label id="signupWorkspaceWrap" class="span-2 hidden">Pilih Workspace / Company
-                              <select id="signupWorkspace"></select>
-                            </label>
-                            <p id="signupApprovalHint" class="hint small-note span-2 hidden">Akses Brewer/QA akan berstatus menunggu approval dari Admin Workspace yang dipilih.</p>
-                            <div class="span-2 inline-actions">
-                              <button class="secondary" id="signupBtn" type="button">Daftar Akun Baru</button>
-                            </div>
-                          </form>
-                        </details>
-                      </div>
-          
-                      <div id="authLoggedInArea" class="logged-in-actions hidden">
-                        <p class="hint small-note">Kamu sudah masuk. Form login dan daftar disembunyikan.</p>
-                        <button class="ghost" id="logoutBtn" type="button">Keluar</button>
-                      </div>
-                      <div class="account-profile-title"><span>Sesi Aktif</span><strong>Status akun aktif</strong></div>
-                      <div class="account-box" id="accountBox">Belum masuk.</div>
-                    </section>
-          
-                    <section class="panel workspace-access-panel" id="workspacePanel">
-                      <div class="section-title"><span>Workspace</span><h2>Coffee Shop / Roastery</h2></div>
-                      <p class="hint" id="workspacePanelHint">Workspace hanya bisa dikelola oleh Admin Workspace. Brewer dan QA yang mendaftar ke company yang sama akan masuk sebagai request dan baru bisa mengakses fitur setelah disetujui admin.</p>
-                      <div class="form-grid compact">
-                        <label>Workspace Aktif<select id="adminWorkspaceSelect"></select></label>
-                      </div>
-                      <div id="workspaceCreateArea">
-                        <hr class="soft-line" />
-                        <form id="workspaceForm" class="form-grid compact">
-                          <label>Nama Workspace<input id="workspaceName" placeholder="Contoh: Roastery ABC" /></label>
-                          <label>Company<input id="workspaceSlug" placeholder="roastery-abc" /></label>
-                          <label class="span-2">Deskripsi<textarea id="workspaceDescription" rows="2" placeholder="Profil singkat coffee shop / roastery"></textarea></label>
-                          <button class="primary span-2" id="createWorkspaceBtn" type="submit">Buat Workspace</button>
-                        </form>
-                      </div>
-                      <div id="workspaceMemberArea" class="hidden">
-                        <hr class="soft-line" />
-                        <div class="account-box">Akses workspace untuk Brewer/QA dikelola oleh Admin Workspace. Jika statusmu masih pending, hubungi admin company yang kamu pilih saat pendaftaran.</div>
-                      </div>
-                    </section>
+            <div class="grid two-col top-align">
+              <section class="panel account-auth-panel">
+                <div class="section-title"><span>Akun</span><h2 id="authPanelTitle">Masuk ke dashboard</h2></div>
+                <div id="authSignupShortcut" class="auth-signup-shortcut hidden">
+                  <div>
+                    <span class="mini-label">Pengguna Baru</span>
+                    <strong>Buat akun untuk menyimpan data ke workspace.</strong>
+                    <small>Gunakan email aktif dan pilih peran sesuai tanggung jawabmu.</small>
                   </div>
-          
-                  <section class="panel wide account-role-path-panel">
-                    <div class="section-title">
-                      <span>Alur Akses</span>
-                      <h2>Alur akses user</h2>
+                  <button id="openSignupDetailsBtn" class="secondary" type="button">Buka Form Pendaftaran</button>
+                </div>
+                <div id="authLoggedOutArea">
+                  <form id="loginForm" class="form-grid compact">
+                    <label>Email<input id="authEmail" inputmode="email" type="email" placeholder="nama@email.com" autocomplete="email" /></label>
+                    <label>Kata Sandi<input id="authPassword" type="password" placeholder="Kata sandi akun" autocomplete="current-password" /></label>
+                    <div class="span-2 inline-actions">
+                      <button class="primary" id="loginBtn" type="button">Masuk</button>
                     </div>
-                    <div class="role-path-grid">
-                      <article><b>01</b><strong>Daftar / Login</strong><small>User membuat akun atau masuk menggunakan akun yang sudah ada.</small></article>
-                      <article><b>02</b><strong>Pilih Workspace</strong><small>Admin membuat workspace, Brewer/QA memilih company yang tersedia.</small></article>
-                      <article><b>03</b><strong>Approval Role</strong><small>Brewer/QA menunggu approval dari Admin Workspace sebelum membuka fitur privat.</small></article>
-                      <article><b>04</b><strong>Access Active</strong><small>Setelah aktif, user bisa memakai modul sesuai role dan workspace.</small></article>
-                    </div>
-                  </section>
+                  </form>
           
-                  <section class="panel wide admin-pro-dashboard" id="adminProDashboard">
-                    <div class="section-title">
-                      <span>Admin Workspace</span>
-                      <h2>Pusat Kendali Workspace</h2>
-                    </div>
-                    <p class="hint">Ringkasan akses, pengguna, moderasi, dan masukan untuk workspace aktif. Panel ini membantu admin melihat antrean pekerjaan tanpa harus membuka setiap tabel satu per satu.</p>
-                    <div class="admin-pro-grid" id="adminProMetricGrid" aria-live="polite"></div>
-                    <div class="admin-workflow-grid" id="adminWorkflowGrid" aria-live="polite"></div>
-                  </section>
+                  <hr class="soft-line" />
           
-                  <section class="panel wide" id="memberApprovalPanel">
-                    <div class="section-title"><span>Approval</span><h2>Request Akses Workspace</h2></div>
-                    <p class="hint">Admin Workspace menyetujui atau menolak pendaftar Brewer/QA di organisasi yang sama. Setelah disetujui, pengguna dapat mengakses rekomendasi biji kopi, stok kopi, Log Seduh & QA, dan fitur workspace terkait.</p>
-                    <div class="admin-toolbar">
-                      <button id="refreshMemberRequests" class="secondary" type="button">Muat Ulang Request</button>
-                      <button id="bulkApproveMembers" class="secondary" type="button">Setujui Semua Pending</button>
-                    </div>
-                    <div class="table-wrap tall"><table id="memberRequestTable"><thead><tr><th>Nama / Email</th><th>Role Diminta</th><th>Status</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
-                  </section>
+                  <details class="signup-details" id="signupDetails">
+                    <summary>Belum punya akun? Daftar di sini</summary>
+                    <form id="signupForm" class="form-grid compact signup-form">
+                      <label>Email<input id="signupEmail" inputmode="email" type="email" placeholder="nama@email.com" autocomplete="email" /></label>
+                      <label>Kata Sandi<input id="signupPassword" type="password" placeholder="Minimal 8 karakter" autocomplete="new-password" /></label>
+                      <label>Nama Tampilan<input id="authDisplayName" placeholder="Nama atau nama usaha" autocomplete="name" /></label>
+                      <label>Peran yang Dibutuhkan
+                        <select id="signupRole">
+                          <option value="admin">Admin Workspace</option>
+                          <option value="brewer">Brewer</option>
+                          <option value="qa">QA / Peninjau Kualitas</option>
+                        </select>
+                      </label>
+                      <label id="signupWorkspaceWrap" class="span-2 hidden">Workspace Tujuan
+                        <select id="signupWorkspace"></select>
+                      </label>
+                      <p id="signupApprovalHint" class="hint small-note span-2 hidden">Permintaan Brewer atau QA akan ditinjau oleh Admin Workspace sebelum akses diaktifkan.</p>
+                      <div class="span-2 inline-actions">
+                        <button class="secondary" id="signupBtn" type="button">Buat Akun</button>
+                      </div>
+                    </form>
+                  </details>
+                </div>
           
-                  <section class="panel wide" id="workspaceUserPanel">
-                    <div class="section-title"><span>Pengguna</span><h2>Pengguna Workspace</h2></div>
-                    <p class="hint">Daftar akun yang tergabung dalam workspace aktif. Admin dapat menghentikan akses sementara atau menghapus akses user dari workspace tanpa menghapus akun Supabase user tersebut.</p>
-                    <div class="admin-toolbar"><button id="refreshWorkspaceUsers" class="secondary" type="button">Muat Ulang Pengguna</button></div>
-                    <div class="table-wrap tall"><table id="workspaceUserTable"><thead><tr><th>Nama / Email</th><th>Role</th><th>Status</th><th>Bergabung</th><th>Update Terakhir</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
-                  </section>
+                <div id="authLoggedInArea" class="logged-in-actions hidden">
+                  <p class="hint small-note">Sesi akun sedang aktif. Keluar setelah selesai memakai perangkat bersama.</p>
+                  <button class="ghost" id="logoutBtn" type="button">Keluar dari Sesi Ini</button>
+                </div>
+                <div class="account-profile-title"><span>Akun Aktif</span><strong>Identitas dan akses saat ini</strong></div>
+                <div class="account-box" id="accountBox">Belum masuk.</div>
+              </section>
           
-                  <section class="panel wide" id="suggestionInboxPanel">
-                    <div class="section-title"><span>Masukan</span><h2>Kotak Saran Masuk</h2></div>
-                    <p class="hint">Admin Workspace dapat membaca masukan yang dikirim dari menu Kotak Saran. Data cloud disimpan di tabel Supabase <code>suggestions</code>; jika Supabase tidak aktif, salinan lokal hanya ada di browser pengirim.</p>
-                    <div class="admin-toolbar">
-                      <button id="refreshSuggestions" class="secondary" type="button">Muat Ulang Masukan</button>
-                      <button id="bulkTinjauSuggestions" class="secondary" type="button">Tandai Semua Tinjaued</button>
-                      <button id="bulkCloseSuggestions" class="ghost" type="button">Tutup Semua Tinjaued</button>
-                    </div>
-                    <div class="table-wrap tall"><table id="suggestionInboxTable"><thead><tr><th>Status</th><th>Kategori</th><th>Masukan</th><th>Pengirim</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
-                  </section>
+              <section class="panel workspace-access-panel" id="workspacePanel">
+                <div class="section-title"><span>Workspace</span><h2>Ruang kerja tim</h2></div>
+                <p class="hint" id="workspacePanelHint">Admin membuat dan mengelola workspace. Brewer atau QA memilih workspace tujuan lalu menunggu persetujuan admin.</p>
+                <div class="form-grid compact">
+                  <label>Workspace Aktif<select id="adminWorkspaceSelect"></select></label>
+                </div>
+                <div id="workspaceCreateArea">
+                  <hr class="soft-line" />
+                  <form id="workspaceForm" class="form-grid compact">
+                    <label>Nama Workspace<input id="workspaceName" placeholder="Contoh: Lestari Roastery" maxlength="120" /></label>
+                    <label>Slug Workspace<input id="workspaceSlug" placeholder="lestari-roastery" maxlength="80" /></label>
+                    <label>Visibilitas Direktori
+                      <select id="workspaceVisibility">
+                        <option value="public" selected>Publik — dapat dipilih saat pendaftaran</option>
+                        <option value="private">Privat — hanya anggota yang dapat melihat</option>
+                      </select>
+                    </label>
+                    <label class="span-2">Deskripsi<textarea id="workspaceDescription" rows="2" maxlength="500" placeholder="Profil singkat coffee shop atau roastery"></textarea></label>
+                    <button class="primary span-2" id="createWorkspaceBtn" type="submit">Buat Workspace</button>
+                  </form>
+                </div>
+                <div id="workspaceMemberArea" class="hidden">
+                  <hr class="soft-line" />
+                  <div class="account-box">Jika status akses masih menunggu, hubungi Admin Workspace yang dipilih saat pendaftaran.</div>
+                </div>
+                <div id="workspaceSecuritySettings" class="workspace-security-settings hidden">
+                  <hr class="soft-line" />
+                  <div class="section-title"><span>Pengaturan Akses</span><h2>Visibilitas workspace</h2></div>
+                  <p class="hint small-note">Workspace publik hanya menampilkan nama dan deskripsi di daftar pendaftaran. Stok, log seduh, QA, dan data internal tetap dilindungi RLS.</p>
+                  <div class="form-grid compact">
+                    <label>Visibilitas Direktori
+                      <select id="workspaceVisibilitySetting">
+                        <option value="public">Publik — dapat dipilih saat pendaftaran</option>
+                        <option value="private">Privat — hanya anggota yang dapat melihat</option>
+                      </select>
+                    </label>
+                    <button id="saveWorkspaceVisibilityBtn" class="secondary" type="button">Simpan Visibilitas</button>
+                  </div>
+                </div>
+              </section>
+            </div>
           
-                  <section class="panel wide">
-                    <div class="section-title"><span>Peran</span><h2>Peran & Aturan Moderasi</h2></div>
-                    <div class="role-grid">
-                      <article><strong>Brewer</strong><p>Input stok, brew log, dan QA sebagai data menunggu review. Tidak bisa menyetujui data sendiri.</p></article>
-                      <article><strong>QA</strong><p>Bisa meninjau dan menyetujui/menolak brew log serta nilai QA di workspace.</p></article>
-                      <article><strong>Admin</strong><p>Bisa menyetujui/menolak, mengedit, menghapus data bermasalah, dan mengelola workspace.</p></article>
-                    </div>
-                  </section>
+            <section class="panel wide account-role-path-panel">
+              <div class="section-title">
+                <span>Alur Akses</span>
+                <h2>Bagaimana akses diberikan</h2>
+              </div>
+              <div class="role-path-grid">
+                <article><b>01</b><strong>Buat akun atau masuk</strong><small>Gunakan identitas akun yang valid agar perubahan dapat ditelusuri.</small></article>
+                <article><b>02</b><strong>Pilih workspace</strong><small>Admin membuat workspace; Brewer dan QA memilih tim yang akan diikuti.</small></article>
+                <article><b>03</b><strong>Admin meninjau permintaan</strong><small>Admin memeriksa peran yang diminta sebelum menyetujui atau menolak akses.</small></article>
+                <article><b>04</b><strong>Akses siap digunakan</strong><small>Fitur yang terbuka mengikuti peran dan workspace aktif.</small></article>
+              </div>
+            </section>
           
-                  <section class="panel wide" id="adminPanel">
-                    <div class="section-title"><span>Moderasi</span><h2>Panel Admin — Menunggu Tinjau / Disetujui / Ditolak</h2></div>
-                    <div class="admin-toolbar">
-                      <select id="moderationDataset" aria-label="Pilih dataset moderasi"><option value="brew_logs">Log Seduh</option><option value="qa_scores">Nilai QA</option></select>
-                      <select id="moderationStatus" aria-label="Pilih status moderasi"><option value="pending">Menunggu review</option><option value="approved">Disetujui</option><option value="rejected">Ditolak</option><option value="all">Semua</option></select>
-                      <button id="refreshModeration" class="secondary" type="button">Muat Ulang</button>
-                      <button id="bulkApproveModeration" class="secondary" type="button">Setujui Tampilan</button>
-                      <button id="bulkRejectModeration" class="danger" type="button">Tolak Tampilan</button>
-                    </div>
-                    <div class="table-wrap tall"><table id="moderationTable"><thead></thead><tbody></tbody></table></div>
-                    <p class="hint small-note">Setujui/Tolak tersedia untuk QA dan Admin. Hapus data hanya tersedia untuk Admin Workspace dan akan benar-benar menghapus row dari Supabase jika policy database sudah sesuai.</p>
-                  </section>
-                </section>
+            <section class="panel wide permission-matrix-panel">
+              <div class="section-title">
+                <span>Hak Akses</span>
+                <h2>Pembagian izin per peran</h2>
+              </div>
+              <p class="hint">Gunakan prinsip akses minimum: berikan izin sesuai tanggung jawab, lalu tingkatkan hanya ketika benar-benar diperlukan.</p>
+              <div class="table-wrap permission-table-wrap">
+                <table id="permissionMatrixTable">
+                  <thead><tr><th>Kemampuan</th><th>Tamu</th><th>Brewer</th><th>QA</th><th>Admin</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </section>
+          
+            <section class="panel wide admin-pro-dashboard" id="adminProDashboard">
+              <div class="section-title">
+                <span>Administrasi Workspace</span>
+                <h2>Ringkasan pekerjaan admin</h2>
+              </div>
+              <p class="hint">Lihat permintaan anggota, status pengguna, antrean moderasi, masukan, dan kontrol keamanan workspace aktif.</p>
+              <div class="admin-pro-grid" id="adminProMetricGrid" aria-live="polite"></div>
+              <div class="admin-workflow-grid" id="adminWorkflowGrid" aria-live="polite"></div>
+            </section>
+          
+            <section class="panel wide" id="memberApprovalPanel">
+              <div class="section-title"><span>Permintaan Anggota</span><h2>Akses yang menunggu persetujuan</h2></div>
+              <p class="hint">Periksa identitas dan peran yang diminta sebelum mengaktifkan akses Brewer atau QA.</p>
+              <div class="admin-toolbar">
+                <button id="refreshMemberRequests" class="secondary" type="button">Muat Ulang</button>
+                <button id="bulkApproveMembers" class="secondary" type="button">Setujui Semua yang Tampil</button>
+              </div>
+              <div class="table-wrap tall"><table id="memberRequestTable"><thead><tr><th>Nama / Email</th><th>Peran Diminta</th><th>Status</th><th>Diajukan</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+            </section>
+          
+            <section class="panel wide" id="workspaceUserPanel">
+              <div class="section-title"><span>Anggota</span><h2>Pengguna workspace</h2></div>
+              <p class="hint">Admin dapat mengubah peran, menangguhkan akses sementara, atau melepas anggota dari workspace tanpa menghapus akun pengguna.</p>
+              <div class="admin-toolbar"><button id="refreshWorkspaceUsers" class="secondary" type="button">Muat Ulang Pengguna</button></div>
+              <div class="table-wrap tall"><table id="workspaceUserTable"><thead><tr><th>Nama / Email</th><th>Peran</th><th>Status</th><th>Bergabung</th><th>Diperbarui</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+            </section>
+          
+            <section class="panel wide audit-trail-panel" id="auditTrailPanel">
+              <div class="section-title"><span>Riwayat Aktivitas</span><h2>Perubahan penting di workspace</h2></div>
+              <p class="hint">Catatan ini bersifat append-only: pengguna tidak dapat mengubah atau menghapus riwayat melalui dashboard. Jalankan migration v42 agar log tersimpan di Supabase.</p>
+              <div class="admin-toolbar audit-toolbar">
+                <select id="auditCategoryFilter" aria-label="Filter kategori aktivitas">
+                  <option value="all">Semua kategori</option>
+                  <option value="access">Akses</option>
+                  <option value="workspace">Workspace</option>
+                  <option value="moderation">Moderasi</option>
+                  <option value="stock">Stok</option>
+                  <option value="brew">Seduhan</option>
+                  <option value="qa">QA</option>
+                  <option value="suggestion">Masukan</option>
+                  <option value="security">Keamanan</option>
+                  <option value="auth">Autentikasi</option>
+                </select>
+                <select id="auditSeverityFilter" aria-label="Filter tingkat aktivitas">
+                  <option value="all">Semua tingkat</option>
+                  <option value="critical">Kritis</option>
+                  <option value="warning">Peringatan</option>
+                  <option value="notice">Perhatian</option>
+                  <option value="info">Informasi</option>
+                </select>
+                <select id="auditPeriodFilter" aria-label="Filter periode aktivitas">
+                  <option value="7">7 hari</option>
+                  <option value="30" selected>30 hari</option>
+                  <option value="90">90 hari</option>
+                  <option value="0">Semua waktu</option>
+                </select>
+                <button id="refreshAuditTrail" class="secondary" type="button">Perbarui Riwayat</button>
+              </div>
+              <div id="auditAvailabilityNotice" class="audit-availability-notice" aria-live="polite"></div>
+              <div class="table-wrap tall"><table id="auditTrailTable"><thead><tr><th>Waktu</th><th>Pelaku</th><th>Aktivitas</th><th>Kategori</th><th>Hasil</th><th>Sumber</th></tr></thead><tbody></tbody></table></div>
+            </section>
+          
+            <section class="panel wide" id="suggestionInboxPanel">
+              <div class="section-title"><span>Masukan Pengguna</span><h2>Kotak saran masuk</h2></div>
+              <p class="hint">Admin dapat meninjau masukan yang dikirim ke workspace aktif atau komunitas publik.</p>
+              <div class="admin-toolbar">
+                <button id="refreshSuggestions" class="secondary" type="button">Muat Ulang Masukan</button>
+                <button id="bulkReviewSuggestions" class="secondary" type="button">Tandai Semua sebagai Ditinjau</button>
+                <button id="bulkCloseSuggestions" class="ghost" type="button">Tutup Semua yang Ditinjau</button>
+              </div>
+              <div class="table-wrap tall"><table id="suggestionInboxTable"><thead><tr><th>Status</th><th>Kategori</th><th>Masukan</th><th>Pengirim</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+            </section>
+          
+            <section class="panel wide" id="adminPanel">
+              <div class="section-title"><span>Moderasi</span><h2>Tinjau hasil seduhan dan nilai QA</h2></div>
+              <div class="admin-toolbar">
+                <select id="moderationDataset" aria-label="Pilih data yang ditinjau"><option value="brew_logs">Log Seduh</option><option value="qa_scores">Nilai QA</option></select>
+                <select id="moderationStatus" aria-label="Pilih status peninjauan"><option value="pending">Menunggu tinjauan</option><option value="approved">Disetujui</option><option value="rejected">Ditolak</option><option value="all">Semua status</option></select>
+                <button id="refreshModeration" class="secondary" type="button">Muat Ulang</button>
+                <button id="bulkApproveModeration" class="secondary" type="button">Setujui yang Tampil</button>
+                <button id="bulkRejectModeration" class="danger" type="button">Tolak yang Tampil</button>
+              </div>
+              <div class="table-wrap tall"><table id="moderationTable"><thead></thead><tbody></tbody></table></div>
+              <p class="hint small-note">QA dan Admin dapat menyetujui atau menolak data. Penghapusan permanen hanya tersedia untuk Admin Workspace.</p>
+            </section>
+          </section>
 
           <section id="tab-library" class="tab-panel">
                     <section class="panel page-intro-card page-intro-card--library">
@@ -2061,40 +2139,42 @@
 
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
-  <script src="assets/app-config.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/core/routes.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/core/navigation.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/core/runtime.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/services/storage-service.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/core/event-bus.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/core/validation.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/core/app-state.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/core/page-modules.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/beranda.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/cara-pakai.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/rekomendasi-seduh.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/input-seduhan.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/beans.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/stock.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/brew-log-qa.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/hasil-seduhan-publik.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/data-analytics.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/notification.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/export-report.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/saran.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/akun-role.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/pages/pustaka-data.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/app-config.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/core/routes.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/core/navigation.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/core/runtime.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/services/storage-service.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/services/security-service.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/services/audit-service.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/core/event-bus.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/core/validation.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/core/app-state.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/core/page-modules.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/beranda.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/cara-pakai.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/rekomendasi-seduh.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/input-seduhan.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/beans.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/stock.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/brew-log-qa.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/hasil-seduhan-publik.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/data-analytics.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/notification.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/export-report.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/saran.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/akun-role.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/pages/pustaka-data.js?v=20260713-v42-security-audit"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
-  <script src="assets/services/supabase-service.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/services/auth-service.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/services/stock-service.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/services/brew-service.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/services/recommendation-service.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/services/qa-service.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/services/analytics-service.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/services/notification-service.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/data.js?v=20260713-v41-analytics-cost"></script>
-  <script src="assets/app.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/supabase-service.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/services/auth-service.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/services/stock-service.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/services/brew-service.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/services/recommendation-service.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/services/qa-service.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/services/analytics-service.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/services/notification-service.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/data.js?v=20260713-v42-security-audit"></script>
+  <script src="assets/app.js?v=20260713-v42-security-audit"></script>
 </body>
 </html>
