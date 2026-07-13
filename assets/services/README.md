@@ -1,8 +1,13 @@
-# Service Layer
+# Browser Services
 
-Release v38 introduces a small browser service layer between the interface and infrastructure APIs.
+Release v39 memperluas service layer agar business logic tidak terus menumpuk di `assets/app.js`.
 
-- `storage-service.js` owns safe browser storage access and the Supabase auth storage adapter.
-- `supabase-service.js` owns configuration validation and Supabase client creation.
+- `storage-service.js`: browser storage dan auth adapter.
+- `supabase-service.js`: validasi konfigurasi dan client Supabase.
+- `auth-service.js`: sign-in, sign-up, session, listener auth, dan local sign-out.
+- `stock-service.js`: validasi inventori, estimasi cangkir, status stok, dan RPC pengurangan stok.
+- `brew-service.js`: validasi parameter seduhan, konsistensi rasio/pour, dan perbandingan parameter.
+- `qa-service.js`: perhitungan nilai akhir serta rekomendasi berbasis parameter terlemah.
+- `notification-service.js`: pengelompokan severity untuk ringkasan notifikasi.
 
-Business rules remain in `assets/app.js` for this release. Future modules should depend on `window.COFFEE_SERVICES` instead of calling infrastructure APIs directly.
+Semua service harus dimuat sebelum `assets/app.js` dan diuji melalui `npm run audit:workflow`.

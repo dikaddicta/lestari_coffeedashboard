@@ -14,18 +14,19 @@
   <meta property="og:title" content="Coffee Brew OS — Dashboard Seduh Kopi" />
   <meta property="og:description" content="Dashboard untuk rekomendasi seduh, log seduh, QA, analitik, laporan, dan pustaka data kopi." />
   <meta property="og:type" content="website" />
-  <link rel="manifest" href="manifest.webmanifest?v=20260713-v38-services-welcome" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260713-v39-core-workflow" />
   <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
   <link rel="preload" href="assets/latte-art-icon.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260713-v38-services-welcome" />
-  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v38-services-welcome" />
-  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v38-services-welcome" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v38-services-welcome" />
-  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v38-services-welcome" />
-  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v38-services-welcome" />
-  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v38-services-welcome" />
-  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v38-services-welcome" />
-  <link rel="stylesheet" href="assets/css/welcome.css?v=20260713-v38-services-welcome" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260713-v39-core-workflow" />
+  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v39-core-workflow" />
+  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v39-core-workflow" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v39-core-workflow" />
+  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v39-core-workflow" />
+  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v39-core-workflow" />
+  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v39-core-workflow" />
+  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v39-core-workflow" />
+  <link rel="stylesheet" href="assets/css/welcome.css?v=20260713-v39-core-workflow" />
+  <link rel="stylesheet" href="assets/css/workflow.css?v=20260713-v39-core-workflow" />
 </head>
 <body class="quiet-luxury-ui modular-pages-ui modular-scripts-ui" data-initial-route="pustaka-data">
 
@@ -170,7 +171,7 @@
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v38.0.0 · Services & Welcome Refinement</small>
+          <small class="sidebar-build-version">v39.0.0 · Core Workflow Modules</small>
         </div>
       </aside>
 
@@ -968,6 +969,10 @@
                         <textarea id="manualNotes" rows="3" placeholder="Catat hasil rasa, clarity, aftertaste, kekurangan, dan keputusan dial-in berikutnya"></textarea>
                       </label>
                       <div class="qa-total manual-qa-total span-2">Final QA: <strong id="manualFinalPreview">8.50</strong> <span id="manualStatusPreview" class="qa-pass">QA PASS</span></div>
+                      <div id="manualValidationSummary" class="workflow-validation-card span-2" data-status="ready" role="status" aria-live="polite">
+                        <strong>Parameter sudah konsisten</strong>
+                        <small>Validasi dosis, rasio, total air, suhu, waktu, dan detail pour akan diperbarui otomatis.</small>
+                      </div>
                       <p id="manualGateHint" class="manual-gate-hint span-2">Tombol simpan aktif karena Final QA memenuhi batas publik 6.5.</p>
                       <div class="manual-submit-row span-2"><button id="manualSubmitBtn" class="primary" type="submit">Simpan Hasil Seduhan Publik</button></div>
                     </form>
@@ -1035,7 +1040,7 @@
                       <div>
                         <span class="page-intro-eyebrow">Pengelolaan Inventori</span>
                         <h2>Stok</h2>
-                        <p>Kelola data beans, origin, producer, varietas, proses, roast profile, flavor group, jumlah stok, dan status pemakaian.</p>
+                        <p>Kelola biji kopi, asal, produsen, varietas, proses, profil sangrai, karakter rasa, jumlah stok, dan status pemakaian.</p>
                         <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
           <span>Inventori</span>
           <span>Data Workspace</span></div>
@@ -1094,7 +1099,7 @@
                     </section>
                   </div>
                   <section class="panel wide">
-                    <div class="section-title"><span>Inventori Table</span><h2>Stok Biji Kopi</h2></div>
+                    <div class="section-title"><span>Daftar Inventori</span><h2>Stok Biji Kopi</h2></div>
                     <div class="stock-overview-strip">
                       <article><span>Total Biji</span><strong id="stockBeanCount">0</strong></article>
                       <article><span>Biji Aktif</span><strong id="stockActiveCount">0</strong></article>
@@ -1102,12 +1107,12 @@
                       <article><span>Metode Seduh</span><strong id="stockMethodCount">0</strong></article>
                     </div>
                     <div class="stock-table-hint">
-                      <span>Inventori data</span>
+                      <span>Ringkasan inventori</span>
                       <small>Header dibuat kontras dan kolom diberi lebar khusus agar tabel lebih mudah dibaca. Geser horizontal untuk melihat seluruh data.</small>
                     </div>
                     <div class="table-wrap tall stock-table-wrap">
                       <table id="stockTable">
-                        <thead><tr><th>Biji Kopi</th><th>Asal Kopi</th><th>Varietas 1</th><th>Varietas 2</th><th>Proses</th><th>Profil Sangrai</th><th>Rasa 1–3</th><th>S/A/B</th><th>Stok</th><th>Seduhan Terbaik</th><th>Aktif</th><th>Aksi</th></tr></thead>
+                        <thead><tr><th>Biji Kopi</th><th>Asal Kopi</th><th>Varietas 1</th><th>Varietas 2</th><th>Proses</th><th>Profil Sangrai</th><th>Rasa 1–3</th><th>S/A/B</th><th>Stok</th><th>Estimasi Cangkir</th><th>Status Stok</th><th>Seduhan Terbaik</th><th>Aktif</th><th>Aksi</th></tr></thead>
                         <tbody></tbody>
                       </table>
                     </div>
@@ -1157,6 +1162,10 @@
                         <label>Persetujuan Manual<select id="qaApproval"><option value="No">Tidak</option><option value="Yes">Ya</option></select></label>
                         <label class="span-2">Catatan Hasil<textarea id="qaNotes" rows="3" placeholder="Catat hasil sensorik dan keputusan dial-in"></textarea></label>
                         <div class="qa-total span-2">Final QA: <strong id="qaFinalPreview">8.50</strong> <span id="qaStatusPreview">RETEST</span></div>
+                        <div id="qaGuidance" class="qa-guidance-card span-2" data-status="review" role="status" aria-live="polite">
+                          <strong>Evaluasi otomatis akan muncul di sini.</strong>
+                          <small>Sistem membaca kekuatan dan parameter terlemah dari nilai sensorik yang kamu masukkan.</small>
+                        </div>
                         <button id="qaSubmitBtn" class="primary span-2" type="button">Simpan Log Seduh + QA</button>
                       </form>
                     </section>
@@ -1973,30 +1982,38 @@
 
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
-  <script src="assets/app-config.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/core/routes.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/core/navigation.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/core/runtime.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/services/storage-service.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/core/page-modules.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/beranda.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/cara-pakai.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/rekomendasi-seduh.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/input-seduhan.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/beans.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/stock.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/brew-log-qa.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/hasil-seduhan-publik.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/data-analytics.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/notification.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/export-report.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/saran.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/akun-role.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/pages/pustaka-data.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/app-config.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/core/routes.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/core/navigation.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/core/runtime.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/services/storage-service.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/core/event-bus.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/core/validation.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/core/app-state.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/core/page-modules.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/beranda.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/cara-pakai.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/rekomendasi-seduh.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/input-seduhan.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/beans.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/stock.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/brew-log-qa.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/hasil-seduhan-publik.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/data-analytics.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/notification.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/export-report.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/saran.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/akun-role.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/pages/pustaka-data.js?v=20260713-v39-core-workflow"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
-  <script src="assets/services/supabase-service.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/data.js?v=20260713-v38-services-welcome"></script>
-  <script src="assets/app.js?v=20260713-v38-services-welcome"></script>
+  <script src="assets/services/supabase-service.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/services/auth-service.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/services/stock-service.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/services/brew-service.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/services/qa-service.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/services/notification-service.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/data.js?v=20260713-v39-core-workflow"></script>
+  <script src="assets/app.js?v=20260713-v39-core-workflow"></script>
 </body>
 </html>

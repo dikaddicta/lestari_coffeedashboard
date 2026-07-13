@@ -1,0 +1,156 @@
+{
+  "passed": 25,
+  "failed": 0,
+  "checks": [
+    {
+      "url": "http://127.0.0.1:4174/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/beranda/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/cara-pakai/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/rekomendasi-seduh/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/input-seduhan/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/beans/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/stock/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/brew-log-qa/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/hasil-seduhan-publik/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/data-analytics/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/notification/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/export-report/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/saran/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/akun-role/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/pustaka-data/",
+      "status": 200,
+      "contentType": "text/html",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/assets/app.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/assets/core/app-state.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/assets/core/event-bus.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/assets/core/validation.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/assets/services/auth-service.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/assets/services/stock-service.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/assets/services/brew-service.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/assets/services/qa-service.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/assets/css/workflow.css",
+      "status": 200,
+      "contentType": "text/css",
+      "ok": true
+    },
+    {
+      "url": "http://127.0.0.1:4174/sw.js",
+      "status": 200,
+      "contentType": "text/javascript",
+      "ok": true
+    }
+  ]
+}

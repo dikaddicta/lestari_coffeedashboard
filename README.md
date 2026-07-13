@@ -4,30 +4,31 @@ Coffee Brew OS adalah dashboard web untuk menyusun rekomendasi seduh, mencatat e
 
 ## Release aktif
 
-**v38.0.0 — Services & Welcome Refinement**
+**v39.0.0 — Core Workflow Modules**
 
-Release ini melanjutkan clean URL dan modular page v37 dengan dua fokus:
+Release ini memindahkan fondasi workflow utama dari satu file aplikasi besar ke modul yang dapat diuji dan digunakan ulang. Fokusnya bukan menambah dekorasi, tetapi membuat alur stok, seduhan, dan QA lebih aman untuk dikembangkan.
 
-1. halaman pembuka dibangun ulang agar lebih rapi, natural, dan mudah dipahami;
-2. akses browser storage dan inisialisasi Supabase mulai dipindahkan ke service layer.
+Pembaruan utama:
 
-Judul pembuka sekarang menggunakan kalimat yang lebih natural:
-
-> Seduh lebih rapi. Hasil lebih konsisten.
-
-Pilihan akses juga disederhanakan menjadi Masuk ke Dashboard, Buat Akun, Jelajahi sebagai Tamu, dan Lihat Data Demo.
+- state aplikasi dipusatkan melalui `assets/core/app-state.js`;
+- lifecycle fitur memakai event bus melalui `assets/core/event-bus.js`;
+- validasi form dipusatkan melalui `assets/core/validation.js`;
+- auth, stok, seduhan, QA, dan notifikasi mulai menggunakan service terpisah;
+- Input Seduhan memiliki pemeriksaan konsistensi dosis, rasio, total air, suhu, waktu, dan detail pour;
+- QA memberi arahan otomatis berdasarkan parameter sensorik terlemah;
+- tabel stok menampilkan estimasi jumlah cangkir dan status ketersediaan.
 
 ## Fitur utama
 
-- Rekomendasi seduh berdasarkan varietas, proses pascapanen, profil sangrai, dripper, grinder, air, dosis, metode, dan target rasa.
-- Input seduhan manual dengan detail pour, Switch valve plan, evaluasi sensorik, dan QA.
-- Hasil seduhan publik dengan threshold QA minimum 6.5.
+- Rekomendasi seduh berdasarkan varietas, pascapanen, profil sangrai, dripper, grinder, air, dosis, metode, dan target rasa.
+- Input seduhan manual dengan 1–3 varietas, proses manual, detail pour, Switch valve plan, QA, dan validasi resep.
+- Hasil seduhan publik dengan batas QA minimum 6.5.
 - Biji kopi dan stok privat per workspace.
-- Pengurangan stok saat brew menggunakan bean dari stok serta pemulihan stok ketika brew dihapus melalui alur yang didukung.
+- Pengurangan stok saat draft seduhan menggunakan biji dari inventori serta pemulihan stok saat log dihapus melalui RPC Supabase yang sudah tersedia.
 - Log Seduh & QA, moderasi, analitik, notifikasi kualitas, ekspor, dan laporan.
-- Role Admin, QA, Brewer, serta mode Guest.
+- Role Admin, QA, Brewer, serta mode Guest dan Demo.
 - Pustaka data varietas, proses, dripper/setup, filter kertas, profil sangrai, air, dan grinder.
-- PWA dengan cache untuk seluruh clean route, page module, dan service layer.
+- PWA dengan clean URL untuk 14 menu.
 
 ## Data referensi
 
@@ -45,37 +46,41 @@ Pilihan akses juga disederhanakan menjadi Masuk ke Dashboard, Buat Akun, Jelajah
 
 ```text
 .
-├─ index.html                    # hasil build untuk root
-├─ 404.html                      # fallback GitHub Pages
-├─ beranda/index.html            # clean URL entry point
-├─ cara-pakai/index.html
-├─ ...                           # 14 clean URL entry points
+├─ index.html
+├─ 404.html
+├─ <route>/index.html            # 14 clean URL entry points
 ├─ src/
-│  ├─ shell.html                 # kerangka aplikasi dan welcome screen
-│  ├─ routes.json                # manifest halaman
-│  └─ pages/                     # 14 menu, satu file per menu
+│  ├─ shell.html
+│  ├─ routes.json
+│  └─ pages/                     # satu fragment HTML per menu
 ├─ assets/
+│  ├─ app.js                     # orchestration lama yang sedang diperkecil bertahap
 │  ├─ app-config.js
-│  ├─ app.js                     # business logic utama, masih dalam proses refactor
 │  ├─ data.js
-│  ├─ supabase-config.js
 │  ├─ core/
-│  │  ├─ routes.js               # hasil build
-│  │  ├─ navigation.js           # History API dan clean URL
-│  │  ├─ page-modules.js         # registry lifecycle halaman
+│  │  ├─ app-state.js
+│  │  ├─ event-bus.js
+│  │  ├─ validation.js
+│  │  ├─ navigation.js
+│  │  ├─ page-modules.js
+│  │  ├─ routes.js
 │  │  └─ runtime.js
 │  ├─ services/
-│  │  ├─ storage-service.js      # penyimpanan browser dan auth adapter
-│  │  └─ supabase-service.js     # validasi config dan pembuatan client
-│  ├─ pages/                     # renderer orchestration per menu
+│  │  ├─ auth-service.js
+│  │  ├─ brew-service.js
+│  │  ├─ notification-service.js
+│  │  ├─ qa-service.js
+│  │  ├─ stock-service.js
+│  │  ├─ storage-service.js
+│  │  └─ supabase-service.js
+│  ├─ pages/
 │  └─ css/
-│     ├─ welcome.css             # seluruh layout halaman pembuka v38
+│     ├─ welcome.css
+│     ├─ workflow.css
 │     └─ ...
 ├─ scripts/
 │  ├─ build-pages.mjs
-│  ├─ clean-url-audit.mjs
-│  ├─ page-modules-audit.mjs
-│  ├─ service-layer-audit.mjs
+│  ├─ workflow-modules-audit.mjs
 │  ├─ functional-audit.mjs
 │  └─ release-check.mjs
 ├─ supabase/
@@ -84,26 +89,14 @@ Pilihan akses juga disederhanakan menjadi Masuk ke Dashboard, Buat Akun, Jelajah
 
 ## Mengubah halaman
 
-Edit konten menu melalui:
+Edit isi menu melalui `src/pages/`, metadata route melalui `src/routes.json`, dan kerangka global melalui `src/shell.html`. Jangan mengedit `index.html` atau folder route hasil build secara langsung.
 
-```text
-src/pages/
+Setelah perubahan:
+
+```powershell
+npm run build
+npm run check
 ```
-
-Ubah route atau metadata melalui:
-
-```text
-src/routes.json
-```
-
-Ubah halaman pembuka melalui:
-
-```text
-src/shell.html
-assets/css/welcome.css
-```
-
-Jangan mengedit `index.html` atau folder route hasil build secara manual karena semuanya dibuat ulang oleh `npm run build`.
 
 ## Menjalankan secara lokal
 
@@ -111,68 +104,47 @@ Persyaratan: Node.js 18 atau lebih baru.
 
 ```powershell
 cd "D:\PRIBADI\4. WEBSITE\coffee_dashboard"
-npm run build
 npm run check
 npm run serve
 ```
 
-Buka:
-
-```text
-http://127.0.0.1:4173/
-```
+Buka `http://127.0.0.1:4173/`.
 
 ## Audit sebelum release
 
-```powershell
-npm run check
-git diff --check
-```
+`npm run check` menjalankan build, audit modular page, clean URL, page module, service layer, core workflow module, functional audit, asset check, PWA check, konfigurasi browser Supabase, dan validasi jumlah dataset.
 
-`npm run check` menjalankan:
+Hasil functional audit tersimpan pada `docs/V39_AUDIT_RESULT.json`.
 
-1. build halaman dan clean route;
-2. audit page fragment;
-3. audit clean URL;
-4. audit page module;
-5. audit service layer;
-6. functional audit aplikasi, asset, PWA, Supabase browser config, dan dataset.
+## Supabase
 
-Hasil audit mesin disimpan pada:
+Gunakan hanya Project URL dan anon/public key pada `assets/supabase-config.js`. Jangan meletakkan `service_role` key di frontend. Tidak ada migrasi database baru pada v39; release ini menggunakan schema dan RPC yang sudah ada.
 
-```text
-docs/V38_AUDIT_RESULT.json
-```
-
-## Konfigurasi Supabase
-
-Konfigurasi browser berada pada `assets/supabase-config.js`. Gunakan hanya Project URL dan anon/public key. Jangan menaruh `service_role` key di frontend atau repository. Keamanan data harus ditegakkan melalui Row Level Security.
-
-## Workflow Git yang aman
+## Workflow Git
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\git-safe-update.ps1
 npm run check
 git add -A
-git commit -m "Release v38 services and welcome refinement"
+git commit -m "Release v39 core workflow modules"
 git push origin main
 ```
 
-Project menggunakan `fetch` dan `merge --ff-only`, bukan rebase otomatis. Jangan memakai `push --force` pada branch `main`.
+Project menggunakan `fetch` dan `merge --ff-only`, bukan rebase otomatis.
 
 ## PWA dan cache
 
-v38 menggunakan cache:
+Cache aktif:
 
 ```text
-coffee-brew-os-v38-services-welcome
+coffee-brew-os-v39-core-workflow
 ```
 
-Setelah deployment besar, uji website melalui Incognito. Clear site data diperlukan bila browser masih mempertahankan service worker versi lama.
+Setelah deployment besar, uji melalui Incognito atau hapus service worker lama satu kali bila browser masih menampilkan asset versi sebelumnya.
 
 ## Batasan release
 
-- Storage dan Supabase client creation sudah dipisahkan, tetapi sebagian besar business logic masih berada di `assets/app.js` untuk menjaga kompatibilitas fungsi.
-- Pengujian otomatis belum menggantikan uji end-to-end login, role, CRUD, dan sinkronisasi dengan session Supabase aktif.
-- Clean route dibuat sebagai static entry point agar kompatibel dengan GitHub Pages tanpa server rewrite.
-- Rekomendasi grinder, air, dan resep adalah titik awal dial-in, bukan jaminan hasil rasa yang sama pada setiap alat dan biji kopi.
+- Sebagian besar orchestration UI masih berada di `assets/app.js`; pemisahan dilakukan bertahap untuk mengurangi risiko regresi.
+- Penyimpanan draft seduhan dan pengurangan stok masih dua operasi terpisah. Race condition ekstrem hanya dapat dihilangkan melalui RPC transaksi gabungan pada tahap database berikutnya.
+- Audit otomatis tidak menggantikan pengujian end-to-end dengan akun, workspace, role, dan database Supabase aktif.
+- Rekomendasi resep merupakan baseline dial-in, bukan jaminan hasil rasa identik pada setiap kopi dan alat.

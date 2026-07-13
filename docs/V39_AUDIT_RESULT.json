@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-13T11:41:09.386Z",
+  "generatedAt": "2026-07-13T11:45:15.022Z",
   "version": "39.0.0",
   "summary": {
-    "pass": 73,
+    "pass": 85,
     "fail": 0
   },
   "results": [
@@ -29,6 +29,21 @@
     {
       "status": "PASS",
       "message": "JavaScript syntax: assets/services/storage-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/event-bus.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/validation.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/app-state.js",
       "detail": ""
     },
     {
@@ -258,6 +273,21 @@
     },
     {
       "status": "PASS",
+      "message": "Service worker precaches assets/core/event-bus.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/core/validation.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/core/app-state.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
       "message": "Service worker precaches assets/core/page-modules.js",
       "detail": ""
     },
@@ -273,7 +303,37 @@
     },
     {
       "status": "PASS",
+      "message": "Service worker precaches assets/css/workflow.css",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
       "message": "Service worker precaches assets/services/supabase-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/auth-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/stock-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/brew-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/qa-service.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/services/notification-service.js",
       "detail": ""
     },
     {

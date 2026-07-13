@@ -17,7 +17,12 @@ function check(ok, message) {
 
 const serviceFiles = [
   "assets/services/storage-service.js",
-  "assets/services/supabase-service.js"
+  "assets/services/supabase-service.js",
+  "assets/services/auth-service.js",
+  "assets/services/stock-service.js",
+  "assets/services/brew-service.js",
+  "assets/services/qa-service.js",
+  "assets/services/notification-service.js"
 ];
 
 for (const file of serviceFiles) {

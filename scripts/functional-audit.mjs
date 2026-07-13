@@ -26,6 +26,9 @@ for (const file of [
   "assets/core/navigation.js",
   "assets/core/runtime.js",
   "assets/services/storage-service.js",
+  "assets/core/event-bus.js",
+  "assets/core/validation.js",
+  "assets/core/app-state.js",
   "assets/core/page-modules.js",
   "assets/services/supabase-service.js",
   "assets/data.js",
@@ -72,6 +75,9 @@ const expectedScriptOrder = [
   "assets/core/navigation.js",
   "assets/core/runtime.js",
   "assets/services/storage-service.js",
+  "assets/core/event-bus.js",
+  "assets/core/validation.js",
+  "assets/core/app-state.js",
   "assets/core/page-modules.js",
   "assets/pages/beranda.js",
   "assets/pages/pustaka-data.js",
@@ -92,14 +98,14 @@ const configContext = { window: {} };
 vm.createContext(configContext);
 vm.runInContext(read("assets/app-config.js"), configContext, { filename: "assets/app-config.js" });
 const appConfig = configContext.window.COFFEE_APP_CONFIG || {};
-record(appConfig.version === "38.0.0", "Application version is 38.0.0", String(appConfig.version || "missing"));
+record(appConfig.version === "39.0.0", "Application version is 39.0.0", String(appConfig.version || "missing"));
 record(appConfig.features?.debugTools === false, "Production debug tools are disabled");
 record(appConfig.features?.mascot === false, "Production mascot is disabled");
 
 const packageJson = JSON.parse(read("package.json"));
 record(packageJson.version === appConfig.version, "package.json version matches app config", String(packageJson.version || "missing"));
 record(html.includes(`v${appConfig.version} · ${appConfig.release}`), "Visible release label matches app config");
-record(read("sw.js").includes("coffee-brew-os-v38-services-welcome"), "Service-worker cache name matches v38 release");
+record(read("sw.js").includes("coffee-brew-os-v39-core-workflow"), "Service-worker cache name matches v39 release");
 record(exists("supabase/schema.sql"), "Canonical Supabase schema exists");
 record(exists("supabase/README.md"), "Supabase setup guide exists");
 
@@ -126,10 +132,19 @@ for (const critical of [
   "assets/core/navigation.js",
   "assets/core/runtime.js",
   "assets/services/storage-service.js",
+  "assets/core/event-bus.js",
+  "assets/core/validation.js",
+  "assets/core/app-state.js",
   "assets/core/page-modules.js",
   "assets/styles-v35-1-functional.css",
   "assets/css/welcome.css",
+  "assets/css/workflow.css",
   "assets/services/supabase-service.js",
+  "assets/services/auth-service.js",
+  "assets/services/stock-service.js",
+  "assets/services/brew-service.js",
+  "assets/services/qa-service.js",
+  "assets/services/notification-service.js",
   "assets/app.js",
   "assets/data.js"
 ]) {
@@ -185,6 +200,6 @@ const report = {
   },
   results
 };
-fs.writeFileSync(path.join(root, "docs/V38_AUDIT_RESULT.json"), JSON.stringify(report, null, 2));
+fs.writeFileSync(path.join(root, "docs/V39_AUDIT_RESULT.json"), JSON.stringify(report, null, 2));
 console.log(`\nAudit summary: ${report.summary.pass} passed, ${report.summary.fail} failed.`);
 if (failed) process.exit(1);

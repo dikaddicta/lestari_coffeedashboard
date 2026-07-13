@@ -41,6 +41,10 @@
               <label>Persetujuan Manual<select id="qaApproval"><option value="No">Tidak</option><option value="Yes">Ya</option></select></label>
               <label class="span-2">Catatan Hasil<textarea id="qaNotes" rows="3" placeholder="Catat hasil sensorik dan keputusan dial-in"></textarea></label>
               <div class="qa-total span-2">Final QA: <strong id="qaFinalPreview">8.50</strong> <span id="qaStatusPreview">RETEST</span></div>
+              <div id="qaGuidance" class="qa-guidance-card span-2" data-status="review" role="status" aria-live="polite">
+                <strong>Evaluasi otomatis akan muncul di sini.</strong>
+                <small>Sistem membaca kekuatan dan parameter terlemah dari nilai sensorik yang kamu masukkan.</small>
+              </div>
               <button id="qaSubmitBtn" class="primary span-2" type="button">Simpan Log Seduh + QA</button>
             </form>
           </section>

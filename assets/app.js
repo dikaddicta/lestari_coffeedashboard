@@ -4,6 +4,15 @@
   const APP_CONFIG = window.COFFEE_APP_CONFIG || {};
   const RUNTIME = window.COFFEE_RUNTIME || {};
   const SERVICES = window.COFFEE_SERVICES || {};
+  const CORE = window.COFFEE_CORE || {};
+  const EVENT_BUS = CORE.events || { on: () => () => {}, emit: () => 0 };
+  const VALIDATION = CORE.validation || null;
+  const APP_STATE_SERVICE = CORE.state || null;
+  const AUTH_SERVICE = SERVICES.auth || null;
+  const STOCK_SERVICE = SERVICES.stock || null;
+  const BREW_SERVICE = SERVICES.brew || null;
+  const QA_SERVICE = SERVICES.qa || null;
+  const NOTIFICATION_SERVICE = SERVICES.notification || null;
   const SAFE_STORAGE = SERVICES.storage || RUNTIME.storage || {
     get(key, fallback = null, kind = "local") {
       try {
@@ -119,7 +128,24 @@
     showMessage(`Terjadi error aplikasi: ${event.message || "unknown error"}`, "error");
   });
 
-  const state = loadState();
+  const defaultState = {
+    userStock: [],
+    userBrewLogs: [],
+    userQA: [],
+    suggestions: [],
+    cloudStock: [],
+    cloudBrewLogs: [],
+    cloudQA: []
+  };
+  const stateStore = APP_STATE_SERVICE?.createStore
+    ? APP_STATE_SERVICE.createStore({ storage: SAFE_STORAGE, key: STORAGE_KEY, defaults: defaultState })
+    : null;
+  const state = stateStore?.state || loadState();
+  if (stateStore) {
+    state.cloudStock = [];
+    state.cloudBrewLogs = [];
+    state.cloudQA = [];
+  }
 
   function loadState() {
     try {
@@ -139,7 +165,7 @@
   }
 
   function persist() {
-    const saved = SAFE_STORAGE.writeJSON(STORAGE_KEY, state);
+    const saved = stateStore ? stateStore.persist() : SAFE_STORAGE.writeJSON(STORAGE_KEY, state);
     if (!saved) showMessage("Penyimpanan browser penuh atau tidak tersedia. Ekspor data penting sebelum melanjutkan.", "error");
     return saved;
   }
@@ -640,7 +666,9 @@
 
   async function initAuth() {
     if (!supabaseClient) return;
-    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const { data: sessionData } = AUTH_SERVICE
+      ? await AUTH_SERVICE.getSession(supabaseClient)
+      : await supabaseClient.auth.getSession();
     currentSession = sessionData?.session || null;
     currentUser = currentSession?.user || null;
     if (currentUser) {
@@ -649,7 +677,7 @@
     }
     await loadWorkspaces();
     scheduleSessionKeepAlive();
-    supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+    const authStateHandler = async (_event, session) => {
       currentSession = session || null;
       currentUser = currentSession?.user || null;
       if (currentUser) {
@@ -665,7 +693,10 @@
       await loadWorkspaces();
       scheduleSessionKeepAlive();
       await syncFromCloud(true).catch(console.warn);
-    });
+      EVENT_BUS.emit("auth:changed", { user: currentUser, workspace: currentWorkspace, role: currentRole });
+    };
+    if (AUTH_SERVICE) AUTH_SERVICE.onAuthStateChange(supabaseClient, authStateHandler);
+    else supabaseClient.auth.onAuthStateChange(authStateHandler);
     renderAuthUI();
   }
 
@@ -674,7 +705,9 @@
     const email = $("authEmail").value.trim();
     const password = $("authPassword").value;
     if (!email || !password) return showMessage("Isi email dan kata sandi untuk masuk.", "error");
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    const { data, error } = AUTH_SERVICE
+      ? await AUTH_SERVICE.signIn(supabaseClient, { email, password })
+      : await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) return showMessage(`Gagal masuk: ${error.message}`, "error");
     currentSession = data?.session || currentSession;
     currentUser = data?.user || currentSession?.user || currentUser;
@@ -683,6 +716,7 @@
     await loadWorkspaces().catch(console.warn);
     await syncFromCloud(true).catch(console.warn);
     renderAll();
+    EVENT_BUS.emit("auth:login", { user: currentUser, workspace: currentWorkspace, role: currentRole });
     showMessage("Berhasil masuk.", "success");
   }
 
@@ -698,18 +732,14 @@
       return showMessage("Pilih workspace/company untuk mendaftar sebagai Brewer atau QA.", "error");
     }
     const redirectTo = `${window.location.origin}${window.location.pathname}`;
-    const { data, error } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectTo,
-        data: {
-          display_name: displayName,
-          requested_role: requestedRole,
-          requested_workspace_id: requestedWorkspaceId || null
-        }
-      }
-    });
+    const signupMetadata = {
+      display_name: displayName,
+      requested_role: requestedRole,
+      requested_workspace_id: requestedWorkspaceId || null
+    };
+    const { data, error } = AUTH_SERVICE
+      ? await AUTH_SERVICE.signUp(supabaseClient, { email, password, redirectTo, metadata: signupMetadata })
+      : await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo, data: signupMetadata } });
     if (error) {
       const message = /Invalid path specified/i.test(error.message)
         ? "Pendaftaran gagal: Supabase URL di assets/supabase-config.js kemungkinan salah. Pakai Project URL utama, contoh https://xxxxx.supabase.co, bukan URL dashboard, /rest/v1, atau /auth/v1."
@@ -908,7 +938,10 @@
 
     try {
       if (supabaseClient) {
-        const { error } = await withTimeout(supabaseClient.auth.signOut({ scope: "local" }), 2500, "logout");
+        const logoutRequest = AUTH_SERVICE
+          ? AUTH_SERVICE.signOut(supabaseClient)
+          : supabaseClient.auth.signOut({ scope: "local" });
+        const { error } = await withTimeout(logoutRequest, 2500, "logout");
         if (error) console.warn("logout warning", error);
       }
     } catch (err) {
@@ -917,6 +950,7 @@
       clearLocalAuthState();
       renderWorkspaceUI();
       renderAll();
+      EVENT_BUS.emit("auth:logout", {});
       showMessage("Berhasil keluar.", "success");
       setTimeout(() => window.location.reload(), 150);
       if (btn) {
@@ -1281,7 +1315,7 @@
           config: SUPABASE_CONFIG,
           library: window.supabase,
           storageAdapter: AUTH_STORAGE_ADAPTER,
-          clientHeader: "v38-services"
+          clientHeader: "v39-core-workflow"
         });
       } else {
         const projectUrl = getSupabaseProjectUrl();
@@ -1294,7 +1328,7 @@
             storage: AUTH_STORAGE_ADAPTER
           },
           global: {
-            headers: { "x-coffee-dashboard-client": "v38-services" }
+            headers: { "x-coffee-dashboard-client": "v39-core-workflow" }
           }
         });
       }
@@ -3025,13 +3059,13 @@
     setModuleLocked("tab-stock", "stockAccessNotice", locked, privateModuleMessage("Stok Kopi"));
     if (locked) {
       updateStockOverview([], true);
-      tbody.innerHTML = emptyRow(12, "Stok privat belum terbuka", "Masuk dan pilih workspace untuk melihat atau mengelola stok kopi.", "◐");
+      tbody.innerHTML = emptyRow(14, "Stok privat belum terbuka", "Masuk dan pilih workspace untuk melihat atau mengelola stok kopi.", "◐");
       return;
     }
     const rows = allStock();
     updateStockOverview(rows, false);
     if (!rows.length) {
-      tbody.innerHTML = emptyRow(12, "Stok kopi masih kosong", "Tambahkan bean pertama untuk mulai membangun pustaka seduh personal.", "☕");
+      tbody.innerHTML = emptyRow(14, "Stok kopi masih kosong", "Tambahkan bean pertama untuk mulai membangun pustaka seduh personal.", "☕");
       return;
     }
     tbody.innerHTML = rows.map(bean => {
@@ -3039,7 +3073,8 @@
       const actions = canAdmin()
         ? `<div class="moderation-actions"><button class="secondary" data-stock-action="edit" data-stock-id="${key}">Edit</button><button class="danger" data-stock-action="delete" data-stock-id="${key}">Hapus</button></div>`
         : `<small class="member-self-note">Admin saja</small>`;
-      return `<tr><td><strong>${html(bean.CoffeeName)}</strong><br><small>${html(bean.Producer || "")}</small></td><td>${html(bean.Origin || "")}</td><td>${html(bean.Variety || "")}</td><td>${html(bean.Variety2_optional || "")}</td><td>${html(bean.Process || "")}</td><td>${html(bean.RoastProfile || "")}</td><td>${html(beanFlavorList(bean).join(" / "))}</td><td>${html(bean.Sweetness)}/${html(bean.Acidity)}/${html(bean.Body)}</td><td>${html(bean.Stock_g)}g</td><td>${html(bean.BestBrew || "Both")}</td><td>${html(bean.Active || "Yes")}</td><td>${actions}</td></tr>`;
+      const stockStatus = STOCK_SERVICE?.getStatus(bean.Stock_g, 15) || { label: Number(bean.Stock_g || 0) > 0 ? "Tersedia" : "Habis", className: "", cups: Math.floor(Number(bean.Stock_g || 0) / 15) };
+      return `<tr><td><strong>${html(bean.CoffeeName)}</strong><br><small>${html(bean.Producer || "")}</small></td><td>${html(bean.Origin || "")}</td><td>${html(bean.Variety || "")}</td><td>${html(bean.Variety2_optional || "")}</td><td>${html(bean.Process || "")}</td><td>${html(bean.RoastProfile || "")}</td><td>${html(beanFlavorList(bean).join(" / "))}</td><td>${html(bean.Sweetness)}/${html(bean.Acidity)}/${html(bean.Body)}</td><td>${html(bean.Stock_g)}g</td><td><strong>${html(stockStatus.cups)}</strong><br><small>@15g</small></td><td><span class="stock-status-pill ${html(stockStatus.className)}">${html(stockStatus.label)}</span></td><td>${html(bean.BestBrew || "Both")}</td><td>${html(bean.Active || "Yes")}</td><td>${actions}</td></tr>`;
     }).join("");
   }
 
@@ -3111,6 +3146,7 @@
       renderStockTable();
       renderBeansTable();
       renderMetrics();
+      EVENT_BUS.emit("stock:deleted", { bean });
       showMessage("Stok kopi berhasil dihapus.", "success");
     } catch (err) {
       console.error(err);
@@ -3200,13 +3236,19 @@
   async function consumeStockForBrew(stockBean, amount) {
     if (!stockBean?.CloudID || !amount) return null;
     await prepareCloudWrite("Update stok kopi");
-    const { data, error } = await withTimeout(supabaseClient.rpc("consume_stock_for_brew", {
-      p_stock_id: stockBean.CloudID,
-      p_amount: Number(amount || 0)
-    }), CLOUD_WRITE_TIMEOUT_MS, "Update stok kopi");
-    if (error) throw error;
+    const data = STOCK_SERVICE
+      ? await STOCK_SERVICE.consume(supabaseClient, { stockId: stockBean.CloudID, amount, timeoutMs: CLOUD_WRITE_TIMEOUT_MS })
+      : await (async () => {
+          const { data: raw, error } = await withTimeout(supabaseClient.rpc("consume_stock_for_brew", {
+            p_stock_id: stockBean.CloudID,
+            p_amount: Number(amount || 0)
+          }), CLOUD_WRITE_TIMEOUT_MS, "Update stok kopi");
+          if (error) throw error;
+          return raw;
+        })();
     const updated = fromSnakeStock(data);
     state.cloudStock = uniqueByCloudId([updated, ...(state.cloudStock || []).filter(bean => bean.CloudID !== updated.CloudID)]);
+    EVENT_BUS.emit("stock:consumed", { bean: updated, amount: Number(amount || 0) });
     return updated;
   }
 
@@ -3241,6 +3283,8 @@
 
       const stockBean = selectedBrewStockBean();
       const log = currentBrewLogBase();
+      const brewValidation = BREW_SERVICE?.validateBrew(log, { stockBean });
+      if (brewValidation && !brewValidation.ok) throw new Error(brewValidation.first);
       const payload = toSnakeBrew(log);
       queuedDraftPayload = payload;
       const saved = await insertCloud("brew_logs", payload, fromSnakeBrew);
@@ -3270,6 +3314,7 @@
       }).catch(console.warn);
 
       clearAutosaveScope("brew");
+      EVENT_BUS.emit("brew:saved", { brew: saved, source: "recommendation" });
       updateSyncGuardStatus("synced", "Draft tersinkron", `Draft ${saved.BrewID} berhasil masuk Supabase.`);
       showMessage(`Draft ${saved.BrewID} berhasil tersimpan. Buka Brew Log & QA lalu pilih BrewID tersebut untuk verifikasi.${stockMessage}`, stockMessage.includes("belum berkurang") ? "error" : "success");
     } catch (err) {
@@ -3291,9 +3336,10 @@
 
   function computeQAFromForm() {
     const ids = ["qaAroma", "qaFlavor", "qaAftertaste", "qaAcidityQuality", "qaSweetness", "qaBody", "qaBalance", "qaClarity", "qaFinish", "qaConsistency"];
-    const avg = ids.reduce((sum, id) => sum + (Number($(id).value) || 0), 0) / ids.length;
-    const final = clamp(avg - (Number($("qaDefect").value) || 0), 0, 10);
-    return round(final, 2);
+    const values = ids.map(id => Number($(id)?.value) || 0);
+    if (QA_SERVICE) return QA_SERVICE.score(values, Number($("qaDefect")?.value) || 0);
+    const avg = values.reduce((sum, value) => sum + value, 0) / ids.length;
+    return round(clamp(avg - (Number($("qaDefect")?.value) || 0), 0, 10), 2);
   }
 
   function renderQAPreview() {
@@ -3303,6 +3349,23 @@
     $("qaFinalPreview").textContent = fmt(final, 2);
     $("qaStatusPreview").textContent = pass ? "QA PASS" : "RETEST";
     $("qaStatusPreview").className = pass ? "qa-pass" : "qa-retest";
+    const guidanceEl = $("qaGuidance");
+    if (guidanceEl && QA_SERVICE) {
+      const guidance = QA_SERVICE.guidance({
+        aroma: $("qaAroma")?.value,
+        flavor: $("qaFlavor")?.value,
+        aftertaste: $("qaAftertaste")?.value,
+        acidity: $("qaAcidityQuality")?.value,
+        sweetness: $("qaSweetness")?.value,
+        body: $("qaBody")?.value,
+        balance: $("qaBalance")?.value,
+        clarity: $("qaClarity")?.value,
+        finish: $("qaFinish")?.value,
+        consistency: $("qaConsistency")?.value
+      }, final);
+      guidanceEl.innerHTML = `<strong>${html(guidance.message)}</strong><small>${html(guidance.advice)}</small>`;
+      guidanceEl.dataset.status = pass ? "pass" : "review";
+    }
   }
 
   async function saveQA(e) {
@@ -3435,6 +3498,7 @@
       renderQABrewOptions();
       renderBrew();
       renderPublicBrewTable();
+      EVENT_BUS.emit("qa:saved", { qa, brew: savedLog, final, approved });
 
       if (isGuest) {
         showMessage(final >= APPROVAL_THRESHOLD ? "Hasil seduhan publik tersimpan dan tampil di feed publik." : "Hasil seduhan tersimpan, tetapi belum masuk feed publik karena nilai belum mencapai 6.5.", final >= APPROVAL_THRESHOLD ? "success" : "info");
@@ -3465,9 +3529,10 @@
 
   function computeManualQAFromForm() {
     const ids = manualScoreIds();
-    const avg = ids.reduce((sum, id) => sum + (Number($(id)?.value) || 0), 0) / ids.length;
-    const final = clamp(avg - (Number($("manualDefect")?.value) || 0), 0, 10);
-    return round(final, 2);
+    const values = ids.map(id => Number($(id)?.value) || 0);
+    if (QA_SERVICE) return QA_SERVICE.score(values, Number($("manualDefect")?.value) || 0);
+    const avg = values.reduce((sum, value) => sum + value, 0) / ids.length;
+    return round(clamp(avg - (Number($("manualDefect")?.value) || 0), 0, 10), 2);
   }
 
   function syncManualTotalWater(force = false) {
@@ -3477,6 +3542,22 @@
     const dose = Number($("manualDose")?.value || 0);
     const ratio = Number($("manualRatio")?.value || 0);
     if (dose && ratio) total.value = String(Math.round(dose * ratio));
+  }
+
+  function manualValidationResult() {
+    if (!BREW_SERVICE) return { ok: true, errors: [], warnings: [], targetWater: 0, pourTotal: 0 };
+    return BREW_SERVICE.validateManual({
+      beanName: $("manualBeanName")?.value,
+      dose: $("manualDose")?.value,
+      ratio: $("manualRatio")?.value,
+      totalWater: $("manualTotalWater")?.value,
+      temperature: $("manualTemp")?.value,
+      brewTime: $("manualBrewTime")?.value,
+      bloom: $("manualBloom")?.value,
+      mode: $("manualMode")?.value,
+      ice: $("manualIce")?.value,
+      pours: [1, 2, 3, 4].map(index => $("manualPour" + index)?.value)
+    });
   }
 
   function renderManualBrewPreview() {
@@ -3502,6 +3583,15 @@
         ? "Tombol simpan aktif karena Final QA memenuhi batas publik 6.5."
         : "Final QA belum mencapai 6.5. Tombol simpan dikunci agar hasil belum masuk feed publik.";
       hint.classList.toggle("locked", !pass);
+    }
+    const validationResult = manualValidationResult();
+    const summary = $("manualValidationSummary");
+    if (summary) {
+      const issues = [...(validationResult.errors || []), ...(validationResult.warnings || [])];
+      summary.dataset.status = validationResult.ok && !issues.length ? "ready" : validationResult.ok ? "warning" : "error";
+      summary.innerHTML = issues.length
+        ? `<strong>${validationResult.ok ? "Resep siap dengan catatan" : "Lengkapi data sebelum menyimpan"}</strong><ul>${issues.map(item => `<li>${html(item)}</li>`).join("")}</ul>`
+        : `<strong>Parameter sudah konsisten</strong><small>Target rasio sekitar ${fmt(validationResult.targetWater)}ml dan detail pour sudah sesuai.</small>`;
     }
   }
 
@@ -4004,9 +4094,9 @@
       showTab("admin");
       return;
     }
-    if (!$("manualBeanName")?.value.trim()) {
-      showMessage("Nama kopi wajib diisi.", "error");
-      $("manualBeanName")?.focus();
+    const manualValidation = manualValidationResult();
+    if (!manualValidation.ok) {
+      showMessage(manualValidation.first || "Periksa kembali parameter seduhan.", "error");
       return;
     }
 
@@ -4070,6 +4160,7 @@
       renderPublicBrewTable();
       renderRecipeOptions(computeBrew());
       clearAutosaveScope("manualBrew");
+      EVENT_BUS.emit("brew:saved", { brew: savedLog, qa: savedQA, source: "manual" });
       updateSyncGuardStatus("synced", "Input tersinkron", editing ? "Perubahan hasil seduhan tersimpan." : "Hasil seduhan publik terkirim ke Supabase.");
       showMessage(editing ? "Perubahan hasil seduhan berhasil disimpan." : "Hasil seduhan berhasil disimpan dan masuk ke Hasil Seduhan Publik.", "success");
       showTab("public-brews");
@@ -4317,6 +4408,11 @@
       RoastDate: $("stockRoastDate").value,
       Active: $("stockActive").value
     };
+    const stockValidation = STOCK_SERVICE?.validateStock(bean);
+    if (stockValidation && !stockValidation.ok) {
+      showMessage(stockValidation.first, "error");
+      return;
+    }
 
     stockSaving = true;
     let watchdog;
@@ -4372,6 +4468,7 @@
       renderMetrics();
       const wasEditing = Boolean(editingStockId);
       resetStockForm();
+      EVENT_BUS.emit("stock:saved", { bean: saved, editing: wasEditing });
       showMessage(wasEditing ? "Perubahan stok kopi berhasil disimpan." : "Stok kopi berhasil masuk ke tabel workspace.", "success");
     } catch (err) {
       console.error("Stock save failed", err);
@@ -6961,9 +7058,10 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   function updateNotificationSummary() {
     const cards = Array.from(document.querySelectorAll("#tab-quality .quality-card, #tab-quality [data-severity], #qualityResults .quality-item"));
     const text = cards.map(card => (card.dataset?.severity || card.textContent || "").toLowerCase());
-    const critical = text.filter(v => /critical|kritis|error|missing|required/.test(v)).length;
-    const warning = text.filter(v => /warning|peringatan|kurang|incomplete|empty|kosong/.test(v)).length;
-    const info = Math.max(0, text.length - critical - warning);
+    const summary = NOTIFICATION_SERVICE?.summarize(text) || {};
+    const critical = summary.critical ?? text.filter(v => /critical|kritis|error|missing|required/.test(v)).length;
+    const warning = summary.warning ?? text.filter(v => /warning|peringatan|kurang|incomplete|empty|kosong/.test(v)).length;
+    const info = summary.info ?? Math.max(0, text.length - critical - warning);
     if ($("notifCriticalCount")) $("notifCriticalCount").textContent = critical;
     if ($("notifWarningCount")) $("notifWarningCount").textContent = warning;
     if ($("notifInfoCount")) $("notifInfoCount").textContent = info;
@@ -7644,8 +7742,8 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
   function applyReleaseMetadata() {
-    const version = APP_CONFIG.version || "38.0.0";
-    const release = APP_CONFIG.release || "Functional Stabilization";
+    const version = APP_CONFIG.version || "39.0.0";
+    const release = APP_CONFIG.release || "Core Workflow Modules";
     document.documentElement.dataset.appVersion = version;
     document.documentElement.dataset.appRelease = release;
     const buildLabel = document.querySelector(".sidebar-build-version");

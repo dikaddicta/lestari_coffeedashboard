@@ -10,13 +10,15 @@
     modularScripts: true,
     cleanUrls: true,
     serviceLayer: true,
-    refinedWelcome: true
+    refinedWelcome: true,
+    coreWorkflowModules: true,
+    workflowValidation: true
   });
 
   window.COFFEE_APP_CONFIG = Object.freeze({
-    version: "38.0.0",
-    release: "Services & Welcome Refinement",
-    build: "20260713-v38-services-welcome",
+    version: "39.0.0",
+    release: "Core Workflow Modules",
+    build: "20260713-v39-core-workflow",
     environment: "production",
     features
   });
