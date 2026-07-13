@@ -1,14 +1,19 @@
 {
-  "generatedAt": "2026-07-13T09:00:53.152Z",
+  "generatedAt": "2026-07-13T09:02:54.857Z",
   "version": "36.0.0",
   "summary": {
-    "pass": 45,
-    "fail": 3
+    "pass": 50,
+    "fail": 0
   },
   "results": [
     {
       "status": "PASS",
       "message": "JavaScript syntax: assets/app-config.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/routes.js",
       "detail": ""
     },
     {
@@ -82,8 +87,8 @@
       "detail": ""
     },
     {
-      "status": "FAIL",
-      "message": "Application version is 35.1.0",
+      "status": "PASS",
+      "message": "Application version is 36.0.0",
       "detail": "36.0.0"
     },
     {
@@ -102,13 +107,13 @@
       "detail": "36.0.0"
     },
     {
-      "status": "FAIL",
+      "status": "PASS",
       "message": "Visible release label matches app config",
       "detail": ""
     },
     {
-      "status": "FAIL",
-      "message": "Service-worker cache name matches v35.1 release",
+      "status": "PASS",
+      "message": "Service-worker cache name matches v36 release",
       "detail": ""
     },
     {
@@ -139,6 +144,11 @@
     {
       "status": "PASS",
       "message": "Service worker precaches assets/app-config.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/core/routes.js",
       "detail": ""
     },
     {

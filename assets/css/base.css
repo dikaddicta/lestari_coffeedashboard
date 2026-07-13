@@ -1,0 +1,17 @@
+/* Modular baseline. Keep global rules small; page-specific rules belong in pages.css. */
+body.modular-pages-ui {
+  font-family: var(--cb-font-sans);
+}
+
+body.modular-pages-ui [hidden] {
+  display: none !important;
+}
+
+body.modular-pages-ui :focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--cb-accent) 55%, transparent);
+  outline-offset: 3px;
+}
+
+body.modular-pages-ui .tab-panel[aria-hidden="true"] {
+  pointer-events: none;
+}

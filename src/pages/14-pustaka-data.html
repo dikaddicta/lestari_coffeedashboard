@@ -1,0 +1,67 @@
+<section id="tab-library" class="tab-panel">
+          <section class="panel page-intro-card page-intro-card--library">
+            <div>
+              <span class="page-intro-eyebrow">Pustaka Referensi Kopi</span>
+              <h2>Pustaka Data</h2>
+              <p>Jelajahi referensi varietas, proses pascapanen, profil sangrai, dripper, filter kertas, jenis air, dan grinder sebagai dasar keputusan seduh.</p>
+              <div class="page-intro-chips"><span>Data Referensi</span>
+<span>Tautan Sumber</span>
+<span>Data SOLO Terbaru</span></div>
+            </div>
+            <div class="page-intro-actions">
+              <button class="secondary page-intro-action" type="button" data-jump-tab="brew">Rekomendasi</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="suggestion">Saran Data</button>
+            </div>
+          </section>
+
+          <section class="module-ops-strip module-ops-strip--library">
+            <article><span>01</span><strong>Pencarian Referensi</strong><small>Cari varietas, proses, dripper, filter, profil sangrai, air, dan grinder.</small></article>
+            <article><span>02</span><strong>Konteks Sumber</strong><small>Setiap data utama diarahkan agar tetap punya konteks referensi.</small></article>
+            <article><span>03</span><strong>Alur Saran</strong><small>Tambahkan saran data jika ada referensi baru yang perlu dimasukkan.</small></article>
+          </section>
+
+
+        <section class="panel wide library-premium-panel">
+          <div class="section-title"><span>Pustaka</span><h2>Pustaka Data Referensi</h2></div>
+          <div class="library-explorer-hero">
+            <div>
+              <span class="mini-label">Pustaka Referensi Kopi</span>
+              <strong id="libraryHeroTitle">Data referensi untuk keputusan seduh</strong>
+              <p id="libraryHeroCopy">Cari varietas, proses, dripper, filter kertas, profil sangrai, air, dan grinder. Gunakan kartu ringkas untuk membaca petunjuk utama, lalu buka detail untuk sumber dan konteks lengkap.</p>
+            </div>
+            <div class="library-hero-signal" id="libraryHeroSignal"></div>
+          </div>
+          <div class="library-controls library-controls--premium">
+            <label>Dataset
+              <select id="libraryDataset"><option value="varieties">Varietas</option><option value="drippers">Dripper / Setup</option><option value="filters">Filter Kertas</option><option value="processes">Proses</option><option value="roasts">Profil Sangrai</option><option value="waters">Air</option><option value="grinders">Grinder</option></select>
+            </label>
+            <label>Pencarian
+              <input id="librarySearch" placeholder="Cari USDA, Kopyol, Mix Varietas, Anaerobic, SOLO..." />
+            </label>
+          </div>
+          <div class="data-quality-notice" role="note">
+            <strong>Catatan kualitas data</strong>
+            <span>Jumlah varietas menunjukkan jumlah record, termasuk alias dan opsi mixed lot. Nilai TDS/pH air serta setting grinder adalah titik awal indikatif; ukur dan kalibrasi kembali sesuai batch, alat, dan hasil seduhan.</span>
+          </div>
+          <div class="library-focus-toolbar" id="libraryFocusToolbar" aria-label="Filter cepat pustaka data">
+            <button type="button" class="active" data-library-focus="all">Semua</button>
+            <button type="button" data-library-focus="source">Sumber Tersedia</button>
+            <button type="button" data-library-focus="local-id">Indonesia / Lokal</button>
+            <button type="button" data-library-focus="new">USDA · Kopyol · Mix</button>
+            <button type="button" data-library-focus="brew-risk">Fermentasi Tinggi / Risiko</button>
+          </div>
+          <div class="library-spotlight-strip" id="librarySpotlightStrip" aria-live="polite"></div>
+          <div class="library-overview-grid" id="libraryOverview"></div>
+          <div class="library-explorer-layout">
+            <div class="library-main-column">
+              <div class="library-card-grid" id="libraryCardGrid" aria-live="polite"></div>
+              <div class="library-table-heading">
+                <div><span class="mini-label">Tampilan Tabel</span><strong>Detail data referensi</strong></div>
+                <small>Klik baris atau kartu untuk melihat konteks lengkap dan source.</small>
+              </div>
+              <div class="table-wrap tall"><table id="libraryTable"><thead></thead><tbody></tbody></table></div>
+            </div>
+            <aside class="library-detail-panel" id="libraryDetailPanel" aria-live="polite"></aside>
+          </div>
+        </section>
+      </section>

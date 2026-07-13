@@ -1,0 +1,107 @@
+<section id="tab-home" class="tab-panel active">
+            <section class="home-v35-hero" aria-labelledby="homeV35Title">
+              <div class="home-v35-copy">
+                <div class="home-v35-kicker">
+                  <span aria-hidden="true"></span>
+                  Lestari Coffee Dashboard
+                </div>
+                <div class="home-v35-brand-row">
+                  <span class="home-v35-logo" aria-hidden="true"><img src="assets/latte-art-icon.png" alt="" /></span>
+                  <div>
+                    <p>Workspace seduh terukur</p>
+                    <h1 id="homeV35Title">Coffee Brew <em>OS</em></h1>
+                  </div>
+                </div>
+                <p class="home-v35-lead">Rancang resep, catat hasil seduhan, dan evaluasi setiap perubahan variabel dalam satu ruang kerja yang lebih tenang dan terstruktur.</p>
+                <p class="home-v35-support">Dibuat untuk homebrewer, barista, roastery, dan coffee shop yang ingin menjaga konsistensi tanpa kehilangan ruang untuk bereksperimen.</p>
+                <div class="home-v35-actions" aria-label="Aksi utama beranda">
+                  <button class="primary" type="button" data-jump-tab="brew">Mulai rekomendasi</button>
+                  <button class="secondary" type="button" data-jump-tab="input-seduhan">Catat seduhan</button>
+                </div>
+                <div class="home-v35-principles" aria-label="Prinsip dashboard">
+                  <span>Resep terarah</span>
+                  <span>Catatan terhubung</span>
+                  <span>Evaluasi konsisten</span>
+                </div>
+              </div>
+
+              <aside class="home-v35-rail">
+                <article class="home-v35-library-card">
+                  <header>
+                    <div>
+                      <span class="quiet-label">Pustaka</span>
+                      <strong>Referensi aktif</strong>
+                    </div>
+                    <button type="button" class="text-action" data-jump-tab="library">Lihat semua</button>
+                  </header>
+                  <div class="metric-grid" id="libraryMetrics"></div>
+                </article>
+
+                <article class="home-v35-account-card" id="authSummary">
+                  <header>
+                    <span class="quiet-label">Akun &amp; Peran</span>
+                    <span class="home-v35-role">Workspace</span>
+                  </header>
+                  <div class="home-v35-account-profile">
+                    <span class="home-v35-avatar" id="authAvatar" aria-hidden="true">T</span>
+                    <div>
+                      <strong id="authUserLabel">Mode Tamu</strong>
+                      <small id="authRoleLabel">Masuk untuk menyimpan dan membagikan data.</small>
+                    </div>
+                  </div>
+                  <button class="home-v35-account-link" type="button" id="authJumpLink">Masuk / Daftar</button>
+                </article>
+              </aside>
+            </section>
+
+            <section class="home-v35-quick-grid" aria-label="Akses cepat">
+              <article data-jump-tab="brew" tabindex="0">
+                <span>01</span>
+                <div><strong>Rancang resep</strong><small>Bangun titik awal berdasarkan biji, alat, air, dan target rasa.</small></div>
+                <i aria-hidden="true">→</i>
+              </article>
+              <article data-jump-tab="input-seduhan" tabindex="0">
+                <span>02</span>
+                <div><strong>Catat seduhan</strong><small>Simpan eksperimen manual dan perubahan variabel secara rinci.</small></div>
+                <i aria-hidden="true">→</i>
+              </article>
+              <article data-jump-tab="qa" tabindex="0">
+                <span>03</span>
+                <div><strong>Evaluasi kualitas</strong><small>Bandingkan hasil, nilai QA, dan tentukan langkah dial-in berikutnya.</small></div>
+                <i aria-hidden="true">→</i>
+              </article>
+              <article data-jump-tab="analytics" tabindex="0">
+                <span>04</span>
+                <div><strong>Baca pola</strong><small>Lihat tren performa dan insight dari data seduhan yang terkumpul.</small></div>
+                <i aria-hidden="true">→</i>
+              </article>
+            </section>
+
+            <section class="home-v35-content-grid">
+              <article class="panel home-v35-workflow-card">
+                <div class="section-title quiet-section-title">
+                  <span>Alur Kerja</span>
+                  <h2>Dari ide hingga resep yang dapat diulang</h2>
+                </div>
+                <ol class="home-v35-workflow-list">
+                  <li><b>01</b><div><strong>Mulai dari konteks</strong><small>Pilih biji, proses, roast, alat, air, dan target rasa.</small></div></li>
+                  <li><b>02</b><div><strong>Uji satu perubahan</strong><small>Jaga variabel lain tetap stabil agar hasil mudah dibaca.</small></div></li>
+                  <li><b>03</b><div><strong>Nilai dan simpan</strong><small>Gunakan QA untuk memilih baseline terbaik dan mencatat tindak lanjut.</small></div></li>
+                </ol>
+              </article>
+
+              <article class="panel home-v35-demo-card">
+                <span class="quiet-label">Demo Cepat</span>
+                <h2>Coba baseline SOLO</h2>
+                <p>Isi rekomendasi awal secara otomatis untuk melihat alur dashboard tanpa memulai dari halaman kosong.</p>
+                <div class="home-v35-recipe-line">
+                  <strong>15 g</strong><i>·</i><strong>230 ml</strong><i>·</i><strong>92°C</strong>
+                </div>
+                <small>SOLO Dripper · medium-fine · agitasi rendah</small>
+                <div class="home-v35-demo-actions">
+                  <button id="homeDemoRecipeBtn" class="primary" type="button">Coba demo SOLO</button>
+                  <button class="secondary" type="button" data-jump-tab="guide">Buka panduan</button>
+                </div>
+              </article>
+            </section>
+          </section>

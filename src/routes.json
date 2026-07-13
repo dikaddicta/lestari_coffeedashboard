@@ -1,0 +1,145 @@
+{
+  "version": "36.0.0",
+  "pages": [
+    {
+      "order": 1,
+      "tab": "home",
+      "route": "beranda",
+      "sectionId": "tab-home",
+      "file": "pages/01-beranda.html",
+      "title": "Beranda",
+      "subtitle": "Ringkasan metrik utama, akses modul, dan informasi pustaka dashboard kopi.",
+      "access": "private"
+    },
+    {
+      "order": 2,
+      "tab": "guide",
+      "route": "cara-pakai",
+      "sectionId": "tab-guide",
+      "file": "pages/02-cara-pakai.html",
+      "title": "Cara Pakai",
+      "subtitle": "Panduan menggunakan dashboard dari rekomendasi hingga publikasi hasil seduhan.",
+      "access": "public"
+    },
+    {
+      "order": 3,
+      "tab": "brew",
+      "route": "rekomendasi-seduh",
+      "sectionId": "tab-brew",
+      "file": "pages/03-rekomendasi-seduh.html",
+      "title": "Rekomendasi Seduh",
+      "subtitle": "Titik awal resep seduh berbasis data biji, proses, alat, dan target rasa.",
+      "access": "public"
+    },
+    {
+      "order": 4,
+      "tab": "input-seduhan",
+      "route": "input-seduhan",
+      "sectionId": "tab-input-seduhan",
+      "file": "pages/04-input-seduhan.html",
+      "title": "Input Seduhan",
+      "subtitle": "Masukkan parameter eksperimen seduh untuk dibandingkan dan disimpan.",
+      "access": "public"
+    },
+    {
+      "order": 5,
+      "tab": "beans",
+      "route": "beans",
+      "sectionId": "tab-beans",
+      "file": "pages/05-beans.html",
+      "title": "Biji Kopi",
+      "subtitle": "Kelola referensi biji, asal, dan atribut pendukung untuk alur kerja internal.",
+      "access": "private"
+    },
+    {
+      "order": 6,
+      "tab": "stock",
+      "route": "stock",
+      "sectionId": "tab-stock",
+      "file": "pages/06-stock.html",
+      "title": "Stok",
+      "subtitle": "Pantau stok kopi, status bahan, dan ketersediaan untuk eksperimen berikutnya.",
+      "access": "private"
+    },
+    {
+      "order": 7,
+      "tab": "qa",
+      "route": "brew-log-qa",
+      "sectionId": "tab-qa",
+      "file": "pages/07-brew-log-qa.html",
+      "title": "Log Seduh & QA",
+      "subtitle": "Catat hasil seduhan, validasi kualitas, dan bangun histori evaluasi internal.",
+      "access": "private"
+    },
+    {
+      "order": 8,
+      "tab": "public-brews",
+      "route": "hasil-seduhan-publik",
+      "sectionId": "tab-public-brews",
+      "file": "pages/08-hasil-seduhan-publik.html",
+      "title": "Hasil Seduhan Publik",
+      "subtitle": "Lihat hasil seduhan yang telah dipublikasikan dan melewati proses peninjauan.",
+      "access": "public"
+    },
+    {
+      "order": 9,
+      "tab": "analytics",
+      "route": "data-analytics",
+      "sectionId": "tab-analytics",
+      "file": "pages/09-data-analytics.html",
+      "title": "Analitik Data",
+      "subtitle": "Baca performa seduhan, tren QA, dan pola eksperimen secara ringkas.",
+      "access": "private"
+    },
+    {
+      "order": 10,
+      "tab": "quality",
+      "route": "notification",
+      "sectionId": "tab-quality",
+      "file": "pages/10-notification.html",
+      "title": "Notifikasi",
+      "subtitle": "Pusat peringatan dan tindakan untuk menjaga kualitas data dan alur kerja.",
+      "access": "private"
+    },
+    {
+      "order": 11,
+      "tab": "reports",
+      "route": "export-report",
+      "sectionId": "tab-reports",
+      "file": "pages/11-export-report.html",
+      "title": "Ekspor & Laporan",
+      "subtitle": "Ekspor data dan rangkum hasil seduhan menjadi laporan yang siap dibagikan.",
+      "access": "private"
+    },
+    {
+      "order": 12,
+      "tab": "suggestion",
+      "route": "saran",
+      "sectionId": "tab-suggestion",
+      "file": "pages/12-saran.html",
+      "title": "Saran",
+      "subtitle": "Kirim masukan untuk membantu pengembangan Coffee Brew OS.",
+      "access": "public"
+    },
+    {
+      "order": 13,
+      "tab": "admin",
+      "route": "akun-role",
+      "sectionId": "tab-admin",
+      "file": "pages/13-akun-role.html",
+      "title": "Akun & Peran",
+      "subtitle": "Kelola akun, peran, dan workspace untuk membuka seluruh modul dashboard.",
+      "access": "private"
+    },
+    {
+      "order": 14,
+      "tab": "library",
+      "route": "pustaka-data",
+      "sectionId": "tab-library",
+      "file": "pages/14-pustaka-data.html",
+      "title": "Pustaka Data",
+      "subtitle": "Jelajahi referensi dripper, filter, varietas, proses, profil sangrai, air, dan grinder.",
+      "access": "public"
+    }
+  ]
+}

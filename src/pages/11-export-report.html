@@ -1,0 +1,138 @@
+<section id="tab-reports" class="tab-panel">
+          <section class="panel page-intro-card page-intro-card--reports">
+            <div>
+              <span class="page-intro-eyebrow">Pusat Laporan</span>
+              <h2>Ekspor & Laporan</h2>
+              <p>Siapkan export CSV/JSON, backup, recipe card, dan report HTML siap print dari data workspace maupun data publik yang sudah disetujui.</p>
+              <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
+<span>CSV / JSON</span>
+<span>Siap Cetak</span></div>
+            </div>
+            <div class="page-intro-actions">
+              <button class="secondary page-intro-action" type="button" data-jump-tab="analytics">Analitik</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="library">Pustaka Data</button>
+            </div>
+          </section>
+
+          <section class="module-ops-strip module-ops-strip--reports">
+            <article><span>01</span><strong>Ekspor Data</strong><small>CSV dan JSON untuk backup, analisis lanjutan, atau arsip.</small></article>
+            <article><span>02</span><strong>Cetak Laporan</strong><small>Laporan HTML siap print untuk ringkasan workspace atau data publik.</small></article>
+            <article><span>03</span><strong>Kartu Resep</strong><small>Siapkan format yang lebih mudah dibagikan ke client atau komunitas.</small></article>
+          </section>
+
+          <section class="panel report-command-center">
+            <div>
+              <span class="mini-label">Laporan Command Center</span>
+              <h2>Pilih output sesuai kebutuhan kerja</h2>
+              <p>Gunakan mode cepat untuk menyiapkan export data, report analytics, atau backup penuh. Preview akan membaca scope dan dataset yang aktif.</p>
+            </div>
+            <div class="report-command-actions">
+              <button class="secondary" type="button" data-report-scope-shortcut="workspace">Workspace</button>
+              <button class="secondary" type="button" data-report-scope-shortcut="public">Public</button>
+              <button class="secondary" type="button" data-report-scope-shortcut="all">Semua Data</button>
+              <button class="primary" type="button" data-report-action="analytics-html">Buat Laporan</button>
+            </div>
+          </section>
+
+
+        <section class="panel wide report-premium-panel">
+          <div class="section-title">
+            <span>Ekspor</span>
+            <h2>Pusat Ekspor & Laporan</h2>
+          </div>
+          <p class="hint">Download data penting sebagai CSV/JSON atau buat report HTML siap print. Modul ini membaca data workspace aktif dan data publik yang sudah disetujui.</p>
+
+          <div class="report-package-strip">
+            <article><span>CSV</span><strong>Data Operasional</strong><small>Brew log, QA, stock, public brew, dan library dataset.</small></article>
+            <article><span>HTML</span><strong>Narasi Analitik</strong><small>Ringkasan performa, best cup, top recipes, dan insight otomatis.</small></article>
+            <article><span>PRINT</span><strong>Kartu Resep</strong><small>Cetak rekomendasi aktif menjadi kartu resep yang mudah dibagikan.</small></article>
+          </div>
+
+          <div class="report-toolbar">
+            <select id="reportScope" aria-label="Pilih cakupan laporan">
+              <option value="workspace">Workspace aktif</option>
+              <option value="public">Publik disetujui</option>
+              <option value="all">Semua data terbaca</option>
+            </select>
+            <select id="reportLibraryDataset" aria-label="Pilih dataset pustaka untuk laporan">
+              <option value="varieties">Pustaka: Varietas</option>
+              <option value="drippers">Pustaka: Dripper / Setup</option>
+              <option value="filters">Pustaka: Filter Kertas</option>
+              <option value="processes">Pustaka: Proses</option>
+              <option value="roasts">Pustaka: Profil Sangrai</option>
+              <option value="waters">Pustaka: Air</option>
+              <option value="grinders">Pustaka: Grinder</option>
+            </select>
+            <button class="secondary" id="refreshLaporans" type="button">Perbarui Pratinjau</button>
+          </div>
+
+          <div class="report-preview-heading">
+            <div>
+              <span class="mini-label">Pratinjau Langsung</span>
+              <strong>Ringkasan data yang akan masuk report</strong>
+            </div>
+            <small>Ubah scope atau dataset untuk memperbarui metrik preview.</small>
+          </div>
+          <div class="report-preview-grid" id="reportPreviewGrid" aria-live="polite"></div>
+
+          <div class="report-action-heading">
+            <div>
+              <span class="mini-label">Pilihan Ekspor</span>
+              <strong>Pilih format export</strong>
+            </div>
+            <small>File akan diunduh sesuai data yang tersedia di browser/workspace aktif.</small>
+          </div>
+          <div class="report-action-grid">
+            <article class="report-action-card">
+              <span class="mini-label">CSV</span>
+              <strong>Log Seduh</strong>
+              <p>Export seluruh brew log yang terbaca sesuai scope report.</p>
+              <button class="primary" type="button" data-report-action="brew-csv">Unduh CSV Seduhan</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">CSV</span>
+              <strong>Nilai QAs</strong>
+              <p>Export nilai QA untuk audit, analisis, atau backup.</p>
+              <button class="primary" type="button" data-report-action="qa-csv">Unduh CSV QA</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">CSV</span>
+              <strong>Stok Biji Kopi</strong>
+              <p>Export stok kopi workspace aktif dengan profil kopi.</p>
+              <button class="primary" type="button" data-report-action="stock-csv">Unduh CSV Stok</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">CSV</span>
+              <strong>Hasil Seduhan Publik</strong>
+              <p>Export resep publik yang sudah approved dan lolos threshold.</p>
+              <button class="secondary" type="button" data-report-action="public-csv">Unduh CSV Publik</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">CSV</span>
+              <strong>Dataset Pustaka</strong>
+              <p>Export dataset referensi aktif, termasuk SourceURL bila tersedia.</p>
+              <button class="secondary" type="button" data-report-action="library-csv">Unduh CSV Pustaka</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">HTML</span>
+              <strong>Analitik Laporan</strong>
+              <p>Buat ringkasan performa QA, top recipe, dan insight otomatis.</p>
+              <button class="secondary" type="button" data-report-action="analytics-html">Unduh Laporan HTML</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">PRINT</span>
+              <strong>Kartu Resep Aktif</strong>
+              <p>Cetak rekomendasi seduh aktif sebagai kartu resep.</p>
+              <button class="ghost" type="button" data-report-action="recipe-print">Cetak Kartu Resep</button>
+            </article>
+            <article class="report-action-card">
+              <span class="mini-label">JSON</span>
+              <strong>Backup Lokal Lengkap</strong>
+              <p>Export backup lokal lengkap untuk arsip pribadi.</p>
+              <button class="ghost" type="button" data-report-action="json-backup">Unduh Backup JSON</button>
+            </article>
+          </div>
+
+          <section class="report-sample-card" id="reportSampleCard" aria-live="polite"></section>
+        </section>
+      </section>

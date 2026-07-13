@@ -1,0 +1,12 @@
+/* Page-level extension point.
+   Keep selectors scoped with body[data-page="..."] to prevent cross-page regressions. */
+body.modular-pages-ui[data-page] .dashboard-topbar__eyebrow {
+  text-wrap: balance;
+}
+
+@container dashboard-page (max-width: 700px) {
+  body.modular-pages-ui .page-intro-card,
+  body.modular-pages-ui .module-ops-strip {
+    min-width: 0;
+  }
+}

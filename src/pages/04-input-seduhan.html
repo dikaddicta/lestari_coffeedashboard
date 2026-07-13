@@ -1,0 +1,199 @@
+<section id="tab-input-seduhan" class="tab-panel">
+          <section class="panel page-intro-card page-intro-card--input-seduhan">
+            <div>
+              <span class="page-intro-eyebrow">Pencatatan Manual</span>
+              <h2>Input Seduhan</h2>
+              <p>Catat eksperimen seduh manual dengan parameter lengkap, termasuk 1–3 varietas, Mix Varietas, dan proses pascapanen manual jika tidak tersedia di pustaka.</p>
+              <div class="page-intro-chips"><span>Input Tamu</span>
+<span>Resep Manual</span>
+<span>QA ≥ 6.5</span></div>
+            </div>
+            <div class="page-intro-actions">
+              <button class="secondary page-intro-action" type="button" data-jump-tab="public-brews">Lihat Publik</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="qa">Evaluasi QA</button>
+            </div>
+          </section>
+
+          <section class="module-ops-strip module-ops-strip--input">
+            <article><span>01</span><strong>Manual Brew</strong><small>Catat resep bebas tanpa harus mengambil data dari stock.</small></article>
+            <article><span>02</span><strong>QA Gate</strong><small>Final QA minimal 6.5 menjadi standar publikasi hasil seduhan.</small></article>
+            <article><span>03</span><strong>Public Candidate</strong><small>Hasil terbaik bisa menjadi referensi komunitas setelah disetujui.</small></article>
+          </section>
+
+
+        <section class="panel wide manual-input-panel">
+          <div class="section-title"><span>Manual Seduh</span><h2>Input Seduhan Manual</h2></div>
+          <p class="hint">Menu ini untuk guest atau brewer yang ingin mencatat seduhan dengan rumus sendiri dan biji kopi sendiri. Data akan masuk ke <strong>Hasil Seduhan Publik</strong> hanya jika Final QA minimal <strong>6.5</strong>.</p>
+          <div id="manualEditBanner" class="manual-edit-banner hidden"><div><strong id="manualEditTitle">Mode edit hasil seduhan</strong><small>Form edit memakai kolom yang sama seperti Input Seduhan. Tombol edit hanya muncul untuk akun yang menginput data tersebut.</small></div><button id="manualCancelEditBtn" class="ghost small-action" type="button">Batalkan Edit</button></div>
+          <form id="manualBrewForm" class="form-grid qa-form manual-brew-form">
+            <div class="form-subtitle span-2"><span>1. Data Seduhan</span><small>Tanpa stok. Isi biji kopi dan resep manual yang kamu gunakan.</small></div>
+            <label class="span-2">Nama Kopi
+              <input id="manualBeanName" placeholder="Contoh: Kintamani Natural Lot 02" required />
+            </label>
+            <label>Origin / Daerah
+              <input id="manualOrigin" placeholder="Contoh: Bali, Gayo, Kerinci" />
+            </label>
+            <label>Brewer / Penilai
+              <input id="manualEvaluator" placeholder="Nama brewer" />
+            </label>
+            <label>Varietas 1
+              <select id="manualVariety"></select>
+              <small>Gunakan “Mix Varietas” jika label bean hanya menulis campuran varietas.</small>
+            </label>
+            <label>Varietas 2
+              <select id="manualVariety2"></select>
+              <small>Opsional untuk kopi dengan dua varietas.</small>
+            </label>
+            <label>Varietas 3
+              <select id="manualVariety3"></select>
+              <small>Opsional untuk kopi dengan tiga varietas.</small>
+            </label>
+            <div class="manual-variety-note span-2">
+              <span>Multi-varietas</span>
+              <small>Isi 2–3 varietas jika tertera di kemasan. Untuk label “Mix Varietas”, pilih Mix Varietas di Varietas 1 dan biarkan Varietas 2/3 opsional.</small>
+            </div>
+            <label>Pascapanen
+              <select id="manualProcess"></select>
+              <small>Pilih Kustom jika proses pascapanen tidak tersedia.</small>
+            </label>
+            <label id="manualProcessCustomWrap" class="hidden">Pascapanen Manual
+              <input id="manualProcessCustom" placeholder="Contoh: Anaerobic Natural 120h, Washed Thermal Shock" />
+            </label>
+            <label>Profil Sangrai
+              <select id="manualRoast"></select>
+            </label>
+            <label>Dripper
+              <select id="manualDripper"></select>
+            </label>
+            <label>Mode Seduh
+              <select id="manualMode">
+                <option>Hot V60</option>
+                <option>Japanese Iced</option>
+              </select>
+            </label>
+            <label id="manualSwitchValveModeWrap">Switch Valve Mode
+              <select id="manualSwitchValveMode">
+                <option value="N/A">N/A</option>
+                <option>Full Open</option>
+                <option>Hybrid</option>
+                <option>Full Immersion</option>
+              </select>
+              <small>Aktif otomatis jika dripper yang dipilih adalah Switch.</small>
+            </label>
+            <label id="manualIceWrap" class="hidden">Es Batu (g)
+              <input id="manualIce" type="number" min="0" max="700" step="1" value="90" />
+              <small>Muncul khusus mode Japanese. Air panas dihitung dari total air dikurangi es batu.</small>
+            </label>
+            <label>Grinder
+              <select id="manualGrinder"></select>
+            </label>
+            <label>Setting Grinder
+              <input id="manualGrindSetting" placeholder="Contoh: 72 klik / 6.5 dial" />
+            </label>
+            <label>Air
+              <select id="manualWater"></select>
+            </label>
+            <label>Dosis (g)
+              <input id="manualDose" type="number" min="5" max="50" step="0.1" value="15" />
+            </label>
+            <label>Rasio 1:x
+              <input id="manualRatio" type="number" min="8" max="25" step="0.1" value="15" />
+            </label>
+            <label>Total Air (ml)
+              <input id="manualTotalWater" type="number" min="50" max="1000" step="1" value="225" />
+            </label>
+            <label>Suhu (°C)
+              <input id="manualTemp" type="number" min="70" max="100" step="1" value="92" />
+            </label>
+            <label>Waktu Seduh (detik)
+              <input id="manualBrewTime" type="number" min="30" max="600" step="1" value="165" />
+            </label>
+            <label>Bloom (ml)
+              <input id="manualBloom" type="number" min="0" max="200" step="1" value="45" />
+            </label>
+
+            <div id="manualPourSection" class="span-2 manual-pour-section">
+              <div class="form-subtitle manual-pour-title"><span>Detail Pour</span><small id="manualPourModeHint">Isi volume Pour 1 sampai Pour 4 sesuai resep manual.</small></div>
+              <div class="manual-pour-grid">
+                <article class="manual-pour-card" data-manual-pour-card="1">
+                  <label>Pour 1 (ml)
+                    <input id="manualPour1" class="manual-pour-input" type="number" min="0" max="1000" step="1" placeholder="Contoh: 45" />
+                  </label>
+                  <label class="manual-pour-valve" data-manual-valve-for="1">Valve
+                    <select id="manualPour1Valve" class="manual-pour-valve-select"><option>Open</option><option>Closed</option></select>
+                  </label>
+                  <label class="manual-pour-note" data-manual-note-for="1">Keterangan
+                    <input id="manualPour1Note" class="manual-pour-note-input" placeholder="Contoh: bloom / center pour" />
+                  </label>
+                </article>
+                <article class="manual-pour-card" data-manual-pour-card="2">
+                  <label>Pour 2 (ml)
+                    <input id="manualPour2" class="manual-pour-input" type="number" min="0" max="1000" step="1" placeholder="Contoh: 90" />
+                  </label>
+                  <label class="manual-pour-valve" data-manual-valve-for="2">Valve
+                    <select id="manualPour2Valve" class="manual-pour-valve-select"><option>Open</option><option>Closed</option></select>
+                  </label>
+                  <label class="manual-pour-note" data-manual-note-for="2">Keterangan
+                    <input id="manualPour2Note" class="manual-pour-note-input" placeholder="Contoh: spiral lembut" />
+                  </label>
+                </article>
+                <article class="manual-pour-card" data-manual-pour-card="3">
+                  <label>Pour 3 (ml)
+                    <input id="manualPour3" class="manual-pour-input" type="number" min="0" max="1000" step="1" placeholder="Contoh: 150" />
+                  </label>
+                  <label class="manual-pour-valve" data-manual-valve-for="3">Valve
+                    <select id="manualPour3Valve" class="manual-pour-valve-select"><option>Open</option><option>Closed</option></select>
+                  </label>
+                  <label class="manual-pour-note" data-manual-note-for="3">Keterangan
+                    <input id="manualPour3Note" class="manual-pour-note-input" placeholder="Contoh: maintain bed" />
+                  </label>
+                </article>
+                <article class="manual-pour-card" data-manual-pour-card="4">
+                  <label>Pour 4 (ml)
+                    <input id="manualPour4" class="manual-pour-input" type="number" min="0" max="1000" step="1" placeholder="Contoh: 225" />
+                  </label>
+                  <label class="manual-pour-valve" data-manual-valve-for="4">Valve
+                    <select id="manualPour4Valve" class="manual-pour-valve-select"><option>Open</option><option>Closed</option></select>
+                  </label>
+                  <label class="manual-pour-note" data-manual-note-for="4">Keterangan
+                    <input id="manualPour4Note" class="manual-pour-note-input" placeholder="Contoh: finish pour" />
+                  </label>
+                </article>
+              </div>
+              <label id="manualValveOpenTimeWrap" class="manual-valve-open-time hidden">Valve Open
+                <input id="manualValveOpenTime" placeholder="Contoh: buka valve di 1:30 / setelah 75 detik" />
+                <small>Khusus Full Immersion: isi waktu kapan valve dibuka.</small>
+              </label>
+            </div>
+
+            <label class="span-2">Recipe / Tahapan Seduh Tambahan
+              <textarea id="manualPourPlan" rows="3" placeholder="Opsional. Contoh: agitasi ringan di akhir Pour 2, swirl 1x sebelum drawdown, selesai 2:45"></textarea>
+            </label>
+
+            <div class="form-subtitle span-2"><span>2. Evaluasi Seduhan</span><small>Nilai sensorik menentukan apakah tombol simpan aktif. Minimal QA 6.5.</small></div>
+            <label class="span-2">Variabel / Fokus Seduhan
+              <input id="manualVariable" placeholder="Contoh: resep original / grind lebih halus / suhu 92°C" />
+            </label>
+            <label class="span-2">Hipotesis
+              <textarea id="manualHypothesis" rows="2" placeholder="Apa yang ingin dicapai dari resep ini?"></textarea>
+            </label>
+            <label>Aroma<input class="manual-qa-score" id="manualAroma" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Rasa<input class="manual-qa-score" id="manualFlavor" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Aftertaste<input class="manual-qa-score" id="manualAftertaste" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Kualitas Acidity<input class="manual-qa-score" id="manualAcidityQuality" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Sweetness<input class="manual-qa-score" id="manualSweetness" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Body<input class="manual-qa-score" id="manualBody" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Balance<input class="manual-qa-score" id="manualBalance" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Clarity<input class="manual-qa-score" id="manualClarity" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Finish<input class="manual-qa-score" id="manualFinish" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Konsistensi<input class="manual-qa-score" id="manualConsistency" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+            <label>Pengurang Nilai<input id="manualDefect" type="number" min="0" max="10" step="0.1" value="0" /></label>
+            <label class="span-2">Catatan Hasil
+              <textarea id="manualNotes" rows="3" placeholder="Catat hasil rasa, clarity, aftertaste, kekurangan, dan keputusan dial-in berikutnya"></textarea>
+            </label>
+            <div class="qa-total manual-qa-total span-2">Final QA: <strong id="manualFinalPreview">8.50</strong> <span id="manualStatusPreview" class="qa-pass">QA PASS</span></div>
+            <p id="manualGateHint" class="manual-gate-hint span-2">Tombol simpan aktif karena Final QA memenuhi batas publik 6.5.</p>
+            <div class="manual-submit-row span-2"><button id="manualSubmitBtn" class="primary" type="submit">Simpan Hasil Seduhan Publik</button></div>
+          </form>
+        </section>
+      </section>

@@ -1,0 +1,22 @@
+/* Shared layout contract for all modular page fragments. */
+body.modular-pages-ui .dashboard-main {
+  container-type: inline-size;
+  container-name: dashboard-page;
+}
+
+body.modular-pages-ui .tab-panel {
+  min-width: 0;
+}
+
+body.modular-pages-ui .tab-panel.active {
+  animation: cb-page-enter 180ms ease-out both;
+}
+
+@keyframes cb-page-enter {
+  from { opacity: .72; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.modular-pages-ui .tab-panel.active { animation: none; }
+}

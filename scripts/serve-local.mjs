@@ -17,10 +17,13 @@ const mime = {
 };
 
 function safeFilePath(requestUrl) {
-  const url = new URL(requestUrl, `http://127.0.0.1:${port}`);
+  const normalizedUrl = String(requestUrl || "/").replace(/^\/{2,}/, "/");
+  const url = new URL(normalizedUrl, `http://127.0.0.1:${port}`);
   const pathname = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
-  const candidate = path.resolve(root, `.${pathname}`);
-  return candidate.startsWith(path.resolve(root)) ? candidate : null;
+  const resolvedRoot = path.resolve(root);
+  const candidate = path.resolve(resolvedRoot, `.${pathname}`);
+  const insideRoot = candidate === resolvedRoot || candidate.startsWith(`${resolvedRoot}${path.sep}`);
+  return insideRoot ? candidate : null;
 }
 
 const server = http.createServer((request, response) => {

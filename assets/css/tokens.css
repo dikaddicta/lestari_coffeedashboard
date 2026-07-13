@@ -1,0 +1,30 @@
+/* Coffee Brew OS v36 — shared design tokens.
+   New modules should use --cb-* variables instead of introducing page-specific values. */
+:root {
+  --cb-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --cb-canvas: var(--ql-canvas, #f3f1ec);
+  --cb-surface: var(--ql-surface, #ffffff);
+  --cb-surface-soft: var(--ql-surface-soft, #f8f6f1);
+  --cb-ink: var(--ql-ink, #1f1e1b);
+  --cb-muted: var(--ql-muted, #706a62);
+  --cb-line: var(--ql-line, #e3dfd7);
+  --cb-accent: var(--ql-accent, #9b6b3f);
+  --cb-accent-strong: var(--ql-accent-strong, #7f512d);
+  --cb-success: var(--ql-success, #356b58);
+  --cb-warning: var(--ql-warning, #9a642f);
+  --cb-danger: var(--ql-danger, #9e4f48);
+  --cb-radius-sm: var(--ql-radius-sm, 12px);
+  --cb-radius-md: var(--ql-radius-md, 16px);
+  --cb-radius-lg: var(--ql-radius-lg, 20px);
+  --cb-shadow-sm: var(--ql-shadow-sm, 0 8px 22px rgba(31, 29, 26, .035));
+  --cb-shadow-md: var(--ql-shadow-md, 0 18px 42px rgba(31, 29, 26, .055));
+  --cb-space-1: .25rem;
+  --cb-space-2: .5rem;
+  --cb-space-3: .75rem;
+  --cb-space-4: 1rem;
+  --cb-space-5: 1.25rem;
+  --cb-space-6: 1.5rem;
+  --cb-space-8: 2rem;
+  --cb-space-10: 2.5rem;
+  --cb-content-max: 1480px;
+}

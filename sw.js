@@ -1,12 +1,18 @@
-const CACHE_NAME = "coffee-brew-os-v35-1-functional";
+const CACHE_NAME = "coffee-brew-os-v36-modular-pages";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./assets/app-config.js",
+  "./assets/core/routes.js",
   "./assets/core/runtime.js",
   "./assets/styles.css",
   "./assets/styles-v35-quiet-luxury.css",
   "./assets/styles-v35-1-functional.css",
+  "./assets/css/tokens.css",
+  "./assets/css/base.css",
+  "./assets/css/layout.css",
+  "./assets/css/components.css",
+  "./assets/css/pages.css",
   "./assets/app.js",
   "./assets/data.js",
   "./assets/supabase-config.js",

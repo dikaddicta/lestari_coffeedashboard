@@ -1,0 +1,21 @@
+/* Cross-page component refinements for the modular architecture. */
+body.modular-pages-ui .module-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cb-space-2);
+  min-height: 30px;
+  padding: 0 var(--cb-space-3);
+  border: 1px solid var(--cb-line);
+  border-radius: 999px;
+  color: var(--cb-muted);
+  background: var(--cb-surface-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+body.modular-pages-ui button,
+body.modular-pages-ui input,
+body.modular-pages-ui select,
+body.modular-pages-ui textarea {
+  font: inherit;
+}

@@ -4,15 +4,16 @@ Coffee Brew OS adalah dashboard web untuk merancang rekomendasi seduh, mencatat 
 
 ## Release aktif
 
-**v35.1.0 — Functional Stabilization**
+**v36.0.0 — Modular Pages Architecture**
 
-Release ini mempertahankan visual **Modern Coffee SaaS — Quiet Luxury** dari v35, lalu memperkuat fondasi fungsi, cache, penyimpanan browser, audit otomatis, dan workflow deployment.
+v36 mempertahankan fungsi dan visual Quiet Luxury dari v35.1, lalu memisahkan sumber setiap menu menjadi file tersendiri. `index.html` sekarang dihasilkan dari shell, manifest route, dan 14 page fragment.
 
-Perubahan lengkap tersedia pada:
+Dokumen perubahan:
 
 ```text
-docs/CHANGELOG_v35_1.md
-docs/V35_1_FUNCTIONAL_AUDIT.md
+docs/CHANGELOG_v36.md
+docs/V36_ARCHITECTURE.md
+docs/V36_BUILD_REPORT.txt
 ```
 
 ## Fitur utama
@@ -43,37 +44,51 @@ docs/V35_1_FUNCTIONAL_AUDIT.md
 
 ```text
 .
-├─ index.html
-├─ package.json
-├─ manifest.webmanifest
-├─ sw.js
+├─ index.html                    # hasil build
+├─ src/
+│  ├─ shell.html                 # kerangka aplikasi
+│  ├─ routes.json                # manifest halaman
+│  └─ pages/                     # 14 menu, satu file per menu
 ├─ assets/
 │  ├─ app-config.js
 │  ├─ app.js
 │  ├─ data.js
 │  ├─ supabase-config.js
-│  ├─ styles.css
-│  ├─ styles-v35-quiet-luxury.css
-│  ├─ styles-v35-1-functional.css
-│  └─ core/
-│     └─ runtime.js
+│  ├─ core/
+│  │  ├─ routes.js               # hasil build
+│  │  └─ runtime.js
+│  └─ css/
+│     ├─ tokens.css
+│     ├─ base.css
+│     ├─ layout.css
+│     ├─ components.css
+│     └─ pages.css
 ├─ scripts/
+│  ├─ build-pages.mjs
+│  ├─ modular-pages-audit.mjs
 │  ├─ functional-audit.mjs
 │  ├─ release-check.mjs
-│  ├─ serve-local.mjs
-│  ├─ pre-push-check.ps1
-│  ├─ setup-git-safe.ps1
-│  └─ git-safe-update.ps1
+│  └─ serve-local.mjs
 ├─ supabase/
-│  ├─ schema.sql
-│  ├─ supabase_repair_v8_stable.sql
-│  ├─ README.md
-│  └─ archive/
 ├─ docs/
 └─ .github/workflows/quality-check.yml
 ```
 
-Aplikasi masih menggunakan arsitektur static single-page app. `package.json` hanya menyediakan tooling audit dan local server; tidak ada dependency npm atau proses build.
+## Mengubah halaman
+
+Edit menu melalui file pada:
+
+```text
+src/pages/
+```
+
+Ubah route atau metadata melalui:
+
+```text
+src/routes.json
+```
+
+Jangan menjadikan `index.html` sebagai sumber utama karena file tersebut akan dihasilkan ulang.
 
 ## Menjalankan secara lokal
 
@@ -81,6 +96,7 @@ Persyaratan: Node.js 18 atau lebih baru.
 
 ```powershell
 cd "D:\PRIBADI\4. WEBSITE\coffee_dashboard"
+npm run build
 npm run check
 npm run serve
 ```
@@ -91,70 +107,36 @@ Buka:
 http://127.0.0.1:4173
 ```
 
-Live Server di VS Code tetap dapat digunakan, tetapi `npm run serve` direkomendasikan karena tidak membutuhkan extension tambahan dan mengirim header `Cache-Control: no-store` untuk pengujian lokal.
-
 ## Audit sebelum release
-
-Jalankan:
 
 ```powershell
 npm run check
 git diff --check
 ```
 
-Audit memeriksa syntax, route, asset, tipe tombol, urutan script, safe storage, Supabase browser key, service worker, serta integritas dataset. Hasil audit mesin disimpan di:
+`npm run check` menjalankan:
+
+1. build page modular;
+2. audit manifest dan fragment halaman;
+3. functional audit aplikasi, asset, PWA, Supabase browser config, dan dataset.
+
+Hasil audit mesin disimpan pada:
 
 ```text
-docs/V35_1_AUDIT_RESULT.json
+docs/V36_AUDIT_RESULT.json
 ```
-
-GitHub Actions juga menjalankan pemeriksaan yang sama ketika ada push ke `main` atau `development`, serta ketika pull request menuju `main` dibuat.
 
 ## Konfigurasi Supabase
 
-Konfigurasi browser berada pada:
+Konfigurasi browser berada pada `assets/supabase-config.js`. Gunakan hanya Project URL dan anon/public key. Jangan menaruh `service_role` key di frontend atau repository. Keamanan data harus ditegakkan melalui Row Level Security.
 
-```text
-assets/supabase-config.js
-```
-
-Gunakan hanya:
-
-- Supabase Project URL.
-- Supabase anon/public key.
-
-Jangan pernah menaruh `service_role` key di frontend atau repository. Anon key memang dapat terlihat oleh browser; keamanan data harus ditegakkan melalui Row Level Security.
-
-### Database baru
-
-Jalankan:
-
-```text
-supabase/schema.sql
-```
-
-### Database lama
-
-Baca:
-
-```text
-supabase/README.md
-```
-
-Gunakan repair script atau migration historis secara sadar. Lakukan backup database sebelum mengubah schema atau RLS.
+Database baru menggunakan `supabase/schema.sql`. Untuk database lama, baca `supabase/README.md` dan lakukan backup sebelum menjalankan repair atau migration.
 
 ## Workflow Git yang aman
 
-Sebelum mulai bekerja:
-
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\git-safe-update.ps1
-```
-
-Sebelum commit dan push:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\pre-push-check.ps1
+npm run check
 git add -A
 git commit -m "Deskripsi perubahan"
 git push origin main
@@ -162,29 +144,19 @@ git push origin main
 
 Project menggunakan `fetch` dan `merge --ff-only`, bukan rebase otomatis. Jangan memakai `push --force` pada branch `main`.
 
-## Catatan PWA dan cache
+## PWA dan cache
 
-v35.1 menggunakan cache:
+v36 menggunakan cache:
 
 ```text
-coffee-brew-os-v35-1-functional
+coffee-brew-os-v36-modular-pages
 ```
 
-Fallback `index.html` hanya dipakai untuk navigasi halaman. File CSS atau JavaScript yang gagal dimuat tidak lagi diganti dengan HTML.
+Setelah deployment besar, uji website melalui Incognito. Clear site data hanya diperlukan bila browser mempertahankan service worker lama.
 
-Setelah deployment besar, uji website melalui Incognito. Clear site data hanya diperlukan bila browser masih mempertahankan service worker versi lama.
+## Batasan release
 
-## Batasan release ini
-
+- Source halaman sudah terpisah, tetapi runtime JavaScript utama masih berada di `assets/app.js` demi kompatibilitas fungsi.
+- Navigasi produksi masih menggunakan hash route; clean URL akan dikerjakan setelah lifecycle modul stabil.
 - Pengujian otomatis bersifat statis dan tidak menggantikan uji end-to-end dengan session Supabase aktif.
-- Seluruh menu masih berada dalam satu `index.html` dan satu file aplikasi utama yang besar.
-- Pemisahan menu menjadi page/module terpisah direncanakan untuk fase arsitektur berikutnya.
 - Rekomendasi grinder, air, dan resep adalah titik awal dial-in, bukan jaminan hasil rasa yang sama pada setiap alat dan biji kopi.
-
-## Dokumen penting
-
-- `docs/CHANGELOG_v35_1.md`
-- `docs/V35_1_FUNCTIONAL_AUDIT.md`
-- `docs/RELEASE_CHECKLIST.md`
-- `docs/GIT_SAFE_UPDATE_SOP.md`
-- `docs/PUSH_TO_GITHUB.md`

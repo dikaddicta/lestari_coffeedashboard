@@ -1,0 +1,94 @@
+<section id="tab-analytics" class="tab-panel">
+          <section class="panel page-intro-card page-intro-card--analytics">
+            <div>
+              <span class="page-intro-eyebrow">Insight Seduhan</span>
+              <h2>Analitik Data</h2>
+              <p>Baca pola performa seduhan, distribusi nilai QA, metode paling stabil, dan insight dari workspace maupun hasil publik yang disetujui.</p>
+              <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
+<span>Performa</span>
+<span>Pendukung Keputusan</span></div>
+            </div>
+            <div class="page-intro-actions">
+              <button class="secondary page-intro-action" type="button" data-jump-tab="quality">Notifikasi</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Ekspor Laporan</button>
+            </div>
+          </section>
+
+          <section class="module-ops-strip module-ops-strip--analytics">
+            <article><span>01</span><strong>Tren QA</strong><small>Membaca pola nilai dari workspace dan data publik yang disetujui.</small></article>
+            <article><span>02</span><strong>Pola Metode</strong><small>Bandingkan performa dripper, proses, roast, dan metode seduh.</small></article>
+            <article><span>03</span><strong>Pendukung Keputusan</strong><small>Gunakan insight untuk menentukan eksperimen seduh berikutnya.</small></article>
+          </section>
+
+
+        <section class="panel wide analytics-premium-panel">
+          <div class="section-title">
+            <span>Analitik Data</span>
+            <h2>Analitik Performa Seduhan</h2>
+          </div>
+          <p class="hint">Baca performa seduhan dari Log Seduh workspace dan hasil publik yang sudah disetujui. Gunakan insight ini untuk menemukan pola dripper, proses, roast, dan resep yang paling konsisten.</p>
+          <div class="analytics-toolbar">
+            <select id="analyticsScope" aria-label="Pilih cakupan data analitik">
+              <option value="all">Semua data terbaca</option>
+              <option value="workspace">Workspace aktif</option>
+              <option value="public">Publik disetujui</option>
+            </select>
+            <select id="analyticsMinQA" aria-label="Pilih nilai minimum QA analitik">
+              <option value="0">Semua QA</option>
+              <option value="6.5">QA ≥ 6.5</option>
+              <option value="7">QA ≥ 7.0</option>
+              <option value="8">QA ≥ 8.0</option>
+            </select>
+            <button id="refreshAnalitik" class="secondary" type="button">Perbarui Analitik</button>
+          </div>
+
+          <div class="analytics-hero-grid" id="analyticsMetricGrid" aria-live="polite"></div>
+
+          <div class="analytics-layout">
+            <section class="analytics-card analytics-trend-card">
+              <div class="analytics-card-head">
+                <span class="mini-label">Tren QA</span>
+                <strong>Performa dari waktu ke waktu</strong>
+              </div>
+              <div class="analytics-chart" id="analyticsTrendChart"></div>
+            </section>
+            <section class="analytics-card analytics-insight-card">
+              <div class="analytics-card-head">
+                <span class="mini-label">Insight Otomatis</span>
+                <strong>Hal yang perlu diperhatikan</strong>
+              </div>
+              <div class="analytics-insight-list" id="analyticsInsightList"></div>
+            </section>
+          </div>
+
+          <div class="analytics-split-grid">
+            <section class="analytics-card">
+              <div class="analytics-card-head">
+                <span class="mini-label">Dripper Performa</span>
+                <strong>Dripper dengan QA terbaik</strong>
+              </div>
+              <div class="analytics-rank-list" id="analyticsDripperRank"></div>
+            </section>
+            <section class="analytics-card">
+              <div class="analytics-card-head">
+                <span class="mini-label">Process Performa</span>
+                <strong>Pasca panen paling konsisten</strong>
+              </div>
+              <div class="analytics-rank-list" id="analyticsProcessRank"></div>
+            </section>
+          </div>
+
+          <section class="analytics-card analytics-table-card">
+            <div class="analytics-card-head">
+              <span class="mini-label">Top Recipes</span>
+              <strong>Resep dengan QA tertinggi</strong>
+            </div>
+            <div class="table-wrap">
+              <table id="analyticsTopTable">
+                <thead><tr><th>Kopi</th><th>Profil</th><th>Metode</th><th>Resep</th><th>QA</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </section>

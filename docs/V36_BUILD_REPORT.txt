@@ -1,0 +1,24 @@
+Coffee Brew OS v36.0.0 — Modular Pages Architecture
+
+Build status: PASS
+
+Perubahan utama:
+- 14 menu dipisahkan menjadi 14 source fragment.
+- 1 shell aplikasi dan 1 manifest route menjadi sumber build.
+- index.html serta route registry dihasilkan otomatis.
+- CSS modular foundation ditambahkan.
+- App route metadata dipusatkan.
+- Page change lifecycle event ditambahkan.
+- PWA cache diperbarui.
+
+Validation:
+- Modular pages audit: 37/37 PASS
+- Functional audit: 50/50 PASS
+- HTML IDs: 378 unique
+- Routes/panels: 14/14 matched
+- Explicit button types: 124/124
+- Missing local assets: 0
+- Dataset counts unchanged
+
+Catatan:
+Pengujian end-to-end dengan session Supabase aktif tetap perlu dilakukan pada perangkat pengguna sebelum release produksi.

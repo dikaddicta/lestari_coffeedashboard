@@ -1,13 +1,21 @@
 import { spawnSync } from "node:child_process";
 
-const audit = spawnSync(process.execPath, ["scripts/functional-audit.mjs"], {
-  stdio: "inherit",
-  shell: false
-});
+const steps = [
+  ["Build modular pages", ["scripts/build-pages.mjs"]],
+  ["Audit modular pages", ["scripts/modular-pages-audit.mjs"]],
+  ["Functional audit", ["scripts/functional-audit.mjs"]]
+];
 
-if (audit.status !== 0) {
-  console.error("\nRelease check failed. Fix the audit findings before commit or deployment.");
-  process.exit(audit.status || 1);
+for (const [label, args] of steps) {
+  console.log(`\n== ${label} ==`);
+  const result = spawnSync(process.execPath, args, {
+    stdio: "inherit",
+    shell: false
+  });
+  if (result.status !== 0) {
+    console.error(`\nRelease check failed during: ${label}.`);
+    process.exit(result.status || 1);
+  }
 }
 
-console.log("\nRelease check passed. The dashboard is ready for local review and deployment.");
+console.log("\nRelease check passed. Modular source, generated index, and dashboard functionality are consistent.");

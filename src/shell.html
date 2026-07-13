@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Coffee Brew OS — Dashboard Seduh Kopi</title>
+  <meta name="description" content="Dashboard seduh kopi untuk rekomendasi resep, pencatatan, QA, analitik, laporan, dan pustaka data berbasis referensi." />
+  <meta name="theme-color" content="#1F1D1A" />
+  <meta name="application-name" content="Coffee Brew OS" />
+  <meta name="apple-mobile-web-app-title" content="Coffee Brew OS" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta property="og:title" content="Coffee Brew OS — Dashboard Seduh Kopi" />
+  <meta property="og:description" content="Dashboard untuk rekomendasi seduh, log seduh, QA, analitik, laporan, dan pustaka data kopi." />
+  <meta property="og:type" content="website" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260713-v36-modular" />
+  <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
+  <link rel="preload" href="assets/latte-art-icon.png" as="image" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260713-v36-modular" />
+  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v36-modular" />
+  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v36-modular" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v36-modular" />
+  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v36-modular" />
+  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v36-modular" />
+  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v36-modular" />
+  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v36-modular" />
+</head>
+<body class="quiet-luxury-ui modular-pages-ui">
+
+  <section id="welcomeScreen" class="welcome-screen">
+    <div class="welcome-screen__backdrop"></div>
+    <div class="welcome-screen__card">
+      <div class="welcome-brand">
+        <span class="welcome-brand__icon"><img src="assets/latte-art-icon.png" alt="" /></span>
+        <div>
+          <p class="welcome-eyebrow">Coffee Brew OS</p>
+          <h1>Ruang kerja seduh yang lebih terukur.</h1>
+        </div>
+      </div>
+      <p class="welcome-copy">
+        Rancang resep, kelola stok, simpan log seduh, lakukan evaluasi QA, dan jelajahi pustaka kopi dalam satu alur kerja yang konsisten.
+      </p>
+      <div class="welcome-actions">
+        <button id="welcomeLoginBtn" class="primary welcome-btn" type="button">Masuk</button>
+        <button id="welcomeSignupBtn" class="secondary welcome-btn welcome-signup-btn" type="button">Daftar</button>
+        <button id="welcomeGuestBtn" class="secondary welcome-btn" type="button">Masuk sebagai Tamu</button>
+        <button id="welcomeDemoBtn" class="secondary welcome-btn welcome-demo-btn" type="button">Coba Demo</button>
+      </div>
+      <p class="welcome-note">Masuk untuk menyimpan data dan membuka seluruh modul workspace.</p>
+      <div class="welcome-onboarding-hint">
+        <strong>Pengguna baru?</strong>
+        <span>Pilih Daftar untuk membuat akun, atau masuk sebagai Tamu lalu ikuti Panduan Cepat dalam lima langkah.</span>
+      </div>
+      <div class="welcome-account-path">
+        <article>
+          <span>Akun Baru</span>
+          <strong>Daftar untuk membuka seluruh fitur</strong>
+          <small>Akun aktif membuka pengelolaan stok, log seduh, QA, analitik, laporan, dan kolaborasi workspace.</small>
+        </article>
+      </div>
+      <div class="welcome-feature-grid">
+        <article><strong>Alur Kerja Rapi</strong><span>Resep, log, dan QA tersusun lebih terstruktur.</span></article>
+        <article><strong>Berbasis Data</strong><span>Keputusan seduh didukung referensi yang dapat ditelusuri.</span></article>
+        <article><strong>Berbagi Resep</strong><span>Publikasikan hasil seduhan yang sudah lolos peninjauan.</span></article>
+      </div>
+    </div>
+  </section>
+
+<div class="app-shell">
+    <div id="appToast" class="app-toast hidden" role="status" aria-live="polite"></div>
+    <div id="syncGuardWidget" class="sync-guard-widget" data-state="idle" role="status" aria-live="polite">
+      <span class="sync-guard-dot" aria-hidden="true"></span>
+      <div class="sync-guard-copy">
+        <strong id="syncGuardTitle">Draft aman</strong>
+        <small id="syncGuardText">Autosave lokal aktif.</small>
+      </div>
+      <button id="syncRetryBtn" class="sync-retry-btn hidden" type="button">Sync ulang</button>
+    </div>
+
+    <div id="sidebarBackdrop" class="sidebar-backdrop" aria-hidden="true"></div>
+    <div class="dashboard-layout">
+      <aside class="dashboard-sidebar">
+        <button id="sidebarCloseBtn" class="sidebar-close-btn" type="button" aria-label="Tutup menu">×</button>
+        <div class="sidebar-brand">
+          <span class="sidebar-brand__icon"><img src="assets/latte-art-icon.png" alt="" /></span>
+          <div>
+            <span class="sidebar-brand__eyebrow">Lestari Coffee Dashboard</span>
+            <strong>Coffee Brew OS</strong>
+          </div>
+        </div>
+
+        <div class="sidebar-user-state" id="sidebarUserState">
+          <span class="mini-label">Mode Akses</span>
+          <strong id="sidebarModeLabel">Tamu</strong>
+          <small id="sidebarModeHint">Akses terbatas hingga kamu login.</small>
+        </div>
+
+        <div class="sidebar-premium-signal" id="sidebarPremiumSignal">
+          <span></span>
+          <div>
+            <strong>Workspace Tools</strong>
+            <small>Resep · QA · Analitik · Laporan</small>
+          </div>
+        </div>
+
+        <div class="sidebar-section-label">Panduan</div>
+        <nav class="sidebar-nav sidebar-nav--utility" aria-label="Navigasi cepat">
+          <button class="tab-btn" type="button" data-tab="guide" data-route="cara-pakai">Cara Pakai</button>
+        </nav>
+
+        <div class="sidebar-section-label">Menu Utama</div>
+        <nav class="sidebar-nav" aria-label="Menu utama">
+          <button class="tab-btn active" type="button" data-tab="home" data-route="beranda">Beranda<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="brew" data-route="rekomendasi-seduh">Rekomendasi Seduh</button>
+          <button class="tab-btn" type="button" data-tab="input-seduhan" data-route="input-seduhan">Input Seduhan</button>
+          <button class="tab-btn" type="button" data-tab="public-brews" data-route="hasil-seduhan-publik">Hasil Seduhan Publik</button>
+          <button class="tab-btn" type="button" data-tab="beans" data-route="beans">Biji Kopi<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="stock" data-route="stock">Stok<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="qa" data-route="brew-log-qa">Log Seduh &amp; QA<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="analytics" data-route="data-analytics">Analitik Data<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="quality" data-route="notification">Notifikasi<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="reports" data-route="export-report">Ekspor &amp; Laporan<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="admin" data-route="akun-role">Akun &amp; Peran<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="suggestion" data-route="saran">Saran</button>
+          <button class="tab-btn" type="button" data-tab="library" data-route="pustaka-data">Pustaka Data</button>
+        </nav>
+
+        <div class="sidebar-footer-card">
+          <span class="mini-label">Welcome Screen</span>
+          <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
+          <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
+          <small class="sidebar-build-version">v36.0.0 · Modular Pages Architecture</small>
+        </div>
+      </aside>
+
+      <div class="dashboard-main-shell">
+        <header class="dashboard-topbar">
+          <div>
+            <span class="dashboard-topbar__eyebrow" id="pageBreadcrumb">Coffee Brew OS / Beranda</span>
+            <h2 id="pageTitle">Beranda</h2>
+            <p id="pageSubtitle">Ringkasan workspace, akses cepat, dan pustaka referensi seduh.</p>
+          </div>
+          <div class="dashboard-topbar__actions">
+            <div class="system-status-pills" id="systemStatusPills" aria-label="System status">
+              <span id="systemOnlineStatus">Online</span>
+              <span id="systemCacheStatus">PWA Ready</span>
+              <span id="systemDataStatus">Data Ready</span>
+            </div>
+            <button id="sidebarToggleBtn" class="secondary sidebar-toggle-btn" type="button" aria-label="Buka menu dashboard">☰ Menu</button>
+            <div class="mobile-tab-switcher">
+              <label class="sr-only" for="mobileTabSelect">Pilih menu</label>
+              <select id="mobileTabSelect" class="input-select">
+                <option value="home">Beranda</option>
+                <option value="guide">Cara Pakai</option>
+                <option value="brew">Rekomendasi Seduh</option>
+                <option value="input-seduhan">Input Seduhan</option>
+                <option value="public-brews">Hasil Seduhan Publik</option>
+                <option value="beans">Biji Kopi</option>
+                <option value="stock">Stok</option>
+                <option value="qa">Log Seduh &amp; QA</option>
+                <option value="analytics">Analitik Data</option>
+                <option value="quality">Notifikasi</option>
+                <option value="reports">Ekspor &amp; Laporan</option>
+                <option value="admin">Akun &amp; Peran</option>
+                <option value="suggestion">Saran</option>
+                <option value="library">Pustaka Data</option>
+              </select>
+            </div>
+            <button id="topbarDemoBtn" class="secondary demo-recipe-btn" type="button">Coba Demo SOLO</button>
+            <button id="installAppBtn" class="secondary install-app-btn hidden" type="button">Install App</button>
+            <button id="topbarSignupBtn" class="secondary topbar-signup-btn" type="button">Daftar</button>
+            <button id="topbarAccessBtn" class="primary" type="button">Masuk / Daftar</button>
+          </div>
+        </header>
+
+        <div id="guestPrivateNotice" class="guest-private-notice hidden" role="status" aria-live="polite">
+          <div>
+            <span class="mini-label">Mode Guest</span>
+            <strong>Masuk untuk membuka menu lengkap</strong>
+            <p>Beranda, Biji Kopi, Stok, Log Seduh &amp; QA, Analitik Data, Notifikasi, Ekspor &amp; Laporan, serta Akun &amp; Peran hanya tersedia setelah masuk.</p>
+          </div>
+          <button class="secondary" type="button" data-jump-tab="admin">Masuk / Daftar</button>
+        </div>
+
+        <main class="dashboard-main">
+          <!-- PAGE_CONTENT: generated from src/pages via npm run build -->
+        </main>
+      </div>
+    </div>
+
+
+  </div>
+
+
+  <div id="publicBrewModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="publicBrewModalTitle">
+    <div class="modal-card public-brew-detail-card">
+      <button id="publicBrewModalClose" class="modal-close" type="button" aria-label="Tutup detail">×</button>
+      <div id="publicBrewModalBody"></div>
+    </div>
+  </div>
+
+  <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
+
+  <script src="assets/app-config.js?v=20260713-v36-modular"></script>
+  <script src="assets/core/routes.js?v=20260713-v36-modular"></script>
+  <script src="assets/core/runtime.js?v=20260713-v36-modular"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
+  <script src="assets/data.js?v=20260713-v36-modular"></script>
+  <script src="assets/app.js?v=20260713-v36-modular"></script>
+</body>
+</html>

@@ -5495,24 +5495,13 @@
 
   
 
-  const PAGE_ROUTES = {
-    home: "beranda",
-    guide: "cara-pakai",
-    brew: "rekomendasi-seduh",
-    "input-seduhan": "input-seduhan",
-    "public-brews": "hasil-seduhan-publik",
-    beans: "beans",
-    stock: "stock",
-    qa: "brew-log-qa",
-    analytics: "data-analytics",
-    quality: "notification",
-    reports: "export-report",
-    admin: "akun-role",
-    suggestion: "saran",
-    library: "pustaka-data"
-  };
-
-  const ROUTE_TO_TAB = Object.fromEntries(Object.entries(PAGE_ROUTES).map(([tab, route]) => [route, tab]));
+  const PAGE_REGISTRY = window.COFFEE_PAGES;
+  const PAGE_ROUTES = Object.freeze(Object.fromEntries(
+    (PAGE_REGISTRY?.pages || []).map(page => [page.tab, page.route])
+  ));
+  const ROUTE_TO_TAB = Object.freeze(Object.fromEntries(
+    (PAGE_REGISTRY?.pages || []).map(page => [page.route, page.tab])
+  ));
   let routeSyncLock = false;
 
   function currentRouteSlug() {
@@ -5575,29 +5564,20 @@
   }
 
 
-  const PAGE_META = {
-    home: { title: "Beranda", subtitle: "Ringkasan metrik utama, akses modul, dan informasi library coffee dashboard." },
-    guide: { title: "Cara Pakai", subtitle: "Panduan menggunakan dashboard dari rekomendasi hingga publikasi hasil seduhan." },
-    brew: { title: "Rekomendasi Seduh", subtitle: "Titik awal resep seduh berbasis data beans, proses, alat, dan target rasa." },
-    "input-seduhan": { title: "Input Seduhan", subtitle: "Masukkan parameter eksperimen seduh untuk dibandingkan dan disimpan." },
-    "public-brews": { title: "Hasil Seduhan Publik", subtitle: "Lihat hasil seduhan yang sudah dipublikasikan dan lolos proses review." },
-    beans: { title: "Biji Kopi", subtitle: "Kelola referensi biji, asal, dan atribut pendukung untuk alur kerja internal." },
-    stock: { title: "Stok", subtitle: "Pantau stok kopi, status bahan, dan ketersediaan untuk eksperimen berikutnya." },
-    qa: { title: "Log Seduh & QA", subtitle: "Catat hasil seduhan, validasi kualitas, dan bangun histori evaluasi internal." },
-    analytics: { title: "Analitik Data", subtitle: "Baca performa seduhan, tren QA, dan pola eksperimen secara ringkas." },
-    quality: { title: "Notifikasi", subtitle: "Pusat peringatan dan tindakan untuk menjaga kualitas data dan alur kerja." },
-    reports: { title: "Ekspor & Laporan", subtitle: "Ekspor data dan rangkum hasil seduhan menjadi laporan yang siap dibagikan." },
-    admin: { title: "Akun & Peran", subtitle: "Kelola akun, peran, dan workspace untuk membuka seluruh modul dashboard." },
-    suggestion: { title: "Saran", subtitle: "Kirim masukan untuk membantu pengembangan Coffee Brew OS." },
-    library: { title: "Pustaka Data", subtitle: "Jelajahi referensi dripper, filter, varietas, proses, profil sangrai, air, dan grinder." }
-  };
+  const PAGE_META = Object.freeze(Object.fromEntries(
+    (PAGE_REGISTRY?.pages || []).map(page => [page.tab, Object.freeze({
+      title: page.title,
+      subtitle: page.subtitle
+    })])
+  ));
 
   function updatePageHeading(name) {
     const key = String(name || "home");
     const meta = PAGE_META[key] || PAGE_META.home;
     $("pageTitle") && ($("pageTitle").textContent = meta.title);
     $("pageSubtitle") && ($("pageSubtitle").textContent = meta.subtitle);
-    $("pageBreadcrumb") && ($("pageBreadcrumb").textContent = `Workspace Coffee Intelligence / ${meta.title}`);
+    $("pageBreadcrumb") && ($("pageBreadcrumb").textContent = `Workspace Kopi / ${meta.title}`);
+    document.title = `${meta.title} — Coffee Brew OS`;
     syncRouteHint(key);
     if (document.body) {
       document.body.dataset.page = key;
@@ -5699,6 +5679,9 @@
     const onboardingStep = tabToOnboardingStep(name);
     if (onboardingStep) markOnboardingStep(onboardingStep);
     updateGuestPrivateNavigation();
+    document.dispatchEvent(new CustomEvent("coffee:pagechange", {
+      detail: Object.freeze({ tab: name, route: routeFromTab(name), meta: PAGE_META[name] || PAGE_META.home })
+    }));
     if (window.matchMedia?.("(max-width: 760px)").matches) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {

@@ -1,0 +1,185 @@
+<section id="tab-brew" class="tab-panel">
+          <section class="panel page-intro-card page-intro-card--brew">
+            <div>
+              <span class="page-intro-eyebrow">Rekomendasi Terarah</span>
+              <h2>Rekomendasi Seduh</h2>
+              <p>Gunakan halaman ini sebagai titik awal dial-in. Pilih varietas, proses pascapanen, profil sangrai, dripper, air, grinder, dan target rasa untuk mendapatkan rekomendasi yang lebih terarah.</p>
+              <div class="page-intro-chips"><span>Mesin Rekomendasi</span>
+<span>Mendukung SOLO</span>
+<span>Berbasis Data</span></div>
+            </div>
+            <div class="page-intro-actions">
+              <button class="secondary page-intro-action" type="button" data-jump-tab="input-seduhan">Input Manual</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="library">Buka Pustaka</button>
+            </div>
+          </section>
+
+          <section class="brew-demo-lane">
+            <div>
+              <span class="mini-label">Mulai Cepat</span>
+              <strong>Demo resep SOLO Dripper</strong>
+              <small>Isi otomatis field rekomendasi dengan baseline cepat untuk SOLO Dripper.</small>
+            </div>
+            <button id="brewDemoRecipeBtn" class="primary" type="button">Gunakan Demo SOLO</button>
+          </section>
+
+
+          <section class="module-ops-strip module-ops-strip--brew">
+            <article><span>01</span><strong>Profil Input</strong><small>Varietas, proses, roast, dripper, air, grinder, dan dose.</small></article>
+            <article><span>02</span><strong>Sinyal Resep</strong><small>Suhu, rasio, grind, pour pattern, dan brew time dibuat lebih terarah.</small></article>
+            <article><span>03</span><strong>Batas Dial-in</strong><small>Rekomendasi disertai cue untuk menghindari thin, bitter, atau over-ferment.</small></article>
+          </section>
+
+
+        <div class="grid two-col top-align">
+          <section class="panel input-panel">
+            <div class="section-title">
+              <span>1.1</span>
+              <h2>Data Seduhan</h2>
+            </div>
+            <div class="form-grid compact">
+              <label id="brewStockWrap" class="span-2 hidden">Biji Kopi dari Stok
+                <select id="brewStockSelect">
+                  <option value="non_stock">Non Stock / Manual</option>
+                </select>
+                <small id="brewStockHint">Pilih stok kopi agar varietas, proses pascapanen, dan profil sangrai terisi otomatis.</small>
+              </label>
+              <label id="brewBeanNameWrap" class="span-2 hidden">Nama Kopi
+                <input id="brewBeanName" placeholder="Contoh: Gayo Natural Lot 03" />
+              </label>
+              <label>Varietas
+                <select id="brewVariety"></select>
+              </label>
+              <label>Pascapanen
+                <select id="brewProcess"></select>
+                <small>Pilih Kustom jika proses pascapanen tidak tersedia.</small>
+              </label>
+              <label id="brewProcessCustomWrap" class="hidden">Pascapanen Manual
+                <input id="brewProcessCustom" placeholder="Contoh: Double Anaerobic Washed, Natural CM, Honey Thermal Shock" />
+              </label>
+              <label>Profil Sangrai
+                <select id="brewRoast"></select>
+              </label>
+              <label>Dripper
+                <select id="brewDripper"></select>
+              </label>
+              <label>Mode Seduh
+                <select id="brewMode">
+                  <option>Hot V60</option>
+                  <option>Japanese Iced</option>
+                </select>
+              </label>
+              <label id="switchModeWrap">Switch Valve Mode
+                <select id="switchValveMode">
+                  <option value="Auto">Otomatis</option>
+                  <option>Full Immersion</option>
+                  <option>Hybrid</option>
+                  <option>Full Open</option>
+                </select>
+              </label>
+              <label>Grinder
+                <select id="brewGrinder"></select>
+              </label>
+              <label id="customGrinderNameWrap" class="hidden">Nama Grinder
+                <input id="customGrinderName" placeholder="Contoh: Grinder manual 38mm" />
+              </label>
+              <label id="customGrinderSettingWrap" class="hidden">Setting Grinder
+                <input id="customGrinderSetting" placeholder="klik/dial" />
+              </label>
+              <label>Air
+                <select id="brewWater"></select>
+              </label>
+              <label>Dosis (g)
+                <input id="brewDose" type="number" min="5" max="50" step="0.1" value="15" />
+              </label>
+              <label>Pola Tuang
+                <select id="pourPattern">
+                  <option value="Auto">Otomatis</option>
+                  <option>2x Tuang</option>
+                  <option>3x Tuang</option>
+                  <option>4x Tuang</option>
+                  <option value="Immersion Full">Full Immersion</option>
+                </select>
+              </label>
+            </div>
+            <div class="inline-actions">
+              <button id="saveCurrentBrew" class="secondary" type="button" data-action="save-brew-draft">Simpan draf ke Log Seduh</button>
+              <button id="applyBeanToBrew" class="ghost" type="button">Gunakan biji kopi ranking #1</button>
+            </div>
+          </section>
+
+          <section class="panel output-panel brew-output-showcase">
+            <div class="section-title">
+              <span>Output</span>
+              <h2>Rekomendasi Seduh Dasar</h2>
+            </div>
+            <div class="brew-visualizer" id="brewVisualizer" aria-hidden="true" data-mood="balanced">
+              <div class="brew-visualizer-copy">
+                <span class="visual-pill" id="brewVisualBadge">Balanced Seduh</span>
+                <strong id="brewVisualTitle">Visual dial-in / ekstraksi stabil</strong>
+                <p id="brewVisualText">Ringkasan visual membaca arah seduh tanpa mengganggu fokus pada parameter utama.</p>
+              </div>
+              <div class="brew-visualizer-scene">
+                <span class="brew-visual-glow"></span>
+              </div>
+            </div>
+            <div class="output-grid" id="brewOutputs"></div>
+            <div class="callout" id="waterNote"></div>
+          </section>
+        </div>
+
+        <section class="panel wide brew-assistant-wide-panel">
+          <div class="section-title compact-title">
+            <span>Dial-In</span>
+            <h2>Kompas Seduh &amp; Pemeriksaan Awal</h2>
+          </div>
+          <div class="brew-assistant-grid">
+            <div class="brew-input-compass" id="brewInputCompass" aria-live="polite"></div>
+            <div class="brew-preflight-panel" id="brewPreflightPanel" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section class="panel wide brew-insight-wide-panel">
+          <div class="section-title compact-title">
+            <span>Intelligence</span>
+            <h2>Insight Seduh &amp; Referensi</h2>
+          </div>
+          <div class="brew-insight-panel wide-mode" id="brewInsightPanel" aria-live="polite"></div>
+          <div class="brew-decision-grid" id="brewDecisionGrid" aria-live="polite"></div>
+        </section>
+
+        <section class="panel wide dial-timeline-panel">
+          <div class="section-title compact-title">
+            <span>Timeline</span>
+            <h2>Timeline Dial-in</h2>
+          </div>
+          <p class="hint">Timeline ini membaca brew log yang cocok. Kalau belum ada histori, dashboard membuat rencana eksperimen bertahap agar perubahan variabel tetap terkontrol.</p>
+          <div class="dial-timeline" id="dialInTimeline" aria-live="polite"></div>
+        </section>
+
+        <section class="panel wide">
+          <div class="section-title">
+            <span>Tahapan</span>
+            <h2>Tahapan Seduh + Rencana Valve</h2>
+          </div>
+          <div class="table-wrap">
+            <table id="brewStepsTable">
+              <thead>
+                <tr><th>Tahap</th><th>Air (g/ml)</th><th>Waktu</th><th>Valve / Teknik</th><th>Instruksi</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="hint" id="pourCheck"></p>
+        </section>
+
+        <section class="panel wide brew-recipe-lab-panel">
+          <div class="section-title">
+            <span>Pilihan Resep</span>
+            <h2>2–3 Opsi Rekomendasi Seduh</h2>
+          </div>
+          <p class="hint recipe-lab-hint">Klik kartu opsi untuk melihat fokus dial-in. Opsi disusun dari kombinasi varietas, proses pascapanen, profil sangrai, karakter dripper, air, dan grinder; brew log terverifikasi tetap muncul sebagai referensi tambahan jika tersedia.</p>
+          <div class="recipe-active-summary" id="recipeActiveSummary" aria-live="polite"></div>
+          <div class="recipe-grid" id="recipeOptions"></div>
+        </section>
+      </section>

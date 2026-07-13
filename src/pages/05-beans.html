@@ -1,0 +1,55 @@
+<section id="tab-beans" class="tab-panel">
+          <section class="panel page-intro-card page-intro-card--beans">
+            <div>
+              <span class="page-intro-eyebrow">Rekomendasi Biji</span>
+              <h2>Biji Kopi</h2>
+              <p>Temukan kandidat beans terbaik dari stok berdasarkan target rasa, varietas, flavor group, dan jenis seduh yang kamu inginkan.</p>
+              <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
+<span>Target Rasa</span>
+<span>Berbasis Stok</span></div>
+            </div>
+            <div class="page-intro-actions">
+              <button class="secondary page-intro-action" type="button" data-jump-tab="stock">Buka Stok</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="brew">Buat Resep</button>
+            </div>
+          </section>
+
+        <section class="panel wide">
+          <div class="section-title">
+            <span>1.2</span>
+            <h2>Filter Rekomendasi Biji Kopi dari Stok</h2>
+          </div>
+          <div class="form-grid beans-filter">
+            <label>Sweetness Target (1-5)<input id="targetSweet" type="number" min="1" max="5" step="1" value="5" /></label>
+            <label>Acidity Target (1-5)<input id="targetAcid" type="number" min="1" max="5" step="1" value="3" /></label>
+            <label>Body Target (1-5)<input id="targetBody" type="number" min="1" max="5" step="1" value="5" /></label>
+            <label>Kelompok Rasa 1<select id="filterFlavor1"></select></label>
+            <label>Kelompok Rasa 2<select id="filterFlavor2"></select></label>
+            <label>Kelompok Rasa 3<select id="filterFlavor3"></select></label>
+            <label>Filter Varietas 1<select id="filterVariety1"></select></label>
+            <label>Filter Varietas 2<select id="filterVariety2"></select></label>
+            <label>Jenis Seduh
+              <select id="filterBrew">
+                <option value="Both">Keduanya</option>
+                <option>Hot V60</option>
+                <option>Japanese Iced</option>
+              </select>
+            </label>
+            <label>Minimal Stok (g)<input id="minStock" type="number" min="0" step="1" value="15" /></label>
+          </div>
+        </section>
+        <section class="panel wide">
+          <div class="section-title">
+            <span>Ranking</span>
+            <h2>Biji Kopi</h2>
+          </div>
+          <div class="table-wrap">
+            <table id="beansTable">
+              <thead>
+                <tr><th>Rank</th><th>Biji Kopi</th><th>Varietas</th><th>Proses</th><th>Profil Sangrai</th><th>Rasa</th><th>Skor</th><th>Saran Seduh</th><th>Saran Dripper</th><th>Ringkasan Resep</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </section>

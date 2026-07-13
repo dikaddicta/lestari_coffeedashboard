@@ -1,0 +1,83 @@
+<section id="tab-stock" class="tab-panel">
+          <section class="panel page-intro-card page-intro-card--stock">
+            <div>
+              <span class="page-intro-eyebrow">Pengelolaan Inventori</span>
+              <h2>Stok</h2>
+              <p>Kelola data beans, origin, producer, varietas, proses, roast profile, flavor group, jumlah stok, dan status pemakaian.</p>
+              <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
+<span>Inventori</span>
+<span>Data Workspace</span></div>
+            </div>
+            <div class="page-intro-actions">
+              <button class="secondary page-intro-action" type="button" data-jump-tab="beans">Cari Biji Kopi</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="qa">Log Seduh</button>
+            </div>
+          </section>
+
+        <div id="stockAccessNotice" class="access-notice hidden"></div>
+        <div class="grid two-col">
+          <section class="panel">
+            <div class="section-title"><span>Inventori</span><h2>Tambah / Update Biji Kopi</h2></div>
+            <form id="stockForm" class="form-grid stock-form">
+              <label>Nama Kopi<input id="stockName" required placeholder="Contoh: Indonesia Kerinci Anaerobic" /></label>
+              <label>Asal Kopi<input id="stockOrigin" placeholder="Indonesia" /></label>
+              <label>Produsen<input id="stockProducer" placeholder="Farm / Producer" /></label>
+              <label>Varietas 1<select id="stockVariety1"></select></label>
+              <label>Varietas 2 (opsional)<select id="stockVariety2"></select></label>
+              <label>Proses<select id="stockProcess"></select><small>Pilih Custom jika proses tidak ada di pustaka.</small></label>
+              <label id="stockProcessCustomWrap" class="hidden">Proses Manual<input id="stockProcessCustom" placeholder="Contoh: Experimental Honey Anaerobic" /></label>
+              <label>Profil Sangrai<select id="stockRoast"></select></label>
+              <label>Kelompok Rasa 1<select id="stockFlavor1"></select></label>
+              <label>Kelompok Rasa 2<select id="stockFlavor2"></select></label>
+              <label>Kelompok Rasa 3<select id="stockFlavor3"></select></label>
+              <label>Sweetness<input id="stockSweet" type="number" min="1" max="5" value="4" /></label>
+              <label>Acidity<input id="stockAcid" type="number" min="1" max="5" value="4" /></label>
+              <label>Body<input id="stockBody" type="number" min="1" max="5" value="3" /></label>
+              <label>Stok (g)<input id="stockQty" type="number" min="0" value="100" /></label>
+              <label>Seduhan Terbaik<select id="stockBestBrew"><option value="Both">Keduanya</option><option>Hot V60</option><option>Japanese Iced</option></select></label>
+              <label>Harga<input id="stockPrice" type="number" min="0" value="0" /></label>
+              <label>Tanggal Roast<input id="stockRoastDate" type="date" /></label>
+              <label>Aktif<select id="stockActive"><option value="Yes">Ya</option><option value="No">Tidak</option></select></label>
+              <label class="span-2">Catatan<textarea id="stockNotes" rows="3" placeholder="tasting notes, roast info, dll"></textarea></label>
+              <button id="stockSubmitBtn" class="primary" type="button">Simpan Stok Pribadi</button>
+              <button id="stockCancelEditBtn" class="ghost hidden" type="button">Batal Edit</button>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="section-title"><span>Workspace</span><h2>Status Workspace</h2></div>
+            <p class="hint">Panel ini difokuskan untuk membantu kamu memastikan koneksi database, workspace aktif, dan sinkronisasi data berjalan dengan baik.</p>
+            <div class="db-status" id="dbStatus" role="status" aria-live="polite">
+              <span class="status-dot offline"></span>
+              <div><strong>Mode penyimpanan lokal</strong><small>Isi <code>assets/supabase-config.js</code> untuk mengaktifkan database online.</small></div>
+            </div>
+            <div class="workspace-mini">
+              <label>Workspace Aktif<select id="activeWorkspaceSelect"></select></label>
+              <small id="workspaceHint">Masuk untuk memilih workspace yang sedang digunakan.</small>
+            </div>
+            <div class="button-stack button-stack-compact">
+              <button id="syncCloud" class="primary" type="button">Sinkronkan dari Supabase</button>
+              <button class="secondary" type="button" data-jump-tab="admin">Buka Akun &amp; Admin</button>
+            </div>
+            <p class="hint small-note">Tamu dapat membaca hasil seduhan publik yang sudah disetujui. Stok kopi, Log Seduh, dan QA aktif setelah pengguna masuk dan terhubung ke workspace.</p>
+          </section>
+        </div>
+        <section class="panel wide">
+          <div class="section-title"><span>Inventori Table</span><h2>Stok Biji Kopi</h2></div>
+          <div class="stock-overview-strip">
+            <article><span>Total Biji</span><strong id="stockBeanCount">0</strong></article>
+            <article><span>Biji Aktif</span><strong id="stockActiveCount">0</strong></article>
+            <article><span>Total Stok</span><strong id="stockGramTotal">0g</strong></article>
+            <article><span>Metode Seduh</span><strong id="stockMethodCount">0</strong></article>
+          </div>
+          <div class="stock-table-hint">
+            <span>Inventori data</span>
+            <small>Header dibuat kontras dan kolom diberi lebar khusus agar tabel lebih mudah dibaca. Geser horizontal untuk melihat seluruh data.</small>
+          </div>
+          <div class="table-wrap tall stock-table-wrap">
+            <table id="stockTable">
+              <thead><tr><th>Biji Kopi</th><th>Asal Kopi</th><th>Varietas 1</th><th>Varietas 2</th><th>Proses</th><th>Profil Sangrai</th><th>Rasa 1–3</th><th>S/A/B</th><th>Stok</th><th>Seduhan Terbaik</th><th>Aktif</th><th>Aksi</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </section>

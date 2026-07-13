@@ -22,6 +22,7 @@ function checkSyntax(file) {
 
 for (const file of [
   "assets/app-config.js",
+  "assets/core/routes.js",
   "assets/core/runtime.js",
   "assets/data.js",
   "assets/app.js",
@@ -59,6 +60,7 @@ record(unsafeBlankLinks.length === 0, "External new-tab links use rel=noopener")
 const scriptSources = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1].split("?")[0]);
 const expectedScriptOrder = [
   "assets/app-config.js",
+  "assets/core/routes.js",
   "assets/core/runtime.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
   "assets/supabase-config.js",
@@ -76,14 +78,14 @@ const configContext = { window: {} };
 vm.createContext(configContext);
 vm.runInContext(read("assets/app-config.js"), configContext, { filename: "assets/app-config.js" });
 const appConfig = configContext.window.COFFEE_APP_CONFIG || {};
-record(appConfig.version === "35.1.0", "Application version is 35.1.0", String(appConfig.version || "missing"));
+record(appConfig.version === "36.0.0", "Application version is 36.0.0", String(appConfig.version || "missing"));
 record(appConfig.features?.debugTools === false, "Production debug tools are disabled");
 record(appConfig.features?.mascot === false, "Production mascot is disabled");
 
 const packageJson = JSON.parse(read("package.json"));
 record(packageJson.version === appConfig.version, "package.json version matches app config", String(packageJson.version || "missing"));
 record(html.includes(`v${appConfig.version} · ${appConfig.release}`), "Visible release label matches app config");
-record(read("sw.js").includes("coffee-brew-os-v35-1-functional"), "Service-worker cache name matches v35.1 release");
+record(read("sw.js").includes("coffee-brew-os-v36-modular-pages"), "Service-worker cache name matches v36 release");
 record(exists("supabase/schema.sql"), "Canonical Supabase schema exists");
 record(exists("supabase/README.md"), "Supabase setup guide exists");
 
@@ -106,6 +108,7 @@ const missingCoreAssets = coreAssets.filter(asset => asset !== "" && !exists(ass
 record(missingCoreAssets.length === 0, `${coreAssets.length} service-worker core assets exist`, missingCoreAssets.join(", "));
 for (const critical of [
   "assets/app-config.js",
+  "assets/core/routes.js",
   "assets/core/runtime.js",
   "assets/styles-v35-1-functional.css",
   "assets/app.js",
@@ -163,6 +166,6 @@ const report = {
   },
   results
 };
-fs.writeFileSync(path.join(root, "docs/V35_1_AUDIT_RESULT.json"), JSON.stringify(report, null, 2));
+fs.writeFileSync(path.join(root, "docs/V36_AUDIT_RESULT.json"), JSON.stringify(report, null, 2));
 console.log(`\nAudit summary: ${report.summary.pass} passed, ${report.summary.fail} failed.`);
 if (failed) process.exit(1);

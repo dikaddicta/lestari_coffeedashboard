@@ -1,0 +1,109 @@
+<section id="tab-quality" class="tab-panel">
+          <section class="panel page-intro-card page-intro-card--quality">
+            <div>
+              <span class="page-intro-eyebrow">Pusat Notifikasi</span>
+              <h2>Notifikasi</h2>
+              <p>Pusat notifikasi kualitas data. Gunakan halaman ini untuk melihat issue, warning, dan informasi penting agar workflow tetap bersih dan terpercaya.</p>
+              <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
+<span>Peringatan Data</span>
+<span>Perlu Tindakan</span></div>
+            </div>
+            <div class="page-intro-actions">
+              <button class="secondary page-intro-action" type="button" data-jump-tab="qa">Buka QA</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Buka Laporan</button>
+            </div>
+          </section>
+
+          <section class="notification-overview">
+            <article class="notification-card critical"><span>Critical</span><strong id="notifCriticalCount">0</strong><small>Issue yang perlu segera dicek.</small></article>
+            <article class="notification-card warning"><span>Warning</span><strong id="notifWarningCount">0</strong><small>Data kurang lengkap atau perlu validasi.</small></article>
+            <article class="notification-card info"><span>Info</span><strong id="notifInfoCount">0</strong><small>Informasi workflow dan kualitas data.</small></article>
+            <article class="notification-card resolved"><span>Resolved</span><strong id="notifResolvedCount">—</strong><small>Gunakan refresh untuk membaca status terbaru.</small></article>
+          </section>
+
+          <section class="panel notification-command-center">
+            <div>
+              <span class="mini-label">Pusat Aksi</span>
+              <h2>Pusat aksi untuk menjaga kualitas data</h2>
+              <p>Pilih filter cepat untuk melihat issue paling penting, lalu buka modul terkait untuk memperbaiki data yang belum lengkap.</p>
+            </div>
+            <div class="notification-command-actions">
+              <button class="secondary" type="button" data-notif-filter="critical">Hanya Kritis</button>
+              <button class="secondary" type="button" data-notif-filter="warning">Hanya Peringatan</button>
+              <button class="secondary" type="button" data-notif-filter="all">Semua Issue</button>
+              <button class="primary" type="button" data-jump-tab="reports">Buka Laporan</button>
+            </div>
+          </section>
+
+
+        <section class="panel wide quality-premium-panel">
+          <div class="section-title">
+            <span>Notifikasi</span>
+            <h2>Notifikasi</h2>
+          </div>
+          <p class="hint">Pusat notifikasi untuk masalah, peringatan, dan informasi kualitas data. Gunakan halaman ini untuk menjaga Log Seduh, QA, Stok, hasil publik, dan Pustaka Data tetap rapi.</p>
+
+          <div class="notification-module-switcher" aria-label="Filter cepat notification">
+            <button type="button" data-notif-scope="all">Semua</button>
+            <button type="button" data-notif-scope="brew">Log Seduh</button>
+            <button type="button" data-notif-scope="qa">QA</button>
+            <button type="button" data-notif-scope="stock">Stok</button>
+            <button type="button" data-notif-scope="public">Public</button>
+            <button type="button" data-notif-scope="library">Pustaka</button>
+          </div>
+
+          <div class="quality-toolbar">
+            <select id="qualityScope" aria-label="Filter modul notifikasi">
+              <option value="all">Semua modul</option>
+              <option value="brew">Log Seduh</option>
+              <option value="qa">QA</option>
+              <option value="stock">Stok</option>
+              <option value="public">Publik</option>
+              <option value="library">Pustaka</option>
+            </select>
+            <select id="qualitySeverity" aria-label="Filter tingkat keparahan notifikasi">
+              <option value="all">Semua severity</option>
+              <option value="critical">Critical</option>
+              <option value="warning">Warning</option>
+              <option value="info">Info</option>
+            </select>
+            <button id="refreshQuality" class="secondary" type="button">Perbarui Notifikasi</button>
+          </div>
+
+          <div class="quality-hero-grid">
+            <div class="quality-score-card" id="qualityScoreCard" aria-live="polite"></div>
+            <div class="quality-metric-grid" id="qualityMetricGrid" aria-live="polite"></div>
+          </div>
+
+          <div class="quality-layout">
+            <section class="quality-card">
+              <div class="quality-card-head">
+                <span class="mini-label">Tindak Lanjut</span>
+                <strong>Hal yang perlu dibenahi</strong>
+              </div>
+              <div class="quality-issue-list" id="qualityIssueList" aria-live="polite"></div>
+            </section>
+
+            <section class="quality-card">
+              <div class="quality-card-head">
+                <span class="mini-label">Checklist</span>
+                <strong>Standar data siap pakai</strong>
+              </div>
+              <div class="quality-checklist" id="qualityChecklist" aria-live="polite"></div>
+            </section>
+          </div>
+
+          <section class="quality-card quality-table-card">
+            <div class="quality-card-head">
+              <span class="mini-label">Log Notifikasi</span>
+              <strong>Detail issue per modul</strong>
+            </div>
+            <div class="table-wrap">
+              <table id="qualityIssueTable">
+                <thead><tr><th>Severity</th><th>Modul</th><th>Item</th><th>Masalah</th><th>Aksi</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </section>

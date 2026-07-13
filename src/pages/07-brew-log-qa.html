@@ -1,0 +1,122 @@
+<section id="tab-qa" class="tab-panel">
+          <section class="panel page-intro-card page-intro-card--qa">
+            <div>
+              <span class="page-intro-eyebrow">Evaluasi Kualitas</span>
+              <h2>Log Seduh & QA</h2>
+              <p>Validasi setiap hasil seduhan dengan skor QA, hipotesis, variabel perubahan, dan catatan evaluasi agar proses dial-in lebih konsisten.</p>
+              <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
+<span>Nilai QA</span>
+<span>Catatan Iterasi</span></div>
+            </div>
+            <div class="page-intro-actions">
+              <button class="secondary page-intro-action" type="button" data-jump-tab="analytics">Analitik</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Laporan</button>
+            </div>
+          </section>
+
+        <div id="qaAccessNotice" class="access-notice hidden"></div>
+        <div class="grid two-col">
+          <section class="panel">
+            <div class="section-title"><span>Quality Assurance</span><h2>Evaluasi Seduhan</h2></div>
+            <form id="qaForm" class="form-grid qa-form">
+              <label>Nama Kopi<input id="qaBeanName" placeholder="Bean / sample name" /></label>
+              <label>Penilai<input id="qaEvaluator" value="Head Brewer" /></label>
+              <label id="qaParentWrap">BrewID Asal<select id="qaParent"></select></label>
+              <label id="qaVariableWrap" class="qa-variable-wrap">
+                <span class="checkbox-line"><input id="qaHasVariable" type="checkbox" /> Ada variabel utama yang diubah</span>
+                <input id="qaVariable" placeholder="Contoh: grind lebih halus / suhu +1°C" disabled />
+              </label>
+              <label class="span-2">Hipotesis<textarea id="qaHypothesis" rows="2" placeholder="Apa yang ingin diperbaiki dari brew sebelumnya?"></textarea></label>
+              <label>Aroma<input class="qa-score" id="qaAroma" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Rasa<input class="qa-score" id="qaFlavor" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Aftertaste<input class="qa-score" id="qaAftertaste" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Kualitas Acidity<input class="qa-score" id="qaAcidityQuality" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Sweetness<input class="qa-score" id="qaSweetness" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Body<input class="qa-score" id="qaBody" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Balance<input class="qa-score" id="qaBalance" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Clarity<input class="qa-score" id="qaClarity" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Finish<input class="qa-score" id="qaFinish" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Konsistensi<input class="qa-score" id="qaConsistency" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Pengurang Nilai<input id="qaDefect" type="number" min="0" max="10" step="0.1" value="0" /></label>
+              <label>Persetujuan Manual<select id="qaApproval"><option value="No">Tidak</option><option value="Yes">Ya</option></select></label>
+              <label class="span-2">Catatan Hasil<textarea id="qaNotes" rows="3" placeholder="Catat hasil sensorik dan keputusan dial-in"></textarea></label>
+              <div class="qa-total span-2">Final QA: <strong id="qaFinalPreview">8.50</strong> <span id="qaStatusPreview">RETEST</span></div>
+              <button id="qaSubmitBtn" class="primary span-2" type="button">Simpan Log Seduh + QA</button>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="section-title"><span>Tata Kelola</span><h2>Alur Kerja Profesional</h2></div>
+            <ol class="workflow">
+              <li><strong>Jadikan resep dasar sebagai kontrol.</strong> Jangan ditimpa; simpan sebagai BrewID awal.</li>
+              <li><strong>Gunakan ParentBrewID saat iterasi.</strong> Dengan begitu, asal perubahan tetap terlacak.</li>
+              <li><strong>Ubah satu variabel utama.</strong> Contoh: grind lebih halus, suhu +1°C, atau rasio berubah.</li>
+              <li><strong>Gunakan gerbang QA.</strong> Resep baru hanya masuk opsi jika nilai QA akhir ≥ 6.5 dan disetujui manual.</li>
+              <li><strong>Uji konsistensi.</strong> Untuk penggunaan komersial, idealnya resep disetujui setelah 2 dari 3 seduhan ulang tetap ≥ 6.5.</li>
+            </ol>
+            <div class="stat-card"><span>Batas Lolos QA</span><strong>6.5 / 10</strong></div>
+          </section>
+        </div>
+        <section class="panel wide" id="brewLogHistoryPanel">
+          <div class="section-title"><span>Riwayat</span><h2>Log Seduh</h2></div>
+          <div class="brew-log-table-hint">
+            <span>Data table</span>
+            <small>Geser horizontal untuk melihat seluruh kolom. Kolom aksi dibuat tetap di kanan agar edit/hapus lebih mudah.</small>
+          </div>
+          <div class="table-wrap tall brew-log-table-wrap">
+            <table id="brewLogTable"><thead></thead><tbody></tbody></table>
+          </div>
+          <div id="brewLogEditPanel" class="admin-edit-panel professional-edit-panel hidden">
+            <div class="edit-panel-header">
+              <div>
+                <span class="edit-kicker">Admin Edit</span>
+                <h3>Perbaiki Log Seduh</h3>
+                <p>Gunakan panel ini hanya untuk koreksi data salah input. Perubahan akan tersimpan ke data workspace dan memengaruhi tampilan publik jika brew log sudah disetujui.</p>
+              </div>
+              <div class="edit-brew-summary">
+                <small>BrewID</small>
+                <strong id="editBrewHeaderId">-</strong>
+              </div>
+            </div>
+            <form id="brewLogEditForm" class="brew-edit-form">
+              <input id="editBrewCloudId" type="hidden" />
+              <section class="edit-group">
+                <h4>Identitas Kopi</h4>
+                <div class="form-grid compact nested-grid">
+                  <label>BrewID<input id="editBrewId" readonly /></label>
+                  <label>Tanggal<input id="editBrewDate" type="date" /></label>
+                  <label>Nama Kopi<input id="editBrewBeanName" /></label>
+                  <label>Origin<input id="editBrewOrigin" /></label>
+                  <label>Varietas<input id="editBrewVariety" /></label>
+                  <label>Pascapanen<input id="editBrewProcess" /></label>
+                  <label class="span-2">Profil Sangrai<input id="editBrewRoast" /></label>
+                </div>
+              </section>
+              <section class="edit-group">
+                <h4>Parameter Seduh</h4>
+                <div class="form-grid compact nested-grid">
+                  <label>Metode<input id="editBrewMethod" /></label>
+                  <label>Dripper<input id="editBrewDripper" /></label>
+                  <label>Grinder<input id="editBrewGrinder" /></label>
+                  <label>Gilingan<input id="editBrewGrind" /></label>
+                  <label>Suhu (°C)<input id="editBrewTemp" type="number" step="0.1" /></label>
+                  <label>Ratio<input id="editBrewRatio" type="number" step="0.1" /></label>
+                  <label>QA<input id="editBrewQA" type="number" min="0" max="10" step="0.1" /></label>
+                  <label class="span-2">Disetujui<select id="editBrewApproved"><option value="No">No</option><option value="Yes">Yes</option><option value="Belum diverifikasi">Belum diverifikasi</option></select></label>
+                </div>
+              </section>
+              <section class="edit-group edit-group-wide">
+                <h4>Detail Evaluasi</h4>
+                <div class="form-grid compact nested-grid">
+                  <label class="span-2">Variabel Utama<textarea id="editBrewVariable" rows="2" placeholder="Contoh: grind lebih halus / suhu +1°C"></textarea></label>
+                  <label class="span-2">Hipotesis<textarea id="editBrewHypothesis" rows="2" placeholder="Apa yang ingin diperbaiki dari brew sebelumnya?"></textarea></label>
+                  <label class="span-2">Catatan Hasil<textarea id="editBrewResultNotes" rows="3" placeholder="Catatan sensorik dan hasil dial-in"></textarea></label>
+                </div>
+              </section>
+              <div class="edit-actions">
+                <button class="primary" type="submit">Simpan Perubahan Log Seduh</button>
+                <button class="ghost" id="cancelBrewEdit" type="button">Batal</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </section>

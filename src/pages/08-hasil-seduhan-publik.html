@@ -1,0 +1,66 @@
+<section id="tab-public-brews" class="tab-panel">
+          <section class="panel page-intro-card page-intro-card--public-brews">
+            <div>
+              <span class="page-intro-eyebrow">Seduhan Komunitas</span>
+              <h2>Hasil Seduhan Publik</h2>
+              <p>Halaman katalog untuk hasil seduhan yang sudah disetujui. Gunakan filter untuk mencari metode, dripper, proses, roast, dan nilai QA terbaik.</p>
+              <div class="page-intro-chips"><span>Katalog Publik</span>
+<span>Seduhan Disetujui</span>
+<span>Referensi Komunitas</span></div>
+            </div>
+            <div class="page-intro-actions">
+              <button class="secondary page-intro-action" type="button" data-jump-tab="input-seduhan">Tambah Input</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Ekspor Laporan</button>
+            </div>
+          </section>
+
+          <section class="module-ops-strip module-ops-strip--public">
+            <article><span>01</span><strong>Approved Feed</strong><small>Menampilkan hasil seduhan yang sudah memenuhi standar publikasi.</small></article>
+            <article><span>02</span><strong>Filter Catalog</strong><small>Cari berdasarkan metode, dripper, proses, roast, dan nilai QA.</small></article>
+            <article><span>03</span><strong>Recipe Reference</strong><small>Gunakan detail seduhan publik sebagai inspirasi dial-in berikutnya.</small></article>
+          </section>
+
+
+        <section class="panel wide">
+          <div class="section-title"><span>Katalog Publik</span><h2>Katalog Hasil Seduhan Publik</h2></div>
+          <section class="public-catalog-highlight">
+            <div>
+              <span>Approved Recipe Catalog</span>
+              <strong>Temukan baseline resep dari hasil seduhan yang sudah lolos QA.</strong>
+              <p>Gunakan kartu katalog untuk membaca profil kopi, metode, dripper, dan recipe signal secara cepat. Klik <b>Gunakan Resep</b> untuk menjadikan hasil publik sebagai titik awal rekomendasi seduh.</p>
+            </div>
+            <div class="catalog-highlight-score">
+              <small>Quality Gate</small>
+              <b>QA ≥ 6.5</b>
+              <em>Approved brew only</em>
+            </div>
+          </section>
+          <div class="public-feed-toolbar public-explorer-toolbar">
+            <input id="publicBrewSearch" aria-label="Cari hasil seduhan publik" placeholder="Cari kopi, brewer, metode, detail seduhan..." />
+            <select id="publicBrewMethod" aria-label="Filter metode seduh"><option value="all">Semua metode</option><option>Hot V60</option><option>Japanese Iced</option></select>
+            <select id="publicBrewDripper" aria-label="Filter dripper"><option value="all">Semua dripper</option></select>
+            <select id="publicBrewProcess" aria-label="Filter proses pascapanen"><option value="all">Semua proses</option></select>
+            <select id="publicBrewRoast" aria-label="Filter profil sangrai"><option value="all">Semua roast</option></select>
+            <select id="publicBrewMinQA" aria-label="Filter nilai minimum QA"><option value="0">Semua nilai QA</option><option value="6.5">QA ≥ 6.5</option><option value="7">QA ≥ 7.0</option><option value="8">QA ≥ 8.0</option></select>
+            <select id="publicBrewSort" aria-label="Urutkan hasil seduhan publik"><option value="newest">Terbaru</option><option value="qa">QA tertinggi</option><option value="recipe">Resep paling lengkap</option></select>
+            <button id="refreshPublicBrews" class="secondary" type="button">Muat Ulang</button>
+          </div>
+          <div class="public-explorer-summary" id="publicJelajahrSummary" aria-live="polite"></div>
+          <div class="public-brew-card-grid" id="publicBrewCards" aria-live="polite"></div>
+          <div class="public-table-heading">
+            <div>
+              <span class="mini-label">Tampilan Tabel</span>
+              <strong>Semua hasil yang cocok</strong>
+            </div>
+            <small>Gunakan kartu di atas untuk eksplorasi cepat, atau tabel ini untuk tampilan ringkas.</small>
+          </div>
+          <div class="table-wrap tall public-brew-table-wrap">
+            <table id="publicBrewTable">
+              <thead>
+                <tr><th>Kopi</th><th>Brewer</th><th>Metode</th><th>QA</th><th>Aksi</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
