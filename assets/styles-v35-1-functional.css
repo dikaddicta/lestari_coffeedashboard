@@ -1,0 +1,62 @@
+/* Coffee Brew OS v35.1 — functional stabilization layer */
+
+:root {
+  --app-focus-ring: rgba(165, 112, 62, 0.32);
+}
+
+button[aria-busy="true"],
+[role="button"][aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.74;
+  pointer-events: none;
+}
+
+button[aria-busy="true"]::after {
+  content: "";
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-left: 0.55em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  vertical-align: -0.08em;
+  animation: v351-spin 0.7s linear infinite;
+}
+
+html.is-offline .system-health-card,
+body.is-offline .system-health-card {
+  border-color: rgba(152, 88, 55, 0.28);
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid var(--app-focus-ring);
+  outline-offset: 3px;
+}
+
+@keyframes v351-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

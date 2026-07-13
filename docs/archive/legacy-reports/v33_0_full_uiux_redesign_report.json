@@ -1,0 +1,33 @@
+{
+  "version": "v33.0 Full UI/UX Redesign Foundation",
+  "baseVersion": "v32.8 Production Pack",
+  "majorChanges": [
+    "Total visual direction refreshed into clean SaaS / premium coffee lab style",
+    "CSS moved into modular assets/styles structure",
+    "Images copied into assets/images structure",
+    "index.html now loads assets/styles/main.css",
+    "Sidebar, topbar, panel, card, button, input, table, home, brew, and library visual system redesigned",
+    "PWA manifest updated for v33",
+    "Service worker cache updated to coffee-brew-os-v33-0-redesign",
+    "Legacy compatibility CSS preserved to avoid breaking existing modules"
+  ],
+  "styleFiles": [
+    "assets/styles/00-tokens.css",
+    "assets/styles/01-base.css",
+    "assets/styles/02-layout.css",
+    "assets/styles/03-components.css",
+    "assets/styles/04-pages.css",
+    "assets/styles/05-mobile.css",
+    "assets/styles/06-legacy-compat.css",
+    "assets/styles/main.css"
+  ],
+  "imageStructure": [
+    "assets/images/latte-art-icon.png",
+    "assets/images/barista-mascot.png",
+    "assets/images/barista-banner.png"
+  ],
+  "validation": [
+    "node --check assets/app.js passed",
+    "Missing structured files: none"
+  ]
+}

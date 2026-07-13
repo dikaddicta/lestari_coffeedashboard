@@ -1,0 +1,17 @@
+{
+  "version": "v32.8 Production Pack",
+  "checks": [
+    "Service worker cache bumped to coffee-brew-os-v32-8-production",
+    "Navigation uses network-first fallback to avoid stale index.html",
+    "Static same-origin assets keep cache-first behavior",
+    "Manifest metadata and shortcuts added",
+    "Deployment checklist added",
+    "Safe Git update SOP added",
+    "Home production readiness panel added"
+  ],
+  "filesAdded": [
+    "docs/DEPLOYMENT_CHECKLIST_v32_8.md",
+    "docs/GIT_SAFE_UPDATE_SOP.md",
+    "docs/v32_8_production_pack_report.json"
+  ]
+}

@@ -1,35 +1,57 @@
-const CACHE_NAME = "coffee-brew-os-v35-quiet-luxury";
+const CACHE_NAME = "coffee-brew-os-v35-1-functional";
 const CORE_ASSETS = [
   "./",
   "./index.html",
+  "./assets/app-config.js",
+  "./assets/core/runtime.js",
   "./assets/styles.css",
   "./assets/styles-v35-quiet-luxury.css",
+  "./assets/styles-v35-1-functional.css",
   "./assets/app.js",
   "./assets/data.js",
+  "./assets/supabase-config.js",
   "./assets/latte-art-icon.png",
   "./manifest.webmanifest"
 ];
 
+function normalizedRequest(request) {
+  const url = new URL(request.url);
+  url.search = "";
+  return new Request(url.toString(), {
+    method: "GET",
+    credentials: request.credentials === "include" ? "include" : "same-origin",
+    redirect: "follow"
+  });
+}
+
+async function putInCache(request, response) {
+  if (!response || !response.ok) return;
+  const cache = await caches.open(CACHE_NAME);
+  await cache.put(normalizedRequest(request), response.clone());
+}
+
+async function matchCache(request) {
+  return caches.match(normalizedRequest(request), { ignoreSearch: true });
+}
+
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(CORE_ASSETS))
-      .catch(() => null)
-  );
-  self.skipWaiting();
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await Promise.allSettled(CORE_ASSETS.map(asset => cache.add(asset)));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-    ))
-  );
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener("message", event => {
-  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("fetch", event => {
@@ -40,33 +62,36 @@ self.addEventListener("fetch", event => {
   const sameOrigin = url.origin === self.location.origin;
 
   if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy)).catch(() => null);
-          return response;
-        })
-        .catch(() => caches.match("./index.html"))
-    );
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request);
+        await putInCache(new Request(new URL("./index.html", self.location.href)), response);
+        return response;
+      } catch (_error) {
+        return (await matchCache(new Request(new URL("./index.html", self.location.href)))) || Response.error();
+      }
+    })());
     return;
   }
 
   if (!sameOrigin) {
-    event.respondWith(fetch(request).catch(() => caches.match(request)));
+    event.respondWith(fetch(request));
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then(cached => {
-      if (cached) return cached;
-      return fetch(request).then(response => {
-        const copy = response.clone();
-        if (response.ok) {
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => null);
-        }
-        return response;
-      }).catch(() => caches.match("./index.html"));
-    })
-  );
+  event.respondWith((async () => {
+    const cached = await matchCache(request);
+    if (cached) {
+      event.waitUntil(fetch(request).then(response => putInCache(request, response)).catch(() => null));
+      return cached;
+    }
+
+    try {
+      const response = await fetch(request);
+      await putInCache(request, response);
+      return response;
+    } catch (_error) {
+      return Response.error();
+    }
+  })());
 });

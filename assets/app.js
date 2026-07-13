@@ -1,6 +1,51 @@
 (function () {
   "use strict";
 
+  const APP_CONFIG = window.COFFEE_APP_CONFIG || {};
+  const RUNTIME = window.COFFEE_RUNTIME || {};
+  const SAFE_STORAGE = RUNTIME.storage || {
+    get(key, fallback = null, kind = "local") {
+      try {
+        const storage = kind === "session" ? window.sessionStorage : window.localStorage;
+        const value = storage.getItem(key);
+        return value === null ? fallback : value;
+      } catch (_error) { return fallback; }
+    },
+    set(key, value, kind = "local") {
+      try {
+        const storage = kind === "session" ? window.sessionStorage : window.localStorage;
+        storage.setItem(key, String(value));
+        return true;
+      } catch (_error) { return false; }
+    },
+    remove(key, kind = "local") {
+      try {
+        const storage = kind === "session" ? window.sessionStorage : window.localStorage;
+        storage.removeItem(key);
+        return true;
+      } catch (_error) { return false; }
+    },
+    keys(kind = "local") {
+      try {
+        const storage = kind === "session" ? window.sessionStorage : window.localStorage;
+        return Array.from({ length: storage.length }, (_, index) => storage.key(index)).filter(Boolean);
+      } catch (_error) { return []; }
+    },
+    readJSON(key, fallback, kind = "local") {
+      const raw = this.get(key, null, kind);
+      if (raw === null) return fallback;
+      try { return JSON.parse(raw); } catch (_error) { return fallback; }
+    },
+    writeJSON(key, value, kind = "local") {
+      try { return this.set(key, JSON.stringify(value), kind); } catch (_error) { return false; }
+    }
+  };
+  const AUTH_STORAGE_ADAPTER = {
+    getItem: key => SAFE_STORAGE.get(key, null),
+    setItem: (key, value) => { SAFE_STORAGE.set(key, value); },
+    removeItem: key => { SAFE_STORAGE.remove(key); }
+  };
+
   const DATA = window.COFFEE_DATA || {};
   const STORAGE_KEY = "coffeeDashboardWebV1";
   const APPROVAL_THRESHOLD = 6.5;
@@ -76,7 +121,7 @@
 
   function loadState() {
     try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      const saved = SAFE_STORAGE.readJSON(STORAGE_KEY, {});
       return {
         userStock: Array.isArray(saved.userStock) ? saved.userStock : [],
         userBrewLogs: Array.isArray(saved.userBrewLogs) ? saved.userBrewLogs : [],
@@ -92,7 +137,9 @@
   }
 
   function persist() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const saved = SAFE_STORAGE.writeJSON(STORAGE_KEY, state);
+    if (!saved) showMessage("Penyimpanan browser penuh atau tidak tersedia. Ekspor data penting sebelum melanjutkan.", "error");
+    return saved;
   }
 
 
@@ -131,10 +178,10 @@
 
   function createClientId() {
     const key = "coffeeDashboardClientId";
-    let id = localStorage.getItem(key);
+    let id = SAFE_STORAGE.get(key, null);
     if (!id) {
       id = `client-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      localStorage.setItem(key, id);
+      SAFE_STORAGE.set(key, id);
     }
     return id;
   }
@@ -221,22 +268,13 @@
   }
 
   function readJSONStorage(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
-    } catch (_err) {
-      return fallback;
-    }
+    return SAFE_STORAGE.readJSON(key, fallback);
   }
 
   function writeJSONStorage(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch (err) {
-      console.warn("localStorage write failed", err);
-      return false;
-    }
+    const written = SAFE_STORAGE.writeJSON(key, value);
+    if (!written && RUNTIME.warn) RUNTIME.warn("Browser storage write failed", key);
+    return written;
   }
 
   function pendingSyncItems() {
@@ -474,7 +512,7 @@
       }
     }
 
-    const last = localStorage.getItem(LAST_WORKSPACE_KEY);
+    const last = SAFE_STORAGE.get(LAST_WORKSPACE_KEY, null);
     const preferredWorkspace = joinedWorkspaces.find(ws => ws.slug !== "public-brew-community") || joinedWorkspaces[0] || null;
     currentWorkspace = joinedWorkspaces.find(ws => ws.id === last) || preferredWorkspace;
     const joined = joinedWorkspaces.find(ws => ws.id === currentWorkspace?.id);
@@ -524,7 +562,7 @@
     currentWorkspace = ws;
     const joined = joinedWorkspaces.find(j => j.id === id);
     currentRole = joined?.role || "viewer";
-    localStorage.setItem(LAST_WORKSPACE_KEY, id);
+    SAFE_STORAGE.set(LAST_WORKSPACE_KEY, id);
     renderWorkspaceUI();
     await syncFromCloud(true).catch(console.warn);
     if (canModerate()) await loadModerationRows().catch(console.warn);
@@ -711,16 +749,16 @@
     state.cloudStock = [];
     state.cloudBrewLogs = [];
     state.cloudQA = [];
-    localStorage.removeItem(LAST_WORKSPACE_KEY);
+    SAFE_STORAGE.remove(LAST_WORKSPACE_KEY);
 
-    Object.keys(localStorage).forEach(key => {
+    SAFE_STORAGE.keys("local").forEach(key => {
       if (/^sb-.*-auth-token$/.test(key) || key.includes("supabase.auth.token")) {
-        localStorage.removeItem(key);
+        SAFE_STORAGE.remove(key);
       }
     });
-    Object.keys(sessionStorage || {}).forEach(key => {
+    SAFE_STORAGE.keys("session").forEach(key => {
       if (/^sb-.*-auth-token$/.test(key) || key.includes("supabase.auth.token")) {
-        sessionStorage.removeItem(key);
+        SAFE_STORAGE.remove(key, "session");
       }
     });
   }
@@ -1240,7 +1278,7 @@
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
-          storage: window.localStorage
+          storage: AUTH_STORAGE_ADAPTER
         },
         global: {
           headers: { "x-coffee-dashboard-client": "stable-v8" }
@@ -5502,7 +5540,12 @@
   function syncRouteHint(tab) {
     const route = routeFromTab(tab);
     document.querySelectorAll("[data-route]").forEach(el => {
-      el.classList.toggle("route-active", el.dataset.route === route);
+      const active = el.dataset.route === route;
+      el.classList.toggle("route-active", active);
+      if (el.classList.contains("tab-btn")) {
+        if (active) el.setAttribute("aria-current", "page");
+        else el.removeAttribute("aria-current");
+      }
     });
   }
 
@@ -5584,7 +5627,7 @@
     document.body.classList.toggle("access-login", accessMode === "login");
     document.body.classList.toggle("access-guest", accessMode === "guest");
     $("welcomeScreen")?.classList.add("is-hidden");
-    try { localStorage.setItem("coffee_experience_mode", accessMode); } catch {}
+    SAFE_STORAGE.set("coffee_experience_mode", accessMode);
     markOnboardingStep("welcome");
     if (accessMode === "login") {
       showTab(loggedInUser() ? "home" : "admin");
@@ -6014,7 +6057,7 @@
     $("importJson")?.addEventListener("change", e => e.target.files[0] && importJson(e.target.files[0]));
     $("resetLocal")?.addEventListener("click", () => {
       if (confirm("Reset semua data lokal? Data bawaan dari dashboard Excel tetap ada.")) {
-        localStorage.removeItem(STORAGE_KEY);
+        SAFE_STORAGE.remove(STORAGE_KEY);
         state.userStock = [];
         state.userBrewLogs = [];
         state.userQA = [];
@@ -6931,6 +6974,8 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
 
   function updateSystemStatus() {
     const online = navigator.onLine;
+    document.documentElement.classList.toggle("is-offline", !online);
+    document.body?.classList.toggle("is-offline", !online);
     if ($("systemOnlineStatus")) {
       $("systemOnlineStatus").textContent = online ? "Online" : "Offline";
       $("systemOnlineStatus").classList.toggle("is-offline", !online);
@@ -6968,10 +7013,23 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
       installBtn.classList.add("hidden");
     });
 
-    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    if (APP_CONFIG.features?.pwa !== false && "serviceWorker" in navigator && location.protocol !== "file:") {
       navigator.serviceWorker.register("./sw.js")
-        .then(() => {
+        .then(registration => {
           if ($("systemCacheStatus")) $("systemCacheStatus").textContent = "Cached";
+          registration.update().catch(() => null);
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: "SKIP_WAITING" });
+          }
+          registration.addEventListener("updatefound", () => {
+            const worker = registration.installing;
+            if (!worker) return;
+            worker.addEventListener("statechange", () => {
+              if (worker.state === "installed" && navigator.serviceWorker.controller) {
+                showMessage("Pembaruan dashboard sudah siap. Muat ulang halaman untuk memakai versi terbaru.", "info");
+              }
+            });
+          });
         })
         .catch(() => {
           if ($("systemCacheStatus")) $("systemCacheStatus").textContent = "Cache Off";
@@ -6986,7 +7044,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
 
   function readOnboardingState() {
     try {
-      const parsed = JSON.parse(localStorage.getItem(ONBOARDING_KEY) || "{}");
+      const parsed = SAFE_STORAGE.readJSON(ONBOARDING_KEY, {});
       return parsed && typeof parsed === "object" ? parsed : {};
     } catch {
       return {};
@@ -6994,7 +7052,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
   function writeOnboardingState(next) {
-    try { localStorage.setItem(ONBOARDING_KEY, JSON.stringify(next)); } catch {}
+    SAFE_STORAGE.writeJSON(ONBOARDING_KEY, next);
   }
 
   function markOnboardingStep(step) {
@@ -7041,7 +7099,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     });
     $("onboardingClose")?.addEventListener("click", () => setOnboardingOpen(false));
     $("onboardingReset")?.addEventListener("click", () => {
-      try { localStorage.removeItem(ONBOARDING_KEY); } catch {}
+      SAFE_STORAGE.remove(ONBOARDING_KEY);
       renderOnboardingCoach();
       showMessage("Checklist Quick Start sudah direset.", "info");
     });
@@ -7076,7 +7134,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
 
   function applySoloDemoRecipe() {
     document.body?.classList.add("demo-mode-active");
-    try { localStorage.setItem("coffee_demo_recipe_v30_8", "solo"); } catch {}
+    SAFE_STORAGE.set("coffee_demo_recipe_v30_8", "solo");
 
     showTab("brew");
     setTimeout(() => {
@@ -7362,10 +7420,10 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
 
     const stateKey = "coffee_dashboard_mascot_state_v11";
     const readState = () => {
-      try { return JSON.parse(localStorage.getItem(stateKey) || '{}'); } catch { return {}; }
+      return SAFE_STORAGE.readJSON(stateKey, {});
     };
     const writeState = next => {
-      try { localStorage.setItem(stateKey, JSON.stringify(next)); } catch {}
+      SAFE_STORAGE.writeJSON(stateKey, next);
     };
     const applyVisibility = state => {
       const minimized = Boolean(state.minimized);
@@ -7430,7 +7488,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
     if (document.body?.dataset.premiumUiReady === "true") return;
     if (document.body) document.body.dataset.premiumUiReady = "true";
 
-    initFloatingMascot();
+    if (APP_CONFIG.features?.mascot === true) initFloatingMascot();
 
     const hero = document.querySelector(".hero");
     if (hero) {
@@ -7486,20 +7544,33 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
 
-  window.COFFEE_APP_DEBUG = {
-    getState: () => ({
-      cloudReady,
-      currentUser: currentUser?.email || null,
-      currentWorkspace: currentWorkspace?.name || null,
-      currentRole,
-      stockCount: state.cloudStock?.length || 0,
-      brewCount: state.cloudBrewLogs?.length || 0,
-      qaCount: state.cloudQA?.length || 0
-    }),
-    saveDraft: saveCurrentBrewDraft,
-    saveManualBrew,
-    sync: () => syncFromCloud(true)
-  };
+  if (APP_CONFIG.features?.debugTools === true) {
+    window.COFFEE_APP_DEBUG = {
+      getState: () => ({
+        cloudReady,
+        currentUser: currentUser?.email || null,
+        currentWorkspace: currentWorkspace?.name || null,
+        currentRole,
+        stockCount: state.cloudStock?.length || 0,
+        brewCount: state.cloudBrewLogs?.length || 0,
+        qaCount: state.cloudQA?.length || 0
+      }),
+      saveDraft: saveCurrentBrewDraft,
+      saveManualBrew,
+      sync: () => syncFromCloud(true)
+    };
+  } else {
+    try { delete window.COFFEE_APP_DEBUG; } catch (_error) { window.COFFEE_APP_DEBUG = undefined; }
+  }
+
+  function applyReleaseMetadata() {
+    const version = APP_CONFIG.version || "35.1.0";
+    const release = APP_CONFIG.release || "Functional Stabilization";
+    document.documentElement.dataset.appVersion = version;
+    document.documentElement.dataset.appRelease = release;
+    const buildLabel = document.querySelector(".sidebar-build-version");
+    if (buildLabel) buildLabel.textContent = `v${version} · ${release}`;
+  }
 
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && currentUser && supabaseClient) {
@@ -7508,13 +7579,14 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   });
 
   document.addEventListener("DOMContentLoaded", async () => {
+    applyReleaseMetadata();
     hydrateSelects();
     restoreAutosaveDrafts();
     bindEvents();
     bindWelcomeScreen();
     bindSidebarDrawer();
     bindOnboardingCoach();
-    bindDemoExperience();
+    if (APP_CONFIG.features?.demoExperience !== false) bindDemoExperience();
     bindSignupLandingFlow();
     bindNotificationCenter();
     bindReportSuitePolish();

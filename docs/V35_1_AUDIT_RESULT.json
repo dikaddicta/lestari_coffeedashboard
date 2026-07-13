@@ -1,0 +1,250 @@
+{
+  "generatedAt": "2026-07-13T07:24:12.733Z",
+  "version": "35.1.0",
+  "summary": {
+    "pass": 48,
+    "fail": 0
+  },
+  "results": [
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/app-config.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/core/runtime.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/data.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: assets/app.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "JavaScript syntax: sw.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "378 unique HTML IDs",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "14 tab routes have panels",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Sidebar navigation buttons use type=button",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "124 buttons have explicit type",
+      "detail": "0 missing"
+    },
+    {
+      "status": "PASS",
+      "message": "Referenced local assets exist",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "3 images include alt text",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "External new-tab links use rel=noopener",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Runtime scripts load in safe order",
+      "detail": "assets/app-config.js → assets/core/runtime.js → https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2 → assets/supabase-config.js → assets/data.js → assets/app.js"
+    },
+    {
+      "status": "PASS",
+      "message": "Application code uses safe storage adapter",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Debug tools are production-gated",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Application version is 35.1.0",
+      "detail": "35.1.0"
+    },
+    {
+      "status": "PASS",
+      "message": "Production debug tools are disabled",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Production mascot is disabled",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "package.json version matches app config",
+      "detail": "35.1.0"
+    },
+    {
+      "status": "PASS",
+      "message": "Visible release label matches app config",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service-worker cache name matches v35.1 release",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Canonical Supabase schema exists",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Supabase setup guide exists",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Supabase browser key uses anon role",
+      "detail": "anon"
+    },
+    {
+      "status": "PASS",
+      "message": "No Supabase service-role key marker in browser config",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "12 service-worker core assets exist",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/app-config.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/core/runtime.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/styles-v35-1-functional.css",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/app.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Service worker precaches assets/data.js",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Asset failures no longer fall back to HTML",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "COFFEE_DATA loads successfully",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "varieties: 180 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "drippers: 74 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "filters: 2 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "processes: 81 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "roasts: 18 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "waters: 15 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "grinders: 16 unique records",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "Paper filters are not counted as drippers",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "message": "varieties count remains 180",
+      "detail": "180"
+    },
+    {
+      "status": "PASS",
+      "message": "processes count remains 81",
+      "detail": "81"
+    },
+    {
+      "status": "PASS",
+      "message": "drippers count remains 74",
+      "detail": "74"
+    },
+    {
+      "status": "PASS",
+      "message": "filters count remains 2",
+      "detail": "2"
+    },
+    {
+      "status": "PASS",
+      "message": "roasts count remains 18",
+      "detail": "18"
+    },
+    {
+      "status": "PASS",
+      "message": "waters count remains 15",
+      "detail": "15"
+    },
+    {
+      "status": "PASS",
+      "message": "grinders count remains 16",
+      "detail": "16"
+    }
+  ]
+}

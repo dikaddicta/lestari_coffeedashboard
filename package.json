@@ -1,0 +1,14 @@
+{
+  "name": "coffee-brew-os",
+  "version": "35.1.0",
+  "private": true,
+  "description": "Lestari Coffee Dashboard — functional stabilization release",
+  "scripts": {
+    "audit": "node scripts/functional-audit.mjs",
+    "check": "node scripts/release-check.mjs",
+    "serve": "node scripts/serve-local.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

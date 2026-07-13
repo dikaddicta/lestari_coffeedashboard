@@ -35,6 +35,8 @@ Script hanya melakukan `fetch` dan `merge --ff-only`. Git tidak akan memulai reb
 Setelah selesai bekerja:
 
 ```powershell
+npm run check
+powershell -ExecutionPolicy Bypass -File .\scripts\pre-push-check.ps1
 git status
 git diff --check
 git add -A

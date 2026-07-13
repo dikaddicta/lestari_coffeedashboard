@@ -1,0 +1,11 @@
+{
+  "version": "v32.7 Brew Logic Upgrade",
+  "checks": [
+    "Custom post-harvest process can now be inferred from label keywords",
+    "Unknown/custom processes get adaptive modifiers instead of neutral default only",
+    "Stock beans with 2-3 varieties are resolved into a composite sensory profile",
+    "Brew Preflight now shows Logic card",
+    "Brew Intelligence now shows Library/Adaptive logic signal",
+    "Confidence score accounts for inferred process and composite varieties"
+  ]
+}

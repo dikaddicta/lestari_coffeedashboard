@@ -13,11 +13,12 @@
   <meta property="og:title" content="Coffee Brew OS — Dashboard Seduh Kopi" />
   <meta property="og:description" content="Dashboard untuk rekomendasi seduh, log seduh, QA, analitik, laporan, dan pustaka data kopi." />
   <meta property="og:type" content="website" />
-  <link rel="manifest" href="manifest.webmanifest?v=20260713-v35-quiet-luxury" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260713-v35-1-functional" />
   <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
   <link rel="preload" href="assets/latte-art-icon.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260713-v35-quiet-luxury" />
-  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v35-quiet-luxury" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260713-v35-1-functional" />
+  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v35-1-functional" />
+  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v35-1-functional" />
 </head>
 <body class="quiet-luxury-ui">
 
@@ -99,31 +100,31 @@
 
         <div class="sidebar-section-label">Panduan</div>
         <nav class="sidebar-nav sidebar-nav--utility" aria-label="Navigasi cepat">
-          <button class="tab-btn" data-tab="guide" data-route="cara-pakai">Cara Pakai</button>
+          <button class="tab-btn" type="button" data-tab="guide" data-route="cara-pakai">Cara Pakai</button>
         </nav>
 
         <div class="sidebar-section-label">Menu Utama</div>
         <nav class="sidebar-nav" aria-label="Menu utama">
-          <button class="tab-btn active" data-tab="home" data-route="beranda">Beranda<small class="lock-pill">login</small></button>
-          <button class="tab-btn" data-tab="brew" data-route="rekomendasi-seduh">Rekomendasi Seduh</button>
-          <button class="tab-btn" data-tab="input-seduhan" data-route="input-seduhan">Input Seduhan</button>
-          <button class="tab-btn" data-tab="public-brews" data-route="hasil-seduhan-publik">Hasil Seduhan Publik</button>
-          <button class="tab-btn" data-tab="beans" data-route="beans">Biji Kopi<small class="lock-pill">login</small></button>
-          <button class="tab-btn" data-tab="stock" data-route="stock">Stok<small class="lock-pill">login</small></button>
-          <button class="tab-btn" data-tab="qa" data-route="brew-log-qa">Log Seduh &amp; QA<small class="lock-pill">login</small></button>
-          <button class="tab-btn" data-tab="analytics" data-route="data-analytics">Analitik Data<small class="lock-pill">login</small></button>
-          <button class="tab-btn" data-tab="quality" data-route="notification">Notifikasi<small class="lock-pill">login</small></button>
-          <button class="tab-btn" data-tab="reports" data-route="export-report">Ekspor &amp; Laporan<small class="lock-pill">login</small></button>
-          <button class="tab-btn" data-tab="admin" data-route="akun-role">Akun &amp; Peran<small class="lock-pill">login</small></button>
-          <button class="tab-btn" data-tab="suggestion" data-route="saran">Saran</button>
-          <button class="tab-btn" data-tab="library" data-route="pustaka-data">Pustaka Data</button>
+          <button class="tab-btn active" type="button" data-tab="home" data-route="beranda">Beranda<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="brew" data-route="rekomendasi-seduh">Rekomendasi Seduh</button>
+          <button class="tab-btn" type="button" data-tab="input-seduhan" data-route="input-seduhan">Input Seduhan</button>
+          <button class="tab-btn" type="button" data-tab="public-brews" data-route="hasil-seduhan-publik">Hasil Seduhan Publik</button>
+          <button class="tab-btn" type="button" data-tab="beans" data-route="beans">Biji Kopi<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="stock" data-route="stock">Stok<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="qa" data-route="brew-log-qa">Log Seduh &amp; QA<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="analytics" data-route="data-analytics">Analitik Data<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="quality" data-route="notification">Notifikasi<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="reports" data-route="export-report">Ekspor &amp; Laporan<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="admin" data-route="akun-role">Akun &amp; Peran<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="suggestion" data-route="saran">Saran</button>
+          <button class="tab-btn" type="button" data-tab="library" data-route="pustaka-data">Pustaka Data</button>
         </nav>
 
         <div class="sidebar-footer-card">
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v35 · Quiet Luxury</small>
+          <small class="sidebar-build-version">v35.1.0 · Functional Stabilization</small>
         </div>
       </aside>
 
@@ -1031,7 +1032,7 @@
           <section class="panel">
             <div class="section-title"><span>Workspace</span><h2>Status Workspace</h2></div>
             <p class="hint">Panel ini difokuskan untuk membantu kamu memastikan koneksi database, workspace aktif, dan sinkronisasi data berjalan dengan baik.</p>
-            <div class="db-status" id="dbStatus">
+            <div class="db-status" id="dbStatus" role="status" aria-live="polite">
               <span class="status-dot offline"></span>
               <div><strong>Mode penyimpanan lokal</strong><small>Isi <code>assets/supabase-config.js</code> untuk mengaktifkan database online.</small></div>
             </div>
@@ -1627,7 +1628,7 @@
             <p class="hint">Terimakasih atas saran dan masukan kalian semua. Semoga hal tersebut bisa membantu orang lain untuk terus bisa belajar tentang Kopi.</p>
             <form id="suggestionForm" class="form-grid compact">
               <label>Nama<input id="suggestionName" placeholder="Nama / brand" /></label>
-              <label>Email<input id="suggestionEmail" type="email" placeholder="opsional@email.com" /></label>
+              <label>Email<input id="suggestionEmail" autocomplete="email" inputmode="email" type="email" placeholder="opsional@email.com" /></label>
               <label>Kategori
                 <select id="suggestionCategory">
                   <option>Dripper</option>
@@ -1710,8 +1711,8 @@
             </div>
             <div id="authLoggedOutArea">
               <form id="loginForm" class="form-grid compact">
-                <label>Email<input id="authEmail" type="email" placeholder="nama@email.com" autocomplete="email" /></label>
-                <label>Kata Sandi<input id="authPassword" type="password" placeholder="Kata sandi akun" autocomplete="current-password" /></label>
+                <label>Email<input id="authEmail" autocomplete="email" inputmode="email" type="email" placeholder="nama@email.com" autocomplete="email" /></label>
+                <label>Kata Sandi<input id="authPassword" autocomplete="current-password" type="password" placeholder="Kata sandi akun" autocomplete="current-password" /></label>
                 <div class="span-2 inline-actions">
                   <button class="primary" id="loginBtn" type="button">Masuk</button>
                 </div>
@@ -1722,9 +1723,9 @@
               <details class="signup-details" id="signupDetails">
                 <summary>Belum punya akun? Daftar di sini</summary>
                 <form id="signupForm" class="form-grid compact signup-form">
-                  <label>Email<input id="signupEmail" type="email" placeholder="nama@email.com" autocomplete="email" /></label>
-                  <label>Kata Sandi<input id="signupPassword" type="password" placeholder="Minimal 6 karakter" autocomplete="new-password" /></label>
-                  <label>Nama Tampilan<input id="authDisplayName" placeholder="Nama / brand" /></label>
+                  <label>Email<input id="signupEmail" autocomplete="email" inputmode="email" type="email" placeholder="nama@email.com" autocomplete="email" /></label>
+                  <label>Kata Sandi<input id="signupPassword" autocomplete="new-password" type="password" placeholder="Minimal 6 karakter" autocomplete="new-password" /></label>
+                  <label>Nama Tampilan<input id="authDisplayName" autocomplete="name" placeholder="Nama / brand" /></label>
                   <label>Daftar sebagai
                     <select id="signupRole">
                       <option value="admin">Admin Workspace</option>
@@ -1932,9 +1933,11 @@
 
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
+  <script src="assets/app-config.js?v=20260713-v35-1-functional"></script>
+  <script src="assets/core/runtime.js?v=20260713-v35-1-functional"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
-  <script src="assets/data.js?v=20260713-v35-quiet-luxury"></script>
-  <script src="assets/app.js?v=20260713-v35-quiet-luxury"></script>
+  <script src="assets/data.js?v=20260713-v35-1-functional"></script>
+  <script src="assets/app.js?v=20260713-v35-1-functional"></script>
 </body>
 </html>

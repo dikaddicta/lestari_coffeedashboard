@@ -1,0 +1,57 @@
+Coffee Brew OS v35.1.0 — Functional Stabilization
+Build date: 2026-07-13
+
+SCOPE
+- Functional audit and code stabilization of v35 Quiet Luxury.
+- No new user-facing menu and no database data count changes.
+- Prepared as the stable baseline before multi-page/module architecture work.
+
+KEY CHANGES
+- Added central app config and production feature flags.
+- Added defensive runtime storage adapter and removed direct localStorage access from app.js.
+- Added safer Supabase Auth storage adapter.
+- Production debug object and mascot are disabled by default.
+- Fixed PWA cache strategy so failed CSS/JS assets never fall back to index.html.
+- Added version-normalized caching and service-worker update detection.
+- Added explicit type attributes to all 124 buttons.
+- Added account autocomplete metadata, route aria-current, reduced-motion support, focus states, and busy states.
+- Added Node-based local server, release audit, pre-push check, and GitHub Actions quality workflow.
+- Restored canonical supabase/schema.sql and added current Supabase setup documentation.
+- Archived historical UI reports to reduce documentation clutter.
+
+FINAL AUTOMATED AUDIT
+- 48 checks passed.
+- 0 checks failed.
+- 378 unique HTML IDs.
+- 14 navigation routes matched 14 panels.
+- 124 buttons have explicit types.
+- JavaScript syntax passed for config, runtime, data, app, and service worker.
+- Supabase browser key role verified as anon.
+- Service-worker core assets verified.
+- Data counts and unique names verified.
+
+DATA COUNTS
+- Varieties: 180
+- Post-harvest processes: 81
+- Drippers/setups: 74
+- Paper filters: 2
+- Roast profiles: 18
+- Water profiles: 15
+- Grinders: 16
+
+HTTP SMOKE TEST
+- index.html: 200
+- app-config.js: 200
+- runtime.js: 200
+- functional CSS: 200
+- app.js: 200
+- data.js: 200
+- service worker: 200
+- manifest: 200
+- Supabase schema: 200
+
+KNOWN LIMITATIONS
+- End-to-end Supabase role and CRUD testing still requires an active user session and live database.
+- The application remains a static single-page app with a large legacy app.js and styles.css.
+- Supabase JavaScript is still loaded from an external CDN.
+- Multi-page/module separation is intentionally deferred to the next architecture phase.
