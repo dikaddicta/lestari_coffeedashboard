@@ -13,12 +13,13 @@
   <meta property="og:title" content="Coffee Brew OS — Dashboard Seduh Kopi" />
   <meta property="og:description" content="Dashboard untuk rekomendasi seduh, log seduh, QA, analitik, laporan, dan pustaka data kopi." />
   <meta property="og:type" content="website" />
-  <link rel="manifest" href="manifest.webmanifest?v=20260712-v34-2-contrast-hotfix" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260713-v34-3-premium-home" />
   <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
   <link rel="preload" href="assets/latte-art-icon.png" as="image" />
   <link rel="preload" href="assets/barista-mascot.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260712-v34-2-contrast-hotfix" />
-  <link rel="stylesheet" href="assets/styles-v34-stabilization.css?v=20260712-v34-2-contrast-hotfix" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260713-v34-3-premium-home" />
+  <link rel="stylesheet" href="assets/styles-v34-stabilization.css?v=20260713-v34-3-premium-home" />
+  <link rel="stylesheet" href="assets/styles-v34-3-premium-home.css?v=20260713-v34-3-premium-home" />
 </head>
 <body>
 
@@ -171,7 +172,7 @@
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v34.2 · Contrast Hotfix</small>
+          <small class="sidebar-build-version">v34.3 · Premium Home</small>
         </div>
       </aside>
 
@@ -227,37 +228,73 @@
         <main class="dashboard-main">
           <section id="tab-home" class="tab-panel active">
             <section class="panel home-hero-panel">
-              <header class="hero">
-      <div class="hero-main">
-        <p class="eyebrow">Lestari Coffee Dashboard</p>
-        <div class="hero-title-row">
-          <span class="hero-icon hero-icon-image" aria-hidden="true"><img src="assets/latte-art-icon.png" alt="" /></span>
-          <h1>Coffee Brew OS</h1>
-        </div>
-        <div class="hero-text">
-          <p class="hero-lead">Dashboard operasional untuk merancang, mencatat, mengevaluasi, dan membagikan resep seduh secara lebih terukur.</p>
-          <p class="hero-copy">Dibangun untuk homebrewer, barista, roastery, dan coffee shop owner yang ingin membuat proses dial-in lebih rapi, konsisten, dan berbasis data.</p>
-          <p class="hero-footnote">Mulai dari rekomendasi seduh, stok, brew log, QA, analytics, report, sampai pustaka data. Jika ada referensi yang perlu dilengkapi, kirim melalui <button class="hero-inline-link" type="button" data-jump-tab="suggestion">kotak saran</button>.</p>
-          <div class="premium-badge-row" aria-label="Fitur utama">
-            <span>Brew Intelligence</span>
-            <span>Workflow Terukur</span>
-            <span>Data-Backed</span>
-          </div>
-        </div>
-      </div>
-      <div class="hero-side">
-        <div class="hero-card">
-          <span class="mini-label">Pustaka</span>
-          <div class="metric-grid" id="libraryMetrics"></div>
-        </div>
-        <div class="auth-card" id="authSummary">
-          <span class="mini-label">Akun &amp; Peran</span>
-          <strong id="authUserLabel">Mode Tamu</strong>
-          <small id="authRoleLabel">Masuk untuk menyimpan dan membagikan data.</small>
-          <button class="auth-jump-link" type="button" id="authJumpLink">Masuk / Daftar</button>
-        </div>
-      </div>
-    </header>
+              <header class="hero home-premium-hero">
+                <div class="hero-main home-premium-copy">
+                  <div class="home-premium-eyebrow">
+                    <span class="home-premium-eyebrow-dot" aria-hidden="true"></span>
+                    <span>Lestari Coffee Dashboard</span>
+                    <span class="home-premium-eyebrow-tag">Brew Workspace</span>
+                  </div>
+
+                  <div class="hero-title-row home-premium-title-row">
+                    <span class="hero-icon hero-icon-image home-premium-logo" aria-hidden="true"><img src="assets/latte-art-icon.png" alt="" /></span>
+                    <div class="home-premium-brand">
+                      <h1>Coffee Brew <em>OS</em></h1>
+                      <span>Precision brewing workspace</span>
+                    </div>
+                  </div>
+
+                  <div class="hero-text home-premium-text">
+                    <p class="hero-lead">Workspace premium untuk merancang resep, mencatat hasil seduhan, dan membangun workflow kopi yang lebih presisi.</p>
+                    <p class="hero-copy">Dirancang untuk homebrewer, barista, roastery, dan coffee business yang ingin bekerja lebih rapi, konsisten, dan berbasis data.</p>
+
+                    <div class="home-premium-actions" aria-label="Aksi utama">
+                      <button class="home-premium-cta home-premium-cta--primary" type="button" data-jump-tab="brew">Mulai Rekomendasi <span aria-hidden="true">→</span></button>
+                      <button class="home-premium-cta home-premium-cta--secondary" type="button" data-jump-tab="input-seduhan">Input Seduhan</button>
+                    </div>
+
+                    <div class="home-premium-divider" aria-hidden="true"></div>
+                    <p class="hero-footnote">Kelola alur seduh dari rekomendasi, stok, log, QA, analitik, laporan, hingga pustaka referensi dalam satu workspace yang terhubung. Lengkapi referensi melalui <button class="hero-inline-link" type="button" data-jump-tab="suggestion">kotak saran</button>.</p>
+
+                    <div class="premium-badge-row home-premium-feature-row" aria-label="Fitur utama">
+                      <span>Brew Intelligence</span>
+                      <span>Workflow Terukur</span>
+                      <span>Data-Backed</span>
+                    </div>
+                  </div>
+                </div>
+
+                <aside class="hero-side home-premium-sidebar">
+                  <div class="hero-card home-library-card">
+                    <div class="home-premium-card-head">
+                      <div>
+                        <span class="mini-label">Pustaka Data</span>
+                        <strong>Knowledge base aktif</strong>
+                      </div>
+                      <span class="home-live-pill"><i aria-hidden="true"></i> Live</span>
+                    </div>
+                    <div class="metric-grid" id="libraryMetrics"></div>
+                  </div>
+
+                  <div class="auth-card home-account-card" id="authSummary">
+                    <div class="home-premium-card-head home-account-head">
+                      <div>
+                        <span class="mini-label">Akun &amp; Peran</span>
+                        <strong>Workspace aktif</strong>
+                      </div>
+                      <span class="home-role-pill">Member</span>
+                    </div>
+                    <div class="home-account-profile">
+                      <span class="home-account-avatar" id="authAvatar" aria-hidden="true">T</span>
+                      <div>
+                        <strong id="authUserLabel">Mode Tamu</strong>
+                        <small id="authRoleLabel">Masuk untuk menyimpan dan membagikan data.</small>
+                      </div>
+                    </div>
+                    <button class="auth-jump-link home-account-action" type="button" id="authJumpLink">Masuk / Daftar</button>
+                  </div>
+                </aside>
+              </header>
             </section>
             <section class="home-secondary-grid">
               <article class="panel home-info-card">
@@ -2056,7 +2093,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
-  <script src="assets/data.js?v=20260712-v34-2-contrast-hotfix"></script>
-  <script src="assets/app.js?v=20260712-v34-2-contrast-hotfix"></script>
+  <script src="assets/data.js?v=20260713-v34-3-premium-home"></script>
+  <script src="assets/app.js?v=20260713-v34-3-premium-home"></script>
 </body>
 </html>

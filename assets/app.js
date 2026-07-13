@@ -559,6 +559,8 @@
 
     if (title) title.textContent = isLoggedIn ? "Akun Pengguna" : "Masuk Pengguna";
     if (userLabel) userLabel.textContent = isLoggedIn ? (userProfile?.display_name || currentUser.email || "Akun Pengguna") : "Mode Tamu";
+    const avatarLabel = isLoggedIn ? (userProfile?.display_name || currentUser.email || "A") : "T";
+    if ($("authAvatar")) $("authAvatar").textContent = String(avatarLabel).trim().charAt(0).toUpperCase() || "A";
     if (roleLabel) roleLabel.textContent = isLoggedIn
       ? `${currentUser.email || "-"} · ${roleCtx.workspace || "-"} · ${roleCtx.role || "user"}`
       : "Masuk untuk menyimpan dan membagikan data.";

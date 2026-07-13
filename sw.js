@@ -1,9 +1,10 @@
-const CACHE_NAME = "coffee-brew-os-v34-2-contrast-hotfix";
+const CACHE_NAME = "coffee-brew-os-v34-3-premium-home";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./assets/styles.css",
   "./assets/styles-v34-stabilization.css",
+  "./assets/styles-v34-3-premium-home.css",
   "./assets/app.js",
   "./assets/data.js",
   "./assets/latte-art-icon.png",
