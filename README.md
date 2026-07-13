@@ -17,6 +17,29 @@ Dashboard web statis untuk rekomendasi seduh kopi, manajemen stok, log seduh, QA
 - Pustaka data varietas, dripper/setup, filter kertas, proses pascapanen, profil sangrai, air, dan grinder.
 
 
+## v35 — Quiet Luxury Visual Rebuild
+
+Versi v35 membangun ulang bahasa visual dashboard menjadi **Modern Coffee SaaS — Quiet Luxury** tanpa mengubah mesin data dan alur utama aplikasi.
+
+Perubahan utama:
+
+- Landing page baru dengan layout editorial dua kolom, hierarki tipografi lebih tenang, dan CTA yang lebih jelas.
+- Beranda disusun ulang menjadi hero fokus, pustaka ringkas, status akun, akses cepat, alur kerja, dan demo SOLO.
+- Sidebar espresso dibuat lebih ramping; bronze hanya dipakai sebagai aksen, bukan warna dominan.
+- Panel, form, tabel, tombol, modal, notifikasi, analitik, laporan, admin, dan pustaka memakai satu design system konsisten.
+- Mascot dan onboarding mengambang dikeluarkan dari tampilan produksi agar UI tidak terasa seperti demo.
+- Ilustrasi barista pada output rekomendasi diganti visual abstrak agar lebih profesional untuk penggunaan komersial.
+- Bahasa menu dan label utama lebih konsisten dalam Bahasa Indonesia.
+- Kontras diuji di 14 menu menggunakan pemeriksaan aksesibilitas; tidak ditemukan pelanggaran kontras pada tampilan statis yang diuji.
+- Layout diuji pada lebar 390 px, 768 px, dan 1440 px tanpa overflow horizontal.
+
+File visual utama v35:
+
+```text
+assets/styles-v35-quiet-luxury.css
+```
+
+
 ## v19 Premium Experience
 
 Versi ini menambahkan lapisan visual dan recipe engine yang lebih premium:
@@ -37,7 +60,7 @@ Versi ini menambahkan lapisan visual dan recipe engine yang lebih premium:
 │  ├─ app.js
 │  ├─ data.js
 │  ├─ styles.css
-│  ├─ styles-v34-stabilization.css
+│  ├─ styles-v35-quiet-luxury.css
 │  └─ supabase-config.js
 ├─ supabase/
 │  ├─ schema.sql
@@ -59,7 +82,7 @@ Project ini sengaja dibuat sebagai static single-page app. Tidak ada `package.js
 Cara paling sederhana:
 
 1. Buka folder project di VS Code.
-2. Jalankan dengan ekstensi Live Server, atau buka `index.html` langsung di browser.
+2. Jalankan dengan ekstensi Live Server. Penggunaan server lokal disarankan agar routing dan service worker bekerja dengan benar.
 3. Pastikan internet aktif karena Supabase client dimuat dari CDN jsDelivr.
 
 ## Konfigurasi Supabase
@@ -109,7 +132,7 @@ Catatan: `migration_v18_23_safer_stock_restore_on_brew_delete.sql` menggantikan 
 
 ## Melihat data masukan
 
-Data dari menu Kotak Saran disimpan di tabel Supabase `suggestions`. Admin Workspace juga bisa membukanya dari menu `Akun & Admin` bagian `Kotak Saran Masuk`. Jika Supabase tidak aktif saat saran dikirim, data fallback hanya tersimpan di `localStorage` browser pengirim dengan key `coffeeDashboardWebV1`.
+Data dari menu Kotak Saran disimpan di tabel Supabase `suggestions`. Admin Workspace juga bisa membukanya dari menu `Akun & Peran` bagian `Kotak Saran Masuk`. Jika Supabase tidak aktif saat saran dikirim, data fallback hanya tersimpan di `localStorage` browser pengirim dengan key `coffeeDashboardWebV1`.
 
 Jika saat menjalankan migration muncul error `relation public.workspace_members does not exist`, database belum memiliki schema workspace/role. Untuk project baru jalankan `supabase/schema.sql`. Untuk project lama, jalankan migration sebelumnya sesuai urutan README sebelum `migration_v19_suggestion_inbox_resilient_save.sql`.
 

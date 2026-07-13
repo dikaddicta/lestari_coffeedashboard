@@ -1,12 +1,12 @@
 {
-  "name": "Coffee Brew OS",
+  "name": "Coffee Brew OS — Lestari Coffee Dashboard",
   "short_name": "Coffee Brew OS",
-  "description": "Coffee Brew OS untuk rekomendasi seduh, log seduh, QA, analitik, laporan, dan pustaka data kopi.",
+  "description": "Workspace seduh kopi untuk rekomendasi, pencatatan, QA, analitik, laporan, dan pustaka referensi.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#D6C8AD",
-  "theme_color": "#2D2D2D",
+  "background_color": "#F3F1EC",
+  "theme_color": "#1F1D1A",
   "orientation": "any",
   "icons": [
     {

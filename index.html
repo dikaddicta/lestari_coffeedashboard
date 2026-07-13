@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Coffee Brew OS — Dashboard Seduh Kopi</title>
   <meta name="description" content="Dashboard seduh kopi untuk rekomendasi resep, pencatatan, QA, analitik, laporan, dan pustaka data berbasis referensi." />
-  <meta name="theme-color" content="#2D2D2D" />
+  <meta name="theme-color" content="#1F1D1A" />
   <meta name="application-name" content="Coffee Brew OS" />
   <meta name="apple-mobile-web-app-title" content="Coffee Brew OS" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -13,15 +13,13 @@
   <meta property="og:title" content="Coffee Brew OS — Dashboard Seduh Kopi" />
   <meta property="og:description" content="Dashboard untuk rekomendasi seduh, log seduh, QA, analitik, laporan, dan pustaka data kopi." />
   <meta property="og:type" content="website" />
-  <link rel="manifest" href="manifest.webmanifest?v=20260713-v34-3-premium-home" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260713-v35-quiet-luxury" />
   <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
   <link rel="preload" href="assets/latte-art-icon.png" as="image" />
-  <link rel="preload" href="assets/barista-mascot.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260713-v34-3-premium-home" />
-  <link rel="stylesheet" href="assets/styles-v34-stabilization.css?v=20260713-v34-3-premium-home" />
-  <link rel="stylesheet" href="assets/styles-v34-3-premium-home.css?v=20260713-v34-3-premium-home" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260713-v35-quiet-luxury" />
+  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v35-quiet-luxury" />
 </head>
-<body>
+<body class="quiet-luxury-ui">
 
   <section id="welcomeScreen" class="welcome-screen">
     <div class="welcome-screen__backdrop"></div>
@@ -30,11 +28,11 @@
         <span class="welcome-brand__icon"><img src="assets/latte-art-icon.png" alt="" /></span>
         <div>
           <p class="welcome-eyebrow">Coffee Brew OS</p>
-          <h1>Satu dashboard untuk merancang, mencatat, dan mengevaluasi seduhan.</h1>
+          <h1>Ruang kerja seduh yang lebih terukur.</h1>
         </div>
       </div>
       <p class="welcome-copy">
-        Susun rekomendasi, kelola stok, simpan log seduh, lakukan QA, bagikan resep publik, dan jelajahi pustaka kopi dari satu ruang kerja yang rapi.
+        Rancang resep, kelola stok, simpan log seduh, lakukan evaluasi QA, dan jelajahi pustaka kopi dalam satu alur kerja yang konsisten.
       </p>
       <div class="welcome-actions">
         <button id="welcomeLoginBtn" class="primary welcome-btn" type="button">Masuk</button>
@@ -42,7 +40,7 @@
         <button id="welcomeGuestBtn" class="secondary welcome-btn" type="button">Masuk sebagai Tamu</button>
         <button id="welcomeDemoBtn" class="secondary welcome-btn welcome-demo-btn" type="button">Coba Demo</button>
       </div>
-      <p class="welcome-note">Masuk untuk membuka seluruh fitur dan menyimpan data ke workspace.</p>
+      <p class="welcome-note">Masuk untuk menyimpan data dan membuka seluruh modul workspace.</p>
       <div class="welcome-onboarding-hint">
         <strong>Pengguna baru?</strong>
         <span>Pilih Daftar untuk membuat akun, atau masuk sebagai Tamu lalu ikuti Panduan Cepat dalam lima langkah.</span>
@@ -51,7 +49,7 @@
         <article>
           <span>Akun Baru</span>
           <strong>Daftar untuk membuka seluruh fitur</strong>
-          <small>Setelah akun aktif, kamu dapat mengakses Biji Kopi, Stok, Log Seduh &amp; QA, Analitik, Notifikasi, Ekspor &amp; Laporan, serta Akun &amp; Peran.</small>
+          <small>Akun aktif membuka pengelolaan stok, log seduh, QA, analitik, laporan, dan kolaborasi workspace.</small>
         </article>
       </div>
       <div class="welcome-feature-grid">
@@ -64,61 +62,14 @@
 
 <div class="app-shell">
     <div id="appToast" class="app-toast hidden" role="status" aria-live="polite"></div>
-    <div id="floatingMascot" class="floating-mascot" data-mood="balanced" role="button" tabindex="0" aria-label="Coffee mascot assistant">
-      <div class="floating-mascot-bubble" id="floatingMascotBubble">
-        <div class="floating-mascot-bubble-head">
-          <strong id="floatingMascotStatus">Balanced Brew</strong>
-          <div class="floating-mascot-controls">
-            <button type="button" class="mascot-control-btn" id="floatingMascotMinimize" aria-label="Minimize mascot">–</button>
-            <button type="button" class="mascot-control-btn" id="floatingMascotClose" aria-label="Close mascot">×</button>
-          </div>
-        </div>
-        <span id="floatingMascotText">Mascot siap memberi feedback seduh.</span>
-      </div>
-      <div class="floating-mascot-stage" aria-hidden="true">
-        <span class="floating-mascot-halo"></span>
-        <img class="floating-mascot-image" src="assets/barista-mascot.png" alt="" />
-      </div>
-    </div>
-    <button type="button" id="floatingMascotLauncher" class="floating-mascot-launcher hidden" aria-label="Show coffee mascot">☕ Mascot</button>
     <div id="syncGuardWidget" class="sync-guard-widget" data-state="idle" role="status" aria-live="polite">
       <span class="sync-guard-dot" aria-hidden="true"></span>
       <div class="sync-guard-copy">
         <strong id="syncGuardTitle">Draft aman</strong>
         <small id="syncGuardText">Autosave lokal aktif.</small>
       </div>
-    <aside id="onboardingCoach" class="onboarding-coach" data-open="false" aria-live="polite">
-      <button id="onboardingToggle" class="onboarding-toggle" type="button" aria-expanded="false">
-        <span>Quick Start</span>
-        <strong id="onboardingProgressText">0%</strong>
-      </button>
-      <div class="onboarding-panel">
-        <div class="onboarding-head">
-          <div>
-            <span class="mini-label">Guided Onboarding</span>
-            <strong>Mulai dalam 5 langkah</strong>
-          </div>
-          <button id="onboardingClose" class="ghost small-action" type="button">×</button>
-        </div>
-        <div class="onboarding-progress">
-          <span id="onboardingProgressBar"></span>
-        </div>
-        <ol class="onboarding-list">
-          <li data-step="welcome"><button type="button" data-onboard-action="welcome"><strong>Welcome</strong><small>Pilih Login atau Guest untuk mulai.</small></button></li>
-          <li data-step="guide"><button type="button" data-jump-tab="guide"><strong>Cara Pakai</strong><small>Pahami flow utama dashboard.</small></button></li>
-          <li data-step="brew"><button type="button" data-jump-tab="brew"><strong>Rekomendasi Seduh</strong><small>Buat titik awal resep pertama.</small></button></li>
-          <li data-step="input"><button type="button" data-jump-tab="input-seduhan"><strong>Input Seduhan</strong><small>Catat eksperimen manual.</small></button></li>
-          <li data-step="public"><button type="button" data-jump-tab="public-brews"><strong>Hasil Publik</strong><small>Lihat katalog seduhan komunitas.</small></button></li>
-        </ol>
-        <div class="onboarding-actions">
-          <button id="onboardingReset" class="secondary" type="button">Reset checklist</button>
-        </div>
-      </div>
-    </aside>
-
       <button id="syncRetryBtn" class="sync-retry-btn hidden" type="button">Sync ulang</button>
     </div>
-    
 
     <div id="sidebarBackdrop" class="sidebar-backdrop" aria-hidden="true"></div>
     <div class="dashboard-layout">
@@ -141,12 +92,12 @@
         <div class="sidebar-premium-signal" id="sidebarPremiumSignal">
           <span></span>
           <div>
-            <strong>Premium Workflow</strong>
-            <small>Recipe · QA · Analytics · Report</small>
+            <strong>Workspace Tools</strong>
+            <small>Resep · QA · Analitik · Laporan</small>
           </div>
         </div>
 
-        <div class="sidebar-section-label">Quick Start</div>
+        <div class="sidebar-section-label">Panduan</div>
         <nav class="sidebar-nav sidebar-nav--utility" aria-label="Navigasi cepat">
           <button class="tab-btn" data-tab="guide" data-route="cara-pakai">Cara Pakai</button>
         </nav>
@@ -172,16 +123,16 @@
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v34.3 · Premium Home</small>
+          <small class="sidebar-build-version">v35 · Quiet Luxury</small>
         </div>
       </aside>
 
       <div class="dashboard-main-shell">
         <header class="dashboard-topbar">
           <div>
-            <span class="dashboard-topbar__eyebrow" id="pageBreadcrumb">Workspace Coffee Intelligence / Beranda</span>
+            <span class="dashboard-topbar__eyebrow" id="pageBreadcrumb">Coffee Brew OS / Beranda</span>
             <h2 id="pageTitle">Beranda</h2>
-            <p id="pageSubtitle">Ringkasan metrik utama, akses modul, dan informasi library coffee dashboard.</p>
+            <p id="pageSubtitle">Ringkasan workspace, akses cepat, dan pustaka referensi seduh.</p>
           </div>
           <div class="dashboard-topbar__actions">
             <div class="system-status-pills" id="systemStatusPills" aria-label="System status">
@@ -209,7 +160,7 @@
                 <option value="library">Pustaka Data</option>
               </select>
             </div>
-            <button id="topbarDemoBtn" class="secondary demo-recipe-btn" type="button">Try SOLO Demo</button>
+            <button id="topbarDemoBtn" class="secondary demo-recipe-btn" type="button">Coba Demo SOLO</button>
             <button id="installAppBtn" class="secondary install-app-btn hidden" type="button">Install App</button>
             <button id="topbarSignupBtn" class="secondary topbar-signup-btn" type="button">Daftar</button>
             <button id="topbarAccessBtn" class="primary" type="button">Masuk / Daftar</button>
@@ -219,7 +170,7 @@
         <div id="guestPrivateNotice" class="guest-private-notice hidden" role="status" aria-live="polite">
           <div>
             <span class="mini-label">Mode Guest</span>
-            <strong>Login untuk membuka menu premium</strong>
+            <strong>Masuk untuk membuka menu lengkap</strong>
             <p>Beranda, Biji Kopi, Stok, Log Seduh &amp; QA, Analitik Data, Notifikasi, Ekspor &amp; Laporan, serta Akun &amp; Peran hanya tersedia setelah masuk.</p>
           </div>
           <button class="secondary" type="button" data-jump-tab="admin">Masuk / Daftar</button>
@@ -227,220 +178,111 @@
 
         <main class="dashboard-main">
           <section id="tab-home" class="tab-panel active">
-            <section class="panel home-hero-panel">
-              <header class="hero home-premium-hero">
-                <div class="hero-main home-premium-copy">
-                  <div class="home-premium-eyebrow">
-                    <span class="home-premium-eyebrow-dot" aria-hidden="true"></span>
-                    <span>Lestari Coffee Dashboard</span>
-                    <span class="home-premium-eyebrow-tag">Brew Workspace</span>
-                  </div>
-
-                  <div class="hero-title-row home-premium-title-row">
-                    <span class="hero-icon hero-icon-image home-premium-logo" aria-hidden="true"><img src="assets/latte-art-icon.png" alt="" /></span>
-                    <div class="home-premium-brand">
-                      <h1>Coffee Brew <em>OS</em></h1>
-                      <span>Precision brewing workspace</span>
-                    </div>
-                  </div>
-
-                  <div class="hero-text home-premium-text">
-                    <p class="hero-lead">Workspace premium untuk merancang resep, mencatat hasil seduhan, dan membangun workflow kopi yang lebih presisi.</p>
-                    <p class="hero-copy">Dirancang untuk homebrewer, barista, roastery, dan coffee business yang ingin bekerja lebih rapi, konsisten, dan berbasis data.</p>
-
-                    <div class="home-premium-actions" aria-label="Aksi utama">
-                      <button class="home-premium-cta home-premium-cta--primary" type="button" data-jump-tab="brew">Mulai Rekomendasi <span aria-hidden="true">→</span></button>
-                      <button class="home-premium-cta home-premium-cta--secondary" type="button" data-jump-tab="input-seduhan">Input Seduhan</button>
-                    </div>
-
-                    <div class="home-premium-divider" aria-hidden="true"></div>
-                    <p class="hero-footnote">Kelola alur seduh dari rekomendasi, stok, log, QA, analitik, laporan, hingga pustaka referensi dalam satu workspace yang terhubung. Lengkapi referensi melalui <button class="hero-inline-link" type="button" data-jump-tab="suggestion">kotak saran</button>.</p>
-
-                    <div class="premium-badge-row home-premium-feature-row" aria-label="Fitur utama">
-                      <span>Brew Intelligence</span>
-                      <span>Workflow Terukur</span>
-                      <span>Data-Backed</span>
-                    </div>
+            <section class="home-v35-hero" aria-labelledby="homeV35Title">
+              <div class="home-v35-copy">
+                <div class="home-v35-kicker">
+                  <span aria-hidden="true"></span>
+                  Lestari Coffee Dashboard
+                </div>
+                <div class="home-v35-brand-row">
+                  <span class="home-v35-logo" aria-hidden="true"><img src="assets/latte-art-icon.png" alt="" /></span>
+                  <div>
+                    <p>Workspace seduh terukur</p>
+                    <h1 id="homeV35Title">Coffee Brew <em>OS</em></h1>
                   </div>
                 </div>
+                <p class="home-v35-lead">Rancang resep, catat hasil seduhan, dan evaluasi setiap perubahan variabel dalam satu ruang kerja yang lebih tenang dan terstruktur.</p>
+                <p class="home-v35-support">Dibuat untuk homebrewer, barista, roastery, dan coffee shop yang ingin menjaga konsistensi tanpa kehilangan ruang untuk bereksperimen.</p>
+                <div class="home-v35-actions" aria-label="Aksi utama beranda">
+                  <button class="primary" type="button" data-jump-tab="brew">Mulai rekomendasi</button>
+                  <button class="secondary" type="button" data-jump-tab="input-seduhan">Catat seduhan</button>
+                </div>
+                <div class="home-v35-principles" aria-label="Prinsip dashboard">
+                  <span>Resep terarah</span>
+                  <span>Catatan terhubung</span>
+                  <span>Evaluasi konsisten</span>
+                </div>
+              </div>
 
-                <aside class="hero-side home-premium-sidebar">
-                  <div class="hero-card home-library-card">
-                    <div class="home-premium-card-head">
-                      <div>
-                        <span class="mini-label">Pustaka Data</span>
-                        <strong>Knowledge base aktif</strong>
-                      </div>
-                      <span class="home-live-pill"><i aria-hidden="true"></i> Live</span>
+              <aside class="home-v35-rail">
+                <article class="home-v35-library-card">
+                  <header>
+                    <div>
+                      <span class="quiet-label">Pustaka</span>
+                      <strong>Referensi aktif</strong>
                     </div>
-                    <div class="metric-grid" id="libraryMetrics"></div>
-                  </div>
+                    <button type="button" class="text-action" data-jump-tab="library">Lihat semua</button>
+                  </header>
+                  <div class="metric-grid" id="libraryMetrics"></div>
+                </article>
 
-                  <div class="auth-card home-account-card" id="authSummary">
-                    <div class="home-premium-card-head home-account-head">
-                      <div>
-                        <span class="mini-label">Akun &amp; Peran</span>
-                        <strong>Workspace aktif</strong>
-                      </div>
-                      <span class="home-role-pill">Member</span>
+                <article class="home-v35-account-card" id="authSummary">
+                  <header>
+                    <span class="quiet-label">Akun &amp; Peran</span>
+                    <span class="home-v35-role">Workspace</span>
+                  </header>
+                  <div class="home-v35-account-profile">
+                    <span class="home-v35-avatar" id="authAvatar" aria-hidden="true">T</span>
+                    <div>
+                      <strong id="authUserLabel">Mode Tamu</strong>
+                      <small id="authRoleLabel">Masuk untuk menyimpan dan membagikan data.</small>
                     </div>
-                    <div class="home-account-profile">
-                      <span class="home-account-avatar" id="authAvatar" aria-hidden="true">T</span>
-                      <div>
-                        <strong id="authUserLabel">Mode Tamu</strong>
-                        <small id="authRoleLabel">Masuk untuk menyimpan dan membagikan data.</small>
-                      </div>
-                    </div>
-                    <button class="auth-jump-link home-account-action" type="button" id="authJumpLink">Masuk / Daftar</button>
                   </div>
-                </aside>
-              </header>
-            </section>
-            <section class="home-secondary-grid">
-              <article class="panel home-info-card">
-                <div class="section-title">
-                  <span>Overview</span>
-                  <h2>Ringkasan Coffee Brew OS</h2>
-                </div>
-                <p>Dashboard ini dirancang untuk membantu homebrewer, barista, roastery, dan coffee shop mengelola proses rekomendasi, pencatatan, evaluasi, serta publikasi hasil seduhan dengan workflow yang lebih profesional.</p>
-                <div class="home-feature-pills">
-                  <span>Brew Recommendation</span>
-                  <span>Public Sharing</span>
-                  <span>Analitik Data</span>
-                  <span>Export Ready</span>
-                </div>
-              </article>
-              <article class="panel home-info-card">
-                <div class="section-title">
-                  <span>Access</span>
-                  <h2>Hak Akses Modul</h2>
-                </div>
-                <ul class="home-access-list">
-                  <li><strong>Guest:</strong> Cara Pakai, Rekomendasi Seduh, Input Seduhan, Hasil Seduhan Publik, Saran, dan Pustaka Data.</li>
-                  <li><strong>Pengguna masuk:</strong> Membuka seluruh menu termasuk Beranda, Biji Kopi, Stok, Log Seduh &amp; QA, Analitik Data, Notifikasi, Ekspor &amp; Laporan, serta Akun &amp; Peran.</li>
-                  <li><strong>Workspace:</strong> Module personal akan aktif penuh setelah akun masuk dan memiliki akses workspace yang sesuai.</li>
-                </ul>
-              </article>
+                  <button class="home-v35-account-link" type="button" id="authJumpLink">Masuk / Daftar</button>
+                </article>
+              </aside>
             </section>
 
-            <section class="home-command-grid">
-              <article class="panel command-card" data-jump-tab="brew">
+            <section class="home-v35-quick-grid" aria-label="Akses cepat">
+              <article data-jump-tab="brew" tabindex="0">
                 <span>01</span>
-                <h3>Generate Recipe</h3>
-                <p>Mulai dari rekomendasi seduh untuk menentukan suhu, rasio, grind, dripper, dan guardrail rasa.</p>
+                <div><strong>Rancang resep</strong><small>Bangun titik awal berdasarkan biji, alat, air, dan target rasa.</small></div>
+                <i aria-hidden="true">→</i>
               </article>
-              <article class="panel command-card" data-jump-tab="input-seduhan">
+              <article data-jump-tab="input-seduhan" tabindex="0">
                 <span>02</span>
-                <h3>Record Brew</h3>
-                <p>Catat eksperimen manual agar setiap perubahan variabel bisa dibandingkan dan dievaluasi.</p>
+                <div><strong>Catat seduhan</strong><small>Simpan eksperimen manual dan perubahan variabel secara rinci.</small></div>
+                <i aria-hidden="true">→</i>
               </article>
-              <article class="panel command-card" data-jump-tab="qa">
+              <article data-jump-tab="qa" tabindex="0">
                 <span>03</span>
-                <h3>Validate QA</h3>
-                <p>Gunakan QA untuk menentukan hasil terbaik, menjaga konsistensi, dan memilih resep yang layak dipublikasi.</p>
+                <div><strong>Evaluasi kualitas</strong><small>Bandingkan hasil, nilai QA, dan tentukan langkah dial-in berikutnya.</small></div>
+                <i aria-hidden="true">→</i>
               </article>
-              <article class="panel command-card" data-jump-tab="reports">
+              <article data-jump-tab="analytics" tabindex="0">
                 <span>04</span>
-                <h3>Export Insight</h3>
-                <p>Ubah data seduhan menjadi report, recipe card, dan backup agar workflow lebih siap digunakan.</p>
+                <div><strong>Baca pola</strong><small>Lihat tren performa dan insight dari data seduhan yang terkumpul.</small></div>
+                <i aria-hidden="true">→</i>
               </article>
             </section>
 
-            <section class="panel home-module-map">
-              <div class="section-title">
-                <span>Module Map</span>
-                <h2>Alur kerja yang lebih tertata</h2>
-              </div>
-              <div class="module-map-grid">
-                <article><i>01</i><strong>Explore</strong><small>Rekomendasi, Input Seduhan, Public Brew, dan Pustaka Data.</small></article>
-                <article><i>02</i><strong>Kelola</strong><small>Biji Kopi, Stok, serta Log Seduh &amp; QA tersedia setelah pengguna masuk.</small></article>
-                <article><i>03</i><strong>Analisis</strong><small>Analitik Data dan Notifikasi membantu membaca kualitas data.</small></article>
-                <article><i>04</i><strong>Bagikan</strong><small>Ekspor &amp; Laporan serta hasil seduhan publik membantu dokumentasi.</small></article>
-              </div>
-            
-            
-            <section class="panel home-demo-panel">
-              <div class="home-demo-copy">
-                <span class="mini-label">Demo Experience</span>
-                <h2>Coba resep cepat dengan SOLO Dripper</h2>
-                <p>Mode demo membantu user baru langsung melihat nilai dashboard tanpa harus mengisi semua data dari awal. Cocok untuk validasi tampilan, onboarding, dan presentasi produk.</p>
-                <div class="home-demo-actions">
-                  <button id="homeDemoRecipeBtn" class="primary" type="button">Generate SOLO Demo</button>
-                  <button class="secondary" type="button" data-jump-tab="library">Lihat Pustaka Data</button>
+            <section class="home-v35-content-grid">
+              <article class="panel home-v35-workflow-card">
+                <div class="section-title quiet-section-title">
+                  <span>Alur Kerja</span>
+                  <h2>Dari ide hingga resep yang dapat diulang</h2>
                 </div>
-              </div>
-              <div class="home-demo-recipe">
-                <span>Suggested baseline</span>
-                <strong>15g · 230ml · 92°C</strong>
-                <small>SOLO Dripper · fast-flow clarity · medium-fine grind · low agitation</small>
-              </div>
+                <ol class="home-v35-workflow-list">
+                  <li><b>01</b><div><strong>Mulai dari konteks</strong><small>Pilih biji, proses, roast, alat, air, dan target rasa.</small></div></li>
+                  <li><b>02</b><div><strong>Uji satu perubahan</strong><small>Jaga variabel lain tetap stabil agar hasil mudah dibaca.</small></div></li>
+                  <li><b>03</b><div><strong>Nilai dan simpan</strong><small>Gunakan QA untuk memilih baseline terbaik dan mencatat tindak lanjut.</small></div></li>
+                </ol>
+              </article>
+
+              <article class="panel home-v35-demo-card">
+                <span class="quiet-label">Demo Cepat</span>
+                <h2>Coba baseline SOLO</h2>
+                <p>Isi rekomendasi awal secara otomatis untuk melihat alur dashboard tanpa memulai dari halaman kosong.</p>
+                <div class="home-v35-recipe-line">
+                  <strong>15 g</strong><i>·</i><strong>230 ml</strong><i>·</i><strong>92°C</strong>
+                </div>
+                <small>SOLO Dripper · medium-fine · agitasi rendah</small>
+                <div class="home-v35-demo-actions">
+                  <button id="homeDemoRecipeBtn" class="primary" type="button">Coba demo SOLO</button>
+                  <button class="secondary" type="button" data-jump-tab="guide">Buka panduan</button>
+                </div>
+              </article>
             </section>
-
-<section class="panel home-spotlight-panel">
-              <div class="section-title">
-                <span>Why Coffee Brew OS</span>
-                <h2>Alasan dashboard ini layak dipakai lebih serius</h2>
-              </div>
-              <div class="home-spotlight-grid">
-                <article>
-                  <b>01</b>
-                  <strong>More Than Recipe Notes</strong>
-                  <small>Bukan hanya tempat mencatat seduhan. Dashboard ini menyatukan rekomendasi, evaluasi QA, analytics, dan publikasi hasil seduh dalam satu workflow.</small>
-                </article>
-                <article>
-                  <b>02</b>
-                  <strong>Built for Growth</strong>
-                  <small>Cocok untuk homebrewer yang ingin lebih rapi, maupun coffee shop / roastery kecil yang mulai membangun standar resep dan dokumentasi internal.</small>
-                </article>
-                <article>
-                  <b>03</b>
-                  <strong>Presentation-Ready</strong>
-                  <small>Tampilan dibuat lebih clean, premium, dan mudah dipresentasikan ke komunitas, partner, atau calon pengguna saat demo produk.</small>
-                </article>
-              </div>
-            </section>
-
-<section class="panel home-readiness-panel">
-              <div class="section-title">
-                <span>Readiness</span>
-                <h2>Product Readiness Checklist</h2>
-              </div>
-              <div class="readiness-grid">
-                <article><b>01</b><strong>Guest Experience</strong><small>Guest bisa mencoba rekomendasi, input, public brew, saran, dan pustaka data tanpa login.</small></article>
-                <article><b>02</b><strong>Akses Lengkap</strong><small>Masuk untuk membuka Beranda, Biji Kopi, Stok, QA, Analitik, Notifikasi, Laporan, dan pengelolaan peran.</small></article>
-                <article><b>03</b><strong>Mobile Friendly</strong><small>Sidebar drawer dan dropdown menjaga navigasi tetap rapi di layar kecil.</small></article>
-                <article><b>04</b><strong>Data Confidence</strong><small>Pustaka, notification, dan report mendukung workflow yang lebih terpercaya.</small></article>
-              </div>
-            
-            <section class="panel home-product-packaging-panel">
-              <div class="section-title">
-                <span>Product Packaging</span>
-                <h2>Siap dipakai sebagai web app</h2>
-              </div>
-              <div class="product-packaging-grid">
-                <article><strong>PWA Ready</strong><small>Bisa berjalan lebih nyaman di browser modern dan siap diarahkan untuk install experience.</small></article>
-                <article><strong>Offline Shell</strong><small>Asset utama disiapkan untuk cache sehingga halaman lebih cepat dibuka ulang.</small></article>
-                <article><strong>Share Preview</strong><small>Meta title dan description disiapkan agar link terlihat lebih profesional saat dibagikan.</small></article>
-                <article><strong>System Status</strong><small>Status online, cache, dan data ditampilkan di topbar untuk memberi rasa produk yang matang.</small></article>
-              </div>
-            </section>
-
-            <section class="panel home-production-pack-panel">
-              <div class="section-title">
-                <span>Production</span>
-                <h2>Deploy readiness pack</h2>
-              </div>
-              <div class="production-pack-grid">
-                <article><b>01</b><strong>Cache Versioned</strong><small>Service worker cache dinaikkan ke versi produksi terbaru supaya browser tidak menyajikan asset lama.</small></article>
-                <article><b>02</b><strong>Deploy Checklist</strong><small>Dokumen checklist deploy dan SOP Git aman ditambahkan di folder docs.</small></article>
-                <article><b>03</b><strong>PWA Metadata</strong><small>Manifest, theme color, dan deskripsi aplikasi dirapikan untuk install/share experience.</small></article>
-                <article><b>04</b><strong>Release Report</strong><small>Release report dibuat agar perubahan v32.8 mudah diaudit sebelum publish.</small></article>
-              </div>
-            </section>
-          </section>
-
-                </section>
-
           </section>
 
 <section id="tab-guide" class="tab-panel">
@@ -449,9 +291,9 @@
               <span class="page-intro-eyebrow">Quick Start</span>
               <h2>Cara Pakai</h2>
               <p>Panduan ringkas untuk memahami alur Coffee Brew OS dari eksplorasi resep, pencatatan seduhan, QA, hingga publikasi hasil terbaik.</p>
-              <div class="page-intro-chips"><span>Guest Friendly</span>
-<span>Workflow Guide</span>
-<span>First Run</span></div>
+              <div class="page-intro-chips"><span>Ramah Pengguna Baru</span>
+<span>Panduan Alur Kerja</span>
+<span>Mulai Cepat</span></div>
             </div>
             <div class="page-intro-actions">
               <button class="secondary page-intro-action" type="button" data-jump-tab="brew">Mulai Rekomendasi</button>
@@ -484,14 +326,14 @@
         <section class="panel wide guide-panel guide-premium-shell">
           <div class="guide-hero-premium">
             <div class="guide-hero-copy">
-              <p class="guide-kicker">Quick Start · Guided Experience</p>
+              <p class="guide-kicker">Panduan Cepat</p>
               <h2>Cara Pakai Dashboard</h2>
               <p class="guide-hero-lead">Panduan ini disusun agar dashboard terasa lebih mudah dipahami: mulai dari eksplorasi resep, pencatatan seduhan, evaluasi QA, hingga publikasi hasil yang layak dibagikan.</p>
               <p class="guide-hero-text">Kalau baru pertama kali membuka dashboard, mulai dari alur ringkas di bawah, lalu pilih peran yang paling sesuai dengan cara kamu menggunakan dashboard ini.</p>
               <div class="guide-hero-badges" aria-label="Highlight panduan">
-                <span>Role Based Guide</span>
-                <span>Workflow Clarity</span>
-                <span>Quick Start Ready</span>
+                <span>Panduan Berdasarkan Peran</span>
+                <span>Alur Kerja Jelas</span>
+                <span>Siap Dicoba</span>
               </div>
             </div>
             <div class="guide-hero-aside">
@@ -553,22 +395,22 @@
 
           <div class="guide-role-tabs guide-role-tabs-premium" aria-label="Pilihan panduan berdasarkan peran">
             <button class="guide-role-btn active" type="button" data-guide-role="guest">
-              <span class="role-btn-kicker">Explore</span>
+              <span class="role-btn-kicker">Jelajah</span>
               <strong>Tamu</strong>
               <small>Untuk mencoba dashboard tanpa login</small>
             </button>
             <button class="guide-role-btn" type="button" data-guide-role="admin">
-              <span class="role-btn-kicker">Control</span>
+              <span class="role-btn-kicker">Kelola</span>
               <strong>Admin</strong>
               <small>Untuk workspace, member, dan moderasi</small>
             </button>
             <button class="guide-role-btn" type="button" data-guide-role="qa">
-              <span class="role-btn-kicker">Review</span>
+              <span class="role-btn-kicker">Tinjau</span>
               <strong>QA</strong>
               <small>Untuk evaluasi, validasi, dan persetujuan</small>
             </button>
             <button class="guide-role-btn" type="button" data-guide-role="brewer">
-              <span class="role-btn-kicker">Brew</span>
+              <span class="role-btn-kicker">Seduh</span>
               <strong>Brewer</strong>
               <small>Untuk seduh, eksperimen, dan pencatatan</small>
             </button>
@@ -578,7 +420,7 @@
             <div class="guide-role-header">
               <div>
                 <p class="guide-kicker small">Mode Guest</p>
-                <h3>Explore tanpa login, pahami alur dasarnya lebih dulu</h3>
+                <h3>Jelajah tanpa login, pahami alur dasarnya lebih dulu</h3>
               </div>
               <p>Mode ini cocok untuk pengguna yang ingin mengenal dashboard, mencoba rekomendasi seduh, menginput seduhan manual, dan membaca hasil seduhan publik sebelum memutuskan membuat akun.</p>
             </div>
@@ -609,10 +451,10 @@
             </div>
             <div class="guide-path"><span>Akun & Peran</span><span>Stok</span><span>Biji Kopi</span><span>Log Seduh & QA</span><span>Publikasi</span></div>
             <div class="guide-menu-grid">
-              <article class="guide-menu-card"><h4>Akun & Peran</h4><p>Pusat kontrol utama untuk membuat workspace, mengelola member, memberi atau mencabut akses, dan memoderasi data pada panel <b>Menunggu Review / Disetujui / Ditolak</b>.</p></article>
+              <article class="guide-menu-card"><h4>Akun & Peran</h4><p>Pusat kontrol utama untuk membuat workspace, mengelola member, memberi atau mencabut akses, dan memoderasi data pada panel <b>Menunggu Tinjau / Disetujui / Ditolak</b>.</p></article>
               <article class="guide-menu-card"><h4>Stok</h4><p>Gunakan menu ini untuk menjaga data stok tetap akurat. Admin dapat menambah, mengedit, dan menghapus stok, sehingga workflow brewer dan QA tetap terhubung ke data yang rapi.</p></article>
               <article class="guide-menu-card"><h4>Biji Kopi</h4><p>Menu ini membantu melihat stok mana yang paling sesuai dengan target rasa atau parameter seduh tertentu, sehingga keputusan penggunaan biji kopi menjadi lebih terarah.</p></article>
-              <article class="guide-menu-card"><h4>Log Seduh & QA</h4><p>Review hasil seduhan tim, pantau kualitas, dan pastikan hanya data yang layak yang diloloskan ke ranah publik atau arsip internal.</p></article>
+              <article class="guide-menu-card"><h4>Log Seduh & QA</h4><p>Tinjau hasil seduhan tim, pantau kualitas, dan pastikan hanya data yang layak yang diloloskan ke ranah publik atau arsip internal.</p></article>
             </div>
             <div class="guide-note-box">
               <strong>Best practice untuk Admin</strong>
@@ -702,12 +544,12 @@
       <section id="tab-brew" class="tab-panel">
           <section class="panel page-intro-card page-intro-card--brew">
             <div>
-              <span class="page-intro-eyebrow">Brew Intelligence</span>
+              <span class="page-intro-eyebrow">Rekomendasi Terarah</span>
               <h2>Rekomendasi Seduh</h2>
               <p>Gunakan halaman ini sebagai titik awal dial-in. Pilih varietas, proses pascapanen, profil sangrai, dripper, air, grinder, dan target rasa untuk mendapatkan rekomendasi yang lebih terarah.</p>
-              <div class="page-intro-chips"><span>Recipe Engine</span>
-<span>SOLO Ready</span>
-<span>Data-Backed</span></div>
+              <div class="page-intro-chips"><span>Mesin Rekomendasi</span>
+<span>Mendukung SOLO</span>
+<span>Berbasis Data</span></div>
             </div>
             <div class="page-intro-actions">
               <button class="secondary page-intro-action" type="button" data-jump-tab="input-seduhan">Input Manual</button>
@@ -717,18 +559,18 @@
 
           <section class="brew-demo-lane">
             <div>
-              <span class="mini-label">Fast Start</span>
-              <strong>SOLO Dripper demo recipe</strong>
+              <span class="mini-label">Mulai Cepat</span>
+              <strong>Demo resep SOLO Dripper</strong>
               <small>Isi otomatis field rekomendasi dengan baseline cepat untuk SOLO Dripper.</small>
             </div>
-            <button id="brewDemoRecipeBtn" class="primary" type="button">Use SOLO Demo</button>
+            <button id="brewDemoRecipeBtn" class="primary" type="button">Gunakan Demo SOLO</button>
           </section>
 
 
           <section class="module-ops-strip module-ops-strip--brew">
-            <article><span>01</span><strong>Input Profile</strong><small>Varietas, proses, roast, dripper, air, grinder, dan dose.</small></article>
-            <article><span>02</span><strong>Recipe Signal</strong><small>Suhu, rasio, grind, pour pattern, dan brew time dibuat lebih terarah.</small></article>
-            <article><span>03</span><strong>Dial-in Guardrail</strong><small>Rekomendasi disertai cue untuk menghindari thin, bitter, atau over-ferment.</small></article>
+            <article><span>01</span><strong>Profil Input</strong><small>Varietas, proses, roast, dripper, air, grinder, dan dose.</small></article>
+            <article><span>02</span><strong>Sinyal Resep</strong><small>Suhu, rasio, grind, pour pattern, dan brew time dibuat lebih terarah.</small></article>
+            <article><span>03</span><strong>Batas Dial-in</strong><small>Rekomendasi disertai cue untuk menghindari thin, bitter, atau over-ferment.</small></article>
           </section>
 
 
@@ -758,7 +600,7 @@
               <label id="brewProcessCustomWrap" class="hidden">Pascapanen Manual
                 <input id="brewProcessCustom" placeholder="Contoh: Double Anaerobic Washed, Natural CM, Honey Thermal Shock" />
               </label>
-              <label>Roast Profile
+              <label>Profil Sangrai
                 <select id="brewRoast"></select>
               </label>
               <label>Dripper
@@ -816,13 +658,12 @@
             </div>
             <div class="brew-visualizer" id="brewVisualizer" aria-hidden="true" data-mood="balanced">
               <div class="brew-visualizer-copy">
-                <span class="visual-pill" id="brewVisualBadge">Balanced Brew</span>
-                <strong id="brewVisualTitle">Barista visual / steady extraction</strong>
-                <p id="brewVisualText">Karakter barista membaca arah seduh dan memberi visual yang lebih premium tanpa mengganggu layout output.</p>
+                <span class="visual-pill" id="brewVisualBadge">Balanced Seduh</span>
+                <strong id="brewVisualTitle">Visual dial-in / ekstraksi stabil</strong>
+                <p id="brewVisualText">Ringkasan visual membaca arah seduh tanpa mengganggu fokus pada parameter utama.</p>
               </div>
               <div class="brew-visualizer-scene">
                 <span class="brew-visual-glow"></span>
-                <img class="brew-visual-banner" src="assets/barista-banner.png" alt="" />
               </div>
             </div>
             <div class="output-grid" id="brewOutputs"></div>
@@ -833,7 +674,7 @@
         <section class="panel wide brew-assistant-wide-panel">
           <div class="section-title compact-title">
             <span>Dial-In</span>
-            <h2>Live Compass + Brew Preflight</h2>
+            <h2>Kompas Seduh &amp; Pemeriksaan Awal</h2>
           </div>
           <div class="brew-assistant-grid">
             <div class="brew-input-compass" id="brewInputCompass" aria-live="polite"></div>
@@ -844,7 +685,7 @@
         <section class="panel wide brew-insight-wide-panel">
           <div class="section-title compact-title">
             <span>Intelligence</span>
-            <h2>Insight Seduh + Source Evidence</h2>
+            <h2>Insight Seduh &amp; Referensi</h2>
           </div>
           <div class="brew-insight-panel wide-mode" id="brewInsightPanel" aria-live="polite"></div>
           <div class="brew-decision-grid" id="brewDecisionGrid" aria-live="polite"></div>
@@ -853,7 +694,7 @@
         <section class="panel wide dial-timeline-panel">
           <div class="section-title compact-title">
             <span>Timeline</span>
-            <h2>Dial-In Timeline</h2>
+            <h2>Timeline Dial-in</h2>
           </div>
           <p class="hint">Timeline ini membaca brew log yang cocok. Kalau belum ada histori, dashboard membuat rencana eksperimen bertahap agar perubahan variabel tetap terkontrol.</p>
           <div class="dial-timeline" id="dialInTimeline" aria-live="polite"></div>
@@ -889,11 +730,11 @@
       <section id="tab-input-seduhan" class="tab-panel">
           <section class="panel page-intro-card page-intro-card--input-seduhan">
             <div>
-              <span class="page-intro-eyebrow">Manual Record</span>
+              <span class="page-intro-eyebrow">Pencatatan Manual</span>
               <h2>Input Seduhan</h2>
               <p>Catat eksperimen seduh manual dengan parameter lengkap, termasuk 1–3 varietas, Mix Varietas, dan proses pascapanen manual jika tidak tersedia di pustaka.</p>
-              <div class="page-intro-chips"><span>Guest Input</span>
-<span>Manual Recipe</span>
+              <div class="page-intro-chips"><span>Input Tamu</span>
+<span>Resep Manual</span>
 <span>QA ≥ 6.5</span></div>
             </div>
             <div class="page-intro-actions">
@@ -910,7 +751,7 @@
 
 
         <section class="panel wide manual-input-panel">
-          <div class="section-title"><span>Manual Brew</span><h2>Input Seduhan Manual</h2></div>
+          <div class="section-title"><span>Manual Seduh</span><h2>Input Seduhan Manual</h2></div>
           <p class="hint">Menu ini untuk guest atau brewer yang ingin mencatat seduhan dengan rumus sendiri dan biji kopi sendiri. Data akan masuk ke <strong>Hasil Seduhan Publik</strong> hanya jika Final QA minimal <strong>6.5</strong>.</p>
           <div id="manualEditBanner" class="manual-edit-banner hidden"><div><strong id="manualEditTitle">Mode edit hasil seduhan</strong><small>Form edit memakai kolom yang sama seperti Input Seduhan. Tombol edit hanya muncul untuk akun yang menginput data tersebut.</small></div><button id="manualCancelEditBtn" class="ghost small-action" type="button">Batalkan Edit</button></div>
           <form id="manualBrewForm" class="form-grid qa-form manual-brew-form">
@@ -947,7 +788,7 @@
             <label id="manualProcessCustomWrap" class="hidden">Pascapanen Manual
               <input id="manualProcessCustom" placeholder="Contoh: Anaerobic Natural 120h, Washed Thermal Shock" />
             </label>
-            <label>Roast Profile
+            <label>Profil Sangrai
               <select id="manualRoast"></select>
             </label>
             <label>Dripper
@@ -1089,15 +930,15 @@
       <section id="tab-beans" class="tab-panel">
           <section class="panel page-intro-card page-intro-card--beans">
             <div>
-              <span class="page-intro-eyebrow">Bean Recommendation</span>
+              <span class="page-intro-eyebrow">Rekomendasi Biji</span>
               <h2>Biji Kopi</h2>
               <p>Temukan kandidat beans terbaik dari stok berdasarkan target rasa, varietas, flavor group, dan jenis seduh yang kamu inginkan.</p>
               <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
-<span>Taste Target</span>
-<span>Stock-Based</span></div>
+<span>Target Rasa</span>
+<span>Berbasis Stok</span></div>
             </div>
             <div class="page-intro-actions">
-              <button class="secondary page-intro-action" type="button" data-jump-tab="stock">Buka Stock</button>
+              <button class="secondary page-intro-action" type="button" data-jump-tab="stock">Buka Stok</button>
 <button class="secondary page-intro-action" type="button" data-jump-tab="brew">Buat Resep</button>
             </div>
           </section>
@@ -1145,12 +986,12 @@
       <section id="tab-stock" class="tab-panel">
           <section class="panel page-intro-card page-intro-card--stock">
             <div>
-              <span class="page-intro-eyebrow">Inventory Control</span>
+              <span class="page-intro-eyebrow">Pengelolaan Inventori</span>
               <h2>Stok</h2>
               <p>Kelola data beans, origin, producer, varietas, proses, roast profile, flavor group, jumlah stok, dan status pemakaian.</p>
               <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
-<span>Inventory</span>
-<span>Workspace Data</span></div>
+<span>Inventori</span>
+<span>Data Workspace</span></div>
             </div>
             <div class="page-intro-actions">
               <button class="secondary page-intro-action" type="button" data-jump-tab="beans">Cari Biji Kopi</button>
@@ -1161,7 +1002,7 @@
         <div id="stockAccessNotice" class="access-notice hidden"></div>
         <div class="grid two-col">
           <section class="panel">
-            <div class="section-title"><span>Inventory</span><h2>Tambah / Update Biji Kopi</h2></div>
+            <div class="section-title"><span>Inventori</span><h2>Tambah / Update Biji Kopi</h2></div>
             <form id="stockForm" class="form-grid stock-form">
               <label>Nama Kopi<input id="stockName" required placeholder="Contoh: Indonesia Kerinci Anaerobic" /></label>
               <label>Asal Kopi<input id="stockOrigin" placeholder="Indonesia" /></label>
@@ -1170,7 +1011,7 @@
               <label>Varietas 2 (opsional)<select id="stockVariety2"></select></label>
               <label>Proses<select id="stockProcess"></select><small>Pilih Custom jika proses tidak ada di pustaka.</small></label>
               <label id="stockProcessCustomWrap" class="hidden">Proses Manual<input id="stockProcessCustom" placeholder="Contoh: Experimental Honey Anaerobic" /></label>
-              <label>Roast Profile<select id="stockRoast"></select></label>
+              <label>Profil Sangrai<select id="stockRoast"></select></label>
               <label>Kelompok Rasa 1<select id="stockFlavor1"></select></label>
               <label>Kelompok Rasa 2<select id="stockFlavor2"></select></label>
               <label>Kelompok Rasa 3<select id="stockFlavor3"></select></label>
@@ -1206,7 +1047,7 @@
           </section>
         </div>
         <section class="panel wide">
-          <div class="section-title"><span>Inventory Table</span><h2>Stok Biji Kopi</h2></div>
+          <div class="section-title"><span>Inventori Table</span><h2>Stok Biji Kopi</h2></div>
           <div class="stock-overview-strip">
             <article><span>Total Biji</span><strong id="stockBeanCount">0</strong></article>
             <article><span>Biji Aktif</span><strong id="stockActiveCount">0</strong></article>
@@ -1214,7 +1055,7 @@
             <article><span>Metode Seduh</span><strong id="stockMethodCount">0</strong></article>
           </div>
           <div class="stock-table-hint">
-            <span>Inventory data</span>
+            <span>Inventori data</span>
             <small>Header dibuat kontras dan kolom diberi lebar khusus agar tabel lebih mudah dibaca. Geser horizontal untuk melihat seluruh data.</small>
           </div>
           <div class="table-wrap tall stock-table-wrap">
@@ -1229,16 +1070,16 @@
       <section id="tab-qa" class="tab-panel">
           <section class="panel page-intro-card page-intro-card--qa">
             <div>
-              <span class="page-intro-eyebrow">Quality Workflow</span>
+              <span class="page-intro-eyebrow">Evaluasi Kualitas</span>
               <h2>Log Seduh & QA</h2>
               <p>Validasi setiap hasil seduhan dengan skor QA, hipotesis, variabel perubahan, dan catatan evaluasi agar proses dial-in lebih konsisten.</p>
               <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
-<span>QA Score</span>
-<span>Iteration Log</span></div>
+<span>Nilai QA</span>
+<span>Catatan Iterasi</span></div>
             </div>
             <div class="page-intro-actions">
-              <button class="secondary page-intro-action" type="button" data-jump-tab="analytics">Analytics</button>
-<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Report</button>
+              <button class="secondary page-intro-action" type="button" data-jump-tab="analytics">Analitik</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Laporan</button>
             </div>
           </section>
 
@@ -1316,7 +1157,7 @@
                   <label>Origin<input id="editBrewOrigin" /></label>
                   <label>Varietas<input id="editBrewVariety" /></label>
                   <label>Pascapanen<input id="editBrewProcess" /></label>
-                  <label class="span-2">Roast Profile<input id="editBrewRoast" /></label>
+                  <label class="span-2">Profil Sangrai<input id="editBrewRoast" /></label>
                 </div>
               </section>
               <section class="edit-group">
@@ -1354,16 +1195,16 @@
       <section id="tab-public-brews" class="tab-panel">
           <section class="panel page-intro-card page-intro-card--public-brews">
             <div>
-              <span class="page-intro-eyebrow">Community Brew</span>
+              <span class="page-intro-eyebrow">Seduhan Komunitas</span>
               <h2>Hasil Seduhan Publik</h2>
               <p>Halaman katalog untuk hasil seduhan yang sudah disetujui. Gunakan filter untuk mencari metode, dripper, proses, roast, dan nilai QA terbaik.</p>
-              <div class="page-intro-chips"><span>Public Catalog</span>
-<span>Approved Brew</span>
-<span>Community Reference</span></div>
+              <div class="page-intro-chips"><span>Katalog Publik</span>
+<span>Seduhan Disetujui</span>
+<span>Referensi Komunitas</span></div>
             </div>
             <div class="page-intro-actions">
               <button class="secondary page-intro-action" type="button" data-jump-tab="input-seduhan">Tambah Input</button>
-<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Export Report</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Ekspor Laporan</button>
             </div>
           </section>
 
@@ -1398,7 +1239,7 @@
             <select id="publicBrewSort" aria-label="Urutkan hasil seduhan publik"><option value="newest">Terbaru</option><option value="qa">QA tertinggi</option><option value="recipe">Resep paling lengkap</option></select>
             <button id="refreshPublicBrews" class="secondary" type="button">Muat Ulang</button>
           </div>
-          <div class="public-explorer-summary" id="publicExplorerSummary" aria-live="polite"></div>
+          <div class="public-explorer-summary" id="publicJelajahrSummary" aria-live="polite"></div>
           <div class="public-brew-card-grid" id="publicBrewCards" aria-live="polite"></div>
           <div class="public-table-heading">
             <div>
@@ -1422,23 +1263,23 @@
       <section id="tab-analytics" class="tab-panel">
           <section class="panel page-intro-card page-intro-card--analytics">
             <div>
-              <span class="page-intro-eyebrow">Executive Insight</span>
+              <span class="page-intro-eyebrow">Insight Seduhan</span>
               <h2>Analitik Data</h2>
               <p>Baca pola performa seduhan, distribusi nilai QA, metode paling stabil, dan insight dari workspace maupun hasil publik yang disetujui.</p>
               <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
-<span>Performance</span>
-<span>Decision Support</span></div>
+<span>Performa</span>
+<span>Pendukung Keputusan</span></div>
             </div>
             <div class="page-intro-actions">
               <button class="secondary page-intro-action" type="button" data-jump-tab="quality">Notifikasi</button>
-<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Export Report</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Ekspor Laporan</button>
             </div>
           </section>
 
           <section class="module-ops-strip module-ops-strip--analytics">
-            <article><span>01</span><strong>QA Trend</strong><small>Membaca pola nilai dari workspace dan data publik yang disetujui.</small></article>
-            <article><span>02</span><strong>Method Pattern</strong><small>Bandingkan performa dripper, proses, roast, dan metode seduh.</small></article>
-            <article><span>03</span><strong>Decision Support</strong><small>Gunakan insight untuk menentukan eksperimen seduh berikutnya.</small></article>
+            <article><span>01</span><strong>Tren QA</strong><small>Membaca pola nilai dari workspace dan data publik yang disetujui.</small></article>
+            <article><span>02</span><strong>Pola Metode</strong><small>Bandingkan performa dripper, proses, roast, dan metode seduh.</small></article>
+            <article><span>03</span><strong>Pendukung Keputusan</strong><small>Gunakan insight untuk menentukan eksperimen seduh berikutnya.</small></article>
           </section>
 
 
@@ -1460,7 +1301,7 @@
               <option value="7">QA ≥ 7.0</option>
               <option value="8">QA ≥ 8.0</option>
             </select>
-            <button id="refreshAnalytics" class="secondary" type="button">Perbarui Analitik</button>
+            <button id="refreshAnalitik" class="secondary" type="button">Perbarui Analitik</button>
           </div>
 
           <div class="analytics-hero-grid" id="analyticsMetricGrid" aria-live="polite"></div>
@@ -1468,7 +1309,7 @@
           <div class="analytics-layout">
             <section class="analytics-card analytics-trend-card">
               <div class="analytics-card-head">
-                <span class="mini-label">QA Trend</span>
+                <span class="mini-label">Tren QA</span>
                 <strong>Performa dari waktu ke waktu</strong>
               </div>
               <div class="analytics-chart" id="analyticsTrendChart"></div>
@@ -1485,14 +1326,14 @@
           <div class="analytics-split-grid">
             <section class="analytics-card">
               <div class="analytics-card-head">
-                <span class="mini-label">Dripper Performance</span>
+                <span class="mini-label">Dripper Performa</span>
                 <strong>Dripper dengan QA terbaik</strong>
               </div>
               <div class="analytics-rank-list" id="analyticsDripperRank"></div>
             </section>
             <section class="analytics-card">
               <div class="analytics-card-head">
-                <span class="mini-label">Process Performance</span>
+                <span class="mini-label">Process Performa</span>
                 <strong>Pasca panen paling konsisten</strong>
               </div>
               <div class="analytics-rank-list" id="analyticsProcessRank"></div>
@@ -1522,12 +1363,12 @@
               <h2>Notifikasi</h2>
               <p>Pusat notifikasi kualitas data. Gunakan halaman ini untuk melihat issue, warning, dan informasi penting agar workflow tetap bersih dan terpercaya.</p>
               <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
-<span>Data Alerts</span>
-<span>Action Needed</span></div>
+<span>Peringatan Data</span>
+<span>Perlu Tindakan</span></div>
             </div>
             <div class="page-intro-actions">
               <button class="secondary page-intro-action" type="button" data-jump-tab="qa">Buka QA</button>
-<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Buka Report</button>
+<button class="secondary page-intro-action" type="button" data-jump-tab="reports">Buka Laporan</button>
             </div>
           </section>
 
@@ -1540,15 +1381,15 @@
 
           <section class="panel notification-command-center">
             <div>
-              <span class="mini-label">Action Center</span>
+              <span class="mini-label">Pusat Aksi</span>
               <h2>Pusat aksi untuk menjaga kualitas data</h2>
               <p>Pilih filter cepat untuk melihat issue paling penting, lalu buka modul terkait untuk memperbaiki data yang belum lengkap.</p>
             </div>
             <div class="notification-command-actions">
-              <button class="secondary" type="button" data-notif-filter="critical">Critical Only</button>
-              <button class="secondary" type="button" data-notif-filter="warning">Warning Only</button>
+              <button class="secondary" type="button" data-notif-filter="critical">Hanya Kritis</button>
+              <button class="secondary" type="button" data-notif-filter="warning">Hanya Peringatan</button>
               <button class="secondary" type="button" data-notif-filter="all">Semua Issue</button>
-              <button class="primary" type="button" data-jump-tab="reports">Buka Report</button>
+              <button class="primary" type="button" data-jump-tab="reports">Buka Laporan</button>
             </div>
           </section>
 
@@ -1595,7 +1436,7 @@
           <div class="quality-layout">
             <section class="quality-card">
               <div class="quality-card-head">
-                <span class="mini-label">Action Items</span>
+                <span class="mini-label">Tindak Lanjut</span>
                 <strong>Hal yang perlu dibenahi</strong>
               </div>
               <div class="quality-issue-list" id="qualityIssueList" aria-live="polite"></div>
@@ -1629,36 +1470,36 @@
       <section id="tab-reports" class="tab-panel">
           <section class="panel page-intro-card page-intro-card--reports">
             <div>
-              <span class="page-intro-eyebrow">Reporting Suite</span>
+              <span class="page-intro-eyebrow">Pusat Laporan</span>
               <h2>Ekspor & Laporan</h2>
               <p>Siapkan export CSV/JSON, backup, recipe card, dan report HTML siap print dari data workspace maupun data publik yang sudah disetujui.</p>
               <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
 <span>CSV / JSON</span>
-<span>Print Ready</span></div>
+<span>Siap Cetak</span></div>
             </div>
             <div class="page-intro-actions">
-              <button class="secondary page-intro-action" type="button" data-jump-tab="analytics">Analytics</button>
+              <button class="secondary page-intro-action" type="button" data-jump-tab="analytics">Analitik</button>
 <button class="secondary page-intro-action" type="button" data-jump-tab="library">Pustaka Data</button>
             </div>
           </section>
 
           <section class="module-ops-strip module-ops-strip--reports">
-            <article><span>01</span><strong>Export Data</strong><small>CSV dan JSON untuk backup, analisis lanjutan, atau arsip.</small></article>
-            <article><span>02</span><strong>Print Report</strong><small>Report HTML siap print untuk ringkasan workspace atau data publik.</small></article>
-            <article><span>03</span><strong>Recipe Card</strong><small>Siapkan format yang lebih mudah dibagikan ke client atau komunitas.</small></article>
+            <article><span>01</span><strong>Ekspor Data</strong><small>CSV dan JSON untuk backup, analisis lanjutan, atau arsip.</small></article>
+            <article><span>02</span><strong>Cetak Laporan</strong><small>Laporan HTML siap print untuk ringkasan workspace atau data publik.</small></article>
+            <article><span>03</span><strong>Kartu Resep</strong><small>Siapkan format yang lebih mudah dibagikan ke client atau komunitas.</small></article>
           </section>
 
           <section class="panel report-command-center">
             <div>
-              <span class="mini-label">Report Command Center</span>
+              <span class="mini-label">Laporan Command Center</span>
               <h2>Pilih output sesuai kebutuhan kerja</h2>
               <p>Gunakan mode cepat untuk menyiapkan export data, report analytics, atau backup penuh. Preview akan membaca scope dan dataset yang aktif.</p>
             </div>
             <div class="report-command-actions">
               <button class="secondary" type="button" data-report-scope-shortcut="workspace">Workspace</button>
               <button class="secondary" type="button" data-report-scope-shortcut="public">Public</button>
-              <button class="secondary" type="button" data-report-scope-shortcut="all">All Data</button>
-              <button class="primary" type="button" data-report-action="analytics-html">Generate Report</button>
+              <button class="secondary" type="button" data-report-scope-shortcut="all">Semua Data</button>
+              <button class="primary" type="button" data-report-action="analytics-html">Buat Laporan</button>
             </div>
           </section>
 
@@ -1671,9 +1512,9 @@
           <p class="hint">Download data penting sebagai CSV/JSON atau buat report HTML siap print. Modul ini membaca data workspace aktif dan data publik yang sudah disetujui.</p>
 
           <div class="report-package-strip">
-            <article><span>CSV</span><strong>Operational Data</strong><small>Brew log, QA, stock, public brew, dan library dataset.</small></article>
-            <article><span>HTML</span><strong>Analytics Narrative</strong><small>Ringkasan performa, best cup, top recipes, dan insight otomatis.</small></article>
-            <article><span>PRINT</span><strong>Recipe Card</strong><small>Cetak rekomendasi aktif menjadi kartu resep yang mudah dibagikan.</small></article>
+            <article><span>CSV</span><strong>Data Operasional</strong><small>Brew log, QA, stock, public brew, dan library dataset.</small></article>
+            <article><span>HTML</span><strong>Narasi Analitik</strong><small>Ringkasan performa, best cup, top recipes, dan insight otomatis.</small></article>
+            <article><span>PRINT</span><strong>Kartu Resep</strong><small>Cetak rekomendasi aktif menjadi kartu resep yang mudah dibagikan.</small></article>
           </div>
 
           <div class="report-toolbar">
@@ -1691,7 +1532,7 @@
               <option value="waters">Pustaka: Air</option>
               <option value="grinders">Pustaka: Grinder</option>
             </select>
-            <button class="secondary" id="refreshReports" type="button">Perbarui Pratinjau</button>
+            <button class="secondary" id="refreshLaporans" type="button">Perbarui Pratinjau</button>
           </div>
 
           <div class="report-preview-heading">
@@ -1715,49 +1556,49 @@
               <span class="mini-label">CSV</span>
               <strong>Log Seduh</strong>
               <p>Export seluruh brew log yang terbaca sesuai scope report.</p>
-              <button class="primary" type="button" data-report-action="brew-csv">Download Brew CSV</button>
+              <button class="primary" type="button" data-report-action="brew-csv">Unduh CSV Seduhan</button>
             </article>
             <article class="report-action-card">
               <span class="mini-label">CSV</span>
-              <strong>QA Scores</strong>
+              <strong>Nilai QAs</strong>
               <p>Export nilai QA untuk audit, analisis, atau backup.</p>
-              <button class="primary" type="button" data-report-action="qa-csv">Download QA CSV</button>
+              <button class="primary" type="button" data-report-action="qa-csv">Unduh CSV QA</button>
             </article>
             <article class="report-action-card">
               <span class="mini-label">CSV</span>
-              <strong>Stock Beans</strong>
+              <strong>Stok Biji Kopi</strong>
               <p>Export stok kopi workspace aktif dengan profil kopi.</p>
-              <button class="primary" type="button" data-report-action="stock-csv">Download Stock CSV</button>
+              <button class="primary" type="button" data-report-action="stock-csv">Unduh CSV Stok</button>
             </article>
             <article class="report-action-card">
               <span class="mini-label">CSV</span>
               <strong>Hasil Seduhan Publik</strong>
               <p>Export resep publik yang sudah approved dan lolos threshold.</p>
-              <button class="secondary" type="button" data-report-action="public-csv">Download Public CSV</button>
+              <button class="secondary" type="button" data-report-action="public-csv">Unduh CSV Publik</button>
             </article>
             <article class="report-action-card">
               <span class="mini-label">CSV</span>
-              <strong>Library Dataset</strong>
+              <strong>Dataset Pustaka</strong>
               <p>Export dataset referensi aktif, termasuk SourceURL bila tersedia.</p>
-              <button class="secondary" type="button" data-report-action="library-csv">Download Library CSV</button>
+              <button class="secondary" type="button" data-report-action="library-csv">Unduh CSV Pustaka</button>
             </article>
             <article class="report-action-card">
               <span class="mini-label">HTML</span>
-              <strong>Analytics Report</strong>
+              <strong>Analitik Laporan</strong>
               <p>Buat ringkasan performa QA, top recipe, dan insight otomatis.</p>
-              <button class="secondary" type="button" data-report-action="analytics-html">Download HTML Report</button>
+              <button class="secondary" type="button" data-report-action="analytics-html">Unduh Laporan HTML</button>
             </article>
             <article class="report-action-card">
               <span class="mini-label">PRINT</span>
-              <strong>Current Recipe Card</strong>
+              <strong>Kartu Resep Aktif</strong>
               <p>Cetak rekomendasi seduh aktif sebagai kartu resep.</p>
-              <button class="ghost" type="button" data-report-action="recipe-print">Print Recipe Card</button>
+              <button class="ghost" type="button" data-report-action="recipe-print">Cetak Kartu Resep</button>
             </article>
             <article class="report-action-card">
               <span class="mini-label">JSON</span>
-              <strong>Full Local Backup</strong>
+              <strong>Backup Lokal Lengkap</strong>
               <p>Export backup lokal lengkap untuk arsip pribadi.</p>
-              <button class="ghost" type="button" data-report-action="json-backup">Download JSON Backup</button>
+              <button class="ghost" type="button" data-report-action="json-backup">Unduh Backup JSON</button>
             </article>
           </div>
 
@@ -1768,12 +1609,12 @@
 <section id="tab-suggestion" class="tab-panel">
           <section class="panel page-intro-card page-intro-card--suggestion">
             <div>
-              <span class="page-intro-eyebrow">Product Feedback</span>
+              <span class="page-intro-eyebrow">Masukan Pengguna</span>
               <h2>Kotak Saran & Pengembangan</h2>
               <p>Kirim saran data, referensi dripper, varietas, proses pascapanen, bug, atau ide fitur agar dashboard terus berkembang.</p>
-              <div class="page-intro-chips"><span>Open Feedback</span>
-<span>Data Suggestion</span>
-<span>Feature Idea</span></div>
+              <div class="page-intro-chips"><span>Masukan Terbuka</span>
+<span>Saran Data</span>
+<span>Ide Fitur</span></div>
             </div>
             <div class="page-intro-actions">
               <button class="secondary page-intro-action" type="button" data-jump-tab="library">Buka Pustaka</button>
@@ -1792,7 +1633,7 @@
                   <option>Dripper</option>
                   <option>Varietas</option>
                   <option>Pascapanen</option>
-                  <option>Roast Profile</option>
+                  <option>Profil Sangrai</option>
                   <option>Setting Grinder</option>
                   <option>Air Mineral</option>
                   <option>Bug / Error Web</option>
@@ -1822,12 +1663,12 @@
       <section id="tab-admin" class="tab-panel">
           <section class="panel page-intro-card page-intro-card--admin">
             <div>
-              <span class="page-intro-eyebrow">Access Control</span>
+              <span class="page-intro-eyebrow">Kontrol Akses</span>
               <h2>Akun & Peran</h2>
               <p>Kelola akses akun, workspace, role, approval member, dan administrasi dasar untuk membuka seluruh fitur Coffee Brew OS.</p>
               <div class="page-intro-chips"><span>Masuk</span>
 <span>Workspace</span>
-<span>Role Based</span></div>
+<span>Berbasis Peran</span></div>
             </div>
             <div class="page-intro-actions">
               <button class="secondary page-intro-action" type="button" data-jump-tab="home">Kembali Beranda</button>
@@ -1836,7 +1677,7 @@
 
           <section class="panel admin-command-center">
             <div>
-              <span class="mini-label">Access Command Center</span>
+              <span class="mini-label">Pusat Kontrol Akses</span>
               <h2>Kelola akun, role, dan workspace dari satu halaman</h2>
               <p>Gunakan halaman ini untuk login, daftar akun, memilih workspace, membuat company, dan memantau status akses user.</p>
             </div>
@@ -1906,7 +1747,7 @@
               <p class="hint small-note">Kamu sudah masuk. Form login dan daftar disembunyikan.</p>
               <button class="ghost" id="logoutBtn" type="button">Keluar</button>
             </div>
-            <div class="account-profile-title"><span>Current Session</span><strong>Status akun aktif</strong></div>
+            <div class="account-profile-title"><span>Sesi Aktif</span><strong>Status akun aktif</strong></div>
             <div class="account-box" id="accountBox">Belum masuk.</div>
           </section>
 
@@ -1934,7 +1775,7 @@
 
         <section class="panel wide account-role-path-panel">
           <div class="section-title">
-            <span>Access Flow</span>
+            <span>Alur Akses</span>
             <h2>Alur akses user</h2>
           </div>
           <div class="role-path-grid">
@@ -1947,8 +1788,8 @@
 
         <section class="panel wide admin-pro-dashboard" id="adminProDashboard">
           <div class="section-title">
-            <span>Admin Pro</span>
-            <h2>Workspace Control Center</h2>
+            <span>Admin Workspace</span>
+            <h2>Pusat Kendali Workspace</h2>
           </div>
           <p class="hint">Ringkasan akses, pengguna, moderasi, dan masukan untuk workspace aktif. Panel ini membantu admin melihat antrean pekerjaan tanpa harus membuka setiap tabel satu per satu.</p>
           <div class="admin-pro-grid" id="adminProMetricGrid" aria-live="polite"></div>
@@ -1977,8 +1818,8 @@
           <p class="hint">Admin Workspace dapat membaca masukan yang dikirim dari menu Kotak Saran. Data cloud disimpan di tabel Supabase <code>suggestions</code>; jika Supabase tidak aktif, salinan lokal hanya ada di browser pengirim.</p>
           <div class="admin-toolbar">
             <button id="refreshSuggestions" class="secondary" type="button">Muat Ulang Masukan</button>
-            <button id="bulkReviewSuggestions" class="secondary" type="button">Tandai Semua Reviewed</button>
-            <button id="bulkCloseSuggestions" class="ghost" type="button">Tutup Semua Reviewed</button>
+            <button id="bulkTinjauSuggestions" class="secondary" type="button">Tandai Semua Tinjaued</button>
+            <button id="bulkCloseSuggestions" class="ghost" type="button">Tutup Semua Tinjaued</button>
           </div>
           <div class="table-wrap tall"><table id="suggestionInboxTable"><thead><tr><th>Status</th><th>Kategori</th><th>Masukan</th><th>Pengirim</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
         </section>
@@ -1993,7 +1834,7 @@
         </section>
 
         <section class="panel wide" id="adminPanel">
-          <div class="section-title"><span>Moderasi</span><h2>Panel Admin — Menunggu Review / Disetujui / Ditolak</h2></div>
+          <div class="section-title"><span>Moderasi</span><h2>Panel Admin — Menunggu Tinjau / Disetujui / Ditolak</h2></div>
           <div class="admin-toolbar">
             <select id="moderationDataset" aria-label="Pilih dataset moderasi"><option value="brew_logs">Log Seduh</option><option value="qa_scores">Nilai QA</option></select>
             <select id="moderationStatus" aria-label="Pilih status moderasi"><option value="pending">Menunggu review</option><option value="approved">Disetujui</option><option value="rejected">Ditolak</option><option value="all">Semua</option></select>
@@ -2009,12 +1850,12 @@
       <section id="tab-library" class="tab-panel">
           <section class="panel page-intro-card page-intro-card--library">
             <div>
-              <span class="page-intro-eyebrow">Coffee Knowledge Base</span>
+              <span class="page-intro-eyebrow">Pustaka Referensi Kopi</span>
               <h2>Pustaka Data</h2>
               <p>Jelajahi referensi varietas, proses pascapanen, profil sangrai, dripper, filter kertas, jenis air, dan grinder sebagai dasar keputusan seduh.</p>
-              <div class="page-intro-chips"><span>Reference Data</span>
+              <div class="page-intro-chips"><span>Data Referensi</span>
 <span>Tautan Sumber</span>
-<span>SOLO Updated</span></div>
+<span>Data SOLO Terbaru</span></div>
             </div>
             <div class="page-intro-actions">
               <button class="secondary page-intro-action" type="button" data-jump-tab="brew">Rekomendasi</button>
@@ -2023,9 +1864,9 @@
           </section>
 
           <section class="module-ops-strip module-ops-strip--library">
-            <article><span>01</span><strong>Reference Search</strong><small>Cari varietas, proses, dripper, filter, profil sangrai, air, dan grinder.</small></article>
+            <article><span>01</span><strong>Pencarian Referensi</strong><small>Cari varietas, proses, dripper, filter, profil sangrai, air, dan grinder.</small></article>
             <article><span>02</span><strong>Konteks Sumber</strong><small>Setiap data utama diarahkan agar tetap punya konteks referensi.</small></article>
-            <article><span>03</span><strong>Suggestion Loop</strong><small>Tambahkan saran data jika ada referensi baru yang perlu dimasukkan.</small></article>
+            <article><span>03</span><strong>Alur Saran</strong><small>Tambahkan saran data jika ada referensi baru yang perlu dimasukkan.</small></article>
           </section>
 
 
@@ -2033,7 +1874,7 @@
           <div class="section-title"><span>Pustaka</span><h2>Pustaka Data Referensi</h2></div>
           <div class="library-explorer-hero">
             <div>
-              <span class="mini-label">Coffee Knowledge Base</span>
+              <span class="mini-label">Pustaka Referensi Kopi</span>
               <strong id="libraryHeroTitle">Data referensi untuk keputusan seduh</strong>
               <p id="libraryHeroCopy">Cari varietas, proses, dripper, filter kertas, profil sangrai, air, dan grinder. Gunakan kartu ringkas untuk membaca petunjuk utama, lalu buka detail untuk sumber dan konteks lengkap.</p>
             </div>
@@ -2041,7 +1882,7 @@
           </div>
           <div class="library-controls library-controls--premium">
             <label>Dataset
-              <select id="libraryDataset"><option value="varieties">Varietas</option><option value="drippers">Dripper / Setup</option><option value="filters">Filter Kertas</option><option value="processes">Proses</option><option value="roasts">Roast Profile</option><option value="waters">Air</option><option value="grinders">Grinder</option></select>
+              <select id="libraryDataset"><option value="varieties">Varietas</option><option value="drippers">Dripper / Setup</option><option value="filters">Filter Kertas</option><option value="processes">Proses</option><option value="roasts">Profil Sangrai</option><option value="waters">Air</option><option value="grinders">Grinder</option></select>
             </label>
             <label>Pencarian
               <input id="librarySearch" placeholder="Cari USDA, Kopyol, Mix Varietas, Anaerobic, SOLO..." />
@@ -2054,9 +1895,9 @@
           <div class="library-focus-toolbar" id="libraryFocusToolbar" aria-label="Filter cepat pustaka data">
             <button type="button" class="active" data-library-focus="all">Semua</button>
             <button type="button" data-library-focus="source">Sumber Tersedia</button>
-            <button type="button" data-library-focus="local-id">Indonesia / Local</button>
+            <button type="button" data-library-focus="local-id">Indonesia / Lokal</button>
             <button type="button" data-library-focus="new">USDA · Kopyol · Mix</button>
-            <button type="button" data-library-focus="brew-risk">High Ferment / Risk</button>
+            <button type="button" data-library-focus="brew-risk">Fermentasi Tinggi / Risiko</button>
           </div>
           <div class="library-spotlight-strip" id="librarySpotlightStrip" aria-live="polite"></div>
           <div class="library-overview-grid" id="libraryOverview"></div>
@@ -2093,7 +1934,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
-  <script src="assets/data.js?v=20260713-v34-3-premium-home"></script>
-  <script src="assets/app.js?v=20260713-v34-3-premium-home"></script>
+  <script src="assets/data.js?v=20260713-v35-quiet-luxury"></script>
+  <script src="assets/app.js?v=20260713-v35-quiet-luxury"></script>
 </body>
 </html>

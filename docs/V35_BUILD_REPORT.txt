@@ -1,0 +1,62 @@
+Coffee Brew OS v35 Final Build Report
+Generated: 2026-07-13
+
+Release direction
+Modern Coffee SaaS — Quiet Luxury
+
+[JavaScript syntax]
+PASS: app.js
+PASS: data.js
+PASS: supabase-config.js
+PASS: sw.js
+
+[Project audit]
+PASS: 378 unique HTML IDs
+PASS: 14 tab routes have matching panels
+PASS: Referenced local assets checked
+PASS: 180 unique variety records
+PASS: 74 unique dripper/setup records
+PASS: 2 unique paper-filter records
+PASS: 81 unique post-harvest process records
+PASS: 18 unique roast-profile records
+PASS: 15 unique water-profile records
+PASS: 16 unique grinder records
+PASS: Paper-filter accessories are not counted as drippers
+PASS: Critical filter controls have accessible labels
+
+[Data seeds]
+Stock beans: 12
+Brew logs: 2
+QA records: 2
+
+[Manifest]
+PASS: valid JSON
+
+[HTML structure]
+PASS: 14 direct tab panels
+PASS: 378 unique IDs
+PASS: no visible /#/ route labels
+
+[CSS]
+PASS: base stylesheet parsed
+PASS: v35 Quiet Luxury stylesheet parsed
+
+[Accessibility]
+PASS: automated contrast audit across all 14 menu panels
+Violations: 0
+
+[Responsive layout]
+PASS: all 14 menu panels at 390 px
+PASS: all 14 menu panels at 768 px
+PASS: all 14 menu panels at 1440 px
+Horizontal-overflow failures: 0
+
+[Runtime smoke test]
+PASS: application initializes in offline/guest mode
+PASS: welcome screen can be dismissed
+PASS: guest-accessible navigation works
+PASS: protected navigation remains access-controlled
+Runtime console/page errors: 0
+
+[Packaging]
+PASS: production ZIP contains the complete dashboard without a .git directory
