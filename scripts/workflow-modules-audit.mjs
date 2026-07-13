@@ -24,6 +24,7 @@ const workflowFiles = [
   "assets/services/auth-service.js",
   "assets/services/stock-service.js",
   "assets/services/brew-service.js",
+  "assets/services/recommendation-service.js",
   "assets/services/qa-service.js",
   "assets/services/notification-service.js"
 ];
@@ -39,6 +40,7 @@ for (const file of [...coreFiles, ...workflowFiles, "assets/css/workflow.css"]) 
   check(shell.includes(file), `${file} is loaded by the modular shell`);
 }
 check(shell.indexOf("assets/core/validation.js") < shell.indexOf("assets/services/stock-service.js"), "Validation loads before stock service");
+check(shell.indexOf("assets/services/recommendation-service.js") < shell.indexOf("assets/app.js"), "Recommendation service loads before app.js");
 check(shell.indexOf("assets/services/qa-service.js") < shell.indexOf("assets/app.js"), "QA service loads before app.js");
 
 const context = {
@@ -92,7 +94,9 @@ check(inconsistent.warnings.length >= 1, "Brew service reports ratio or pour inc
 const qaScore = services.qa.score([8, 8, 8, 8, 8, 8, 8, 8, 8, 8], 0.5);
 check(qaScore === 7.5, "QA service calculates final score with defect penalty");
 const guidance = services.qa.guidance({ clarity: 6, sweetness: 8, body: 7, balance: 7 }, 7);
-check(guidance.weakest === "clarity" && Boolean(guidance.advice), "QA service identifies weakest metric and advice");
+check(guidance.weakest === "kejernihan rasa" && Boolean(guidance.advice), "QA service identifies weakest metric and advice");
+const recommendation = services.recommendation.explain({ variety: { Variety: "Test" }, process: { Process: "Washed" }, roast: { RoastProfile: "Light" }, dripper: { DripperName: "V60" }, water: { Water: "Test" }, grinderSetting: "18 clicks", flow: 3, heat: 3, tds: 100, risk: 2, mineralBand: "balanced", temp: 93, ratio: 16, grindTarget: 700, body: 3, acidity: 3, floral: 2 }, []);
+check(Boolean(recommendation.confidence.score && recommendation.experiment.variable), "Recommendation service returns confidence and next experiment");
 
 const app = read("assets/app.js");
 check(app.includes("APP_STATE_SERVICE.createStore"), "Application consumes centralized state store");

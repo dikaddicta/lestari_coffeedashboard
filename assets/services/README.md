@@ -1,6 +1,6 @@
 # Browser Services
 
-Release v39 memperluas service layer agar business logic tidak terus menumpuk di `assets/app.js`.
+Release v40 memperluas service layer agar business logic tidak terus menumpuk di `assets/app.js`.
 
 - `storage-service.js`: browser storage dan auth adapter.
 - `supabase-service.js`: validasi konfigurasi dan client Supabase.
@@ -11,3 +11,10 @@ Release v39 memperluas service layer agar business logic tidak terus menumpuk di
 - `notification-service.js`: pengelompokan severity untuk ringkasan notifikasi.
 
 Semua service harus dimuat sebelum `assets/app.js` dan diuji melalui `npm run audit:workflow`.
+
+
+## v40 — Recommendation & QA Engine
+
+- `recommendation-service.js` menjelaskan tingkat keyakinan, dasar parameter, dan satu eksperimen berikutnya.
+- `qa-service.js` menghasilkan diagnosis sensorik, perbandingan dengan evaluasi sebelumnya, serta rencana perubahan satu variabel.
+- Service tidak menulis langsung ke DOM atau database; orchestration tetap dilakukan oleh `assets/app.js`.

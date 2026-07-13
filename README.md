@@ -4,7 +4,14 @@ Coffee Brew OS adalah dashboard web untuk menyusun rekomendasi seduh, mencatat e
 
 ## Release aktif
 
-**v39.0.0 — Core Workflow Modules**
+**v40.0.0 — Recommendation & QA Engine**
+
+Fokus release ini adalah rekomendasi yang dapat dijelaskan dan evaluasi QA yang langsung menghasilkan rencana dial-in berikutnya.
+
+- Skor keyakinan rekomendasi 0–100 dengan rincian faktor.
+- Alasan suhu, rasio, gilingan, agitasi, dan komposisi Japanese Iced.
+- Satu eksperimen berikutnya dengan variabel lain tetap dikunci.
+- Diagnosis masalah rasa dan perbandingan QA dengan brew terdahulu.
 
 Release ini memindahkan fondasi workflow utama dari satu file aplikasi besar ke modul yang dapat diuji dan digunakan ulang. Fokusnya bukan menambah dekorasi, tetapi membuat alur stok, seduhan, dan QA lebih aman untuk dikembangkan.
 
@@ -118,7 +125,7 @@ Hasil functional audit tersimpan pada `docs/V39_AUDIT_RESULT.json`.
 
 ## Supabase
 
-Gunakan hanya Project URL dan anon/public key pada `assets/supabase-config.js`. Jangan meletakkan `service_role` key di frontend. Tidak ada migrasi database baru pada v39; release ini menggunakan schema dan RPC yang sudah ada.
+Gunakan hanya Project URL dan anon/public key pada `assets/supabase-config.js`. Jangan meletakkan `service_role` key di frontend. Tidak ada migrasi database baru pada v40; release ini menggunakan schema dan RPC yang sudah ada.
 
 ## Workflow Git
 
@@ -126,7 +133,7 @@ Gunakan hanya Project URL dan anon/public key pada `assets/supabase-config.js`. 
 powershell -ExecutionPolicy Bypass -File .\scripts\git-safe-update.ps1
 npm run check
 git add -A
-git commit -m "Release v39 core workflow modules"
+git commit -m "Release v40 recommendation and QA engine"
 git push origin main
 ```
 
@@ -137,7 +144,7 @@ Project menggunakan `fetch` dan `merge --ff-only`, bukan rebase otomatis.
 Cache aktif:
 
 ```text
-coffee-brew-os-v39-core-workflow
+coffee-brew-os-v40-recommendation-qa
 ```
 
 Setelah deployment besar, uji melalui Incognito atau hapus service worker lama satu kali bila browser masih menampilkan asset versi sebelumnya.

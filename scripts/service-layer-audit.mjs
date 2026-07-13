@@ -21,6 +21,7 @@ const serviceFiles = [
   "assets/services/auth-service.js",
   "assets/services/stock-service.js",
   "assets/services/brew-service.js",
+  "assets/services/recommendation-service.js",
   "assets/services/qa-service.js",
   "assets/services/notification-service.js"
 ];

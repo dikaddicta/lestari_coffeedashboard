@@ -133,7 +133,7 @@
   const byRoute = Object.fromEntries(pages.map(page => [page.route, byTab[page.tab]]));
 
   window.COFFEE_PAGES = Object.freeze({
-    version: "39.0.0",
+    version: "40.0.0",
     pages: Object.freeze(pages.map(page => byTab[page.tab])),
     byTab: Object.freeze(byTab),
     byRoute: Object.freeze(byRoute),

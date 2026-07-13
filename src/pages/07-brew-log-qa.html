@@ -29,15 +29,38 @@
               <label class="span-2">Hipotesis<textarea id="qaHypothesis" rows="2" placeholder="Apa yang ingin diperbaiki dari brew sebelumnya?"></textarea></label>
               <label>Aroma<input class="qa-score" id="qaAroma" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
               <label>Rasa<input class="qa-score" id="qaFlavor" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
-              <label>Aftertaste<input class="qa-score" id="qaAftertaste" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Kesan Akhir<input class="qa-score" id="qaAftertaste" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
               <label>Kualitas Acidity<input class="qa-score" id="qaAcidityQuality" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
-              <label>Sweetness<input class="qa-score" id="qaSweetness" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
-              <label>Body<input class="qa-score" id="qaBody" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
-              <label>Balance<input class="qa-score" id="qaBalance" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
-              <label>Clarity<input class="qa-score" id="qaClarity" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
-              <label>Finish<input class="qa-score" id="qaFinish" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Kemanisan<input class="qa-score" id="qaSweetness" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Body / Tekstur<input class="qa-score" id="qaBody" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Keseimbangan<input class="qa-score" id="qaBalance" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Kejernihan Rasa<input class="qa-score" id="qaClarity" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
+              <label>Kebersihan Akhir<input class="qa-score" id="qaFinish" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
               <label>Konsistensi<input class="qa-score" id="qaConsistency" type="number" min="0" max="10" step="0.1" value="8.5" /></label>
               <label>Pengurang Nilai<input id="qaDefect" type="number" min="0" max="10" step="0.1" value="0" /></label>
+              <label>Masalah Utama
+                <select id="qaPrimaryIssue">
+                  <option value="none">Belum ditentukan</option>
+                  <option value="sour">Masih asam mentah</option>
+                  <option value="sharp">Acidity terlalu tajam</option>
+                  <option value="bitter">Pahit dominan</option>
+                  <option value="dry">Kering atau sepat</option>
+                  <option value="thin">Body terlalu tipis</option>
+                  <option value="flat">Rasa datar</option>
+                  <option value="muddy">Rasa keruh</option>
+                  <option value="weak_aroma">Aroma lemah</option>
+                </select>
+              </label>
+              <label>Target Percobaan Berikutnya
+                <select id="qaTargetFocus">
+                  <option value="balanced">Lebih seimbang</option>
+                  <option value="lebih manis">Lebih manis</option>
+                  <option value="lebih jernih">Lebih jernih</option>
+                  <option value="body lebih penuh">Body lebih penuh</option>
+                  <option value="acidity lebih lembut">Acidity lebih lembut</option>
+                  <option value="hasil lebih konsisten">Lebih konsisten</option>
+                </select>
+              </label>
               <label>Persetujuan Manual<select id="qaApproval"><option value="No">Tidak</option><option value="Yes">Ya</option></select></label>
               <label class="span-2">Catatan Hasil<textarea id="qaNotes" rows="3" placeholder="Catat hasil sensorik dan keputusan dial-in"></textarea></label>
               <div class="qa-total span-2">Final QA: <strong id="qaFinalPreview">8.50</strong> <span id="qaStatusPreview">RETEST</span></div>
@@ -45,6 +68,13 @@
                 <strong>Evaluasi otomatis akan muncul di sini.</strong>
                 <small>Sistem membaca kekuatan dan parameter terlemah dari nilai sensorik yang kamu masukkan.</small>
               </div>
+              <section class="qa-intelligence-panel span-2" aria-label="Diagnosis dan rencana percobaan berikutnya">
+                <div class="qa-intelligence-grid">
+                  <div id="qaDiagnosticPlan" class="qa-diagnostic-card"></div>
+                  <div id="qaComparisonCard" class="qa-comparison-card"></div>
+                </div>
+                <div id="qaMetricMap" class="qa-metric-map"></div>
+              </section>
               <button id="qaSubmitBtn" class="primary span-2" type="button">Simpan Log Seduh + QA</button>
             </form>
           </section>

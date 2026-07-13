@@ -12,13 +12,15 @@
     serviceLayer: true,
     refinedWelcome: true,
     coreWorkflowModules: true,
-    workflowValidation: true
+    workflowValidation: true,
+    recommendationEngine: true,
+    qaDiagnostics: true
   });
 
   window.COFFEE_APP_CONFIG = Object.freeze({
-    version: "39.0.0",
-    release: "Core Workflow Modules",
-    build: "20260713-v39-core-workflow",
+    version: "40.0.0",
+    release: "Recommendation & QA Engine",
+    build: "20260713-v40-recommendation-qa",
     environment: "production",
     features
   });

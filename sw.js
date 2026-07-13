@@ -1,4 +1,4 @@
-const CACHE_NAME = "coffee-brew-os-v39-core-workflow";
+const CACHE_NAME = "coffee-brew-os-v40-recommendation-qa";
 const ROUTE_ENTRIES = [
   "beranda",
   "cara-pakai",
@@ -58,6 +58,7 @@ const CORE_ASSETS = [
   "./assets/css/pages.css",
   "./assets/css/welcome.css",
   "./assets/css/workflow.css",
+  "./assets/css/intelligence.css",
   "./assets/app.js",
   "./assets/data.js",
   "./assets/supabase-config.js",
@@ -65,6 +66,7 @@ const CORE_ASSETS = [
   "./assets/services/auth-service.js",
   "./assets/services/stock-service.js",
   "./assets/services/brew-service.js",
+  "./assets/services/recommendation-service.js",
   "./assets/services/qa-service.js",
   "./assets/services/notification-service.js",
   "./assets/latte-art-icon.png",

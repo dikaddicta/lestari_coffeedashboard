@@ -91,7 +91,7 @@
   });
 
   window.COFFEE_NAVIGATION = Object.freeze({
-    version: config.version || "39.0.0",
+    version: config.version || "40.0.0",
     baseUrl: baseUrl.href,
     basePath,
     normalizeRoute,

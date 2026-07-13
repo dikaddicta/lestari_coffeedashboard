@@ -1,8 +1,8 @@
 {
   "name": "coffee-brew-os",
-  "version": "39.0.0",
+  "version": "40.0.0",
   "private": true,
-  "description": "Lestari Coffee Dashboard — modular core workflow, reusable validation, and connected brew QA flow",
+  "description": "Lestari Coffee Dashboard — explainable brew recommendations, confidence breakdown, and actionable QA diagnostics",
   "scripts": {
     "build": "node scripts/build-pages.mjs",
     "audit": "node scripts/functional-audit.mjs",
@@ -12,7 +12,8 @@
     "audit:routes": "node scripts/clean-url-audit.mjs",
     "audit:modules": "node scripts/page-modules-audit.mjs",
     "audit:services": "node scripts/service-layer-audit.mjs",
-    "audit:workflow": "node scripts/workflow-modules-audit.mjs"
+    "audit:workflow": "node scripts/workflow-modules-audit.mjs",
+    "audit:intelligence": "node scripts/recommendation-qa-audit.mjs"
   },
   "engines": {
     "node": ">=18"

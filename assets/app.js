@@ -11,6 +11,7 @@
   const AUTH_SERVICE = SERVICES.auth || null;
   const STOCK_SERVICE = SERVICES.stock || null;
   const BREW_SERVICE = SERVICES.brew || null;
+  const RECOMMENDATION_SERVICE = SERVICES.recommendation || null;
   const QA_SERVICE = SERVICES.qa || null;
   const NOTIFICATION_SERVICE = SERVICES.notification || null;
   const SAFE_STORAGE = SERVICES.storage || RUNTIME.storage || {
@@ -1315,7 +1316,7 @@
           config: SUPABASE_CONFIG,
           library: window.supabase,
           storageAdapter: AUTH_STORAGE_ADAPTER,
-          clientHeader: "v39-core-workflow"
+          clientHeader: "v40-recommendation-qa"
         });
       } else {
         const projectUrl = getSupabaseProjectUrl();
@@ -1328,7 +1329,7 @@
             storage: AUTH_STORAGE_ADAPTER
           },
           global: {
-            headers: { "x-coffee-dashboard-client": "v39-core-workflow" }
+            headers: { "x-coffee-dashboard-client": "v40-recommendation-qa" }
           }
         });
       }
@@ -2798,6 +2799,7 @@
     renderBrewStockOptions();
     syncBrewStockUI({ apply: true });
     const brew = computeBrew();
+    renderRecommendationEvidence(brew);
     const cards = [
       ["Suhu", `${brew.temp} °C`, "Target suhu air seduh", "thermo"],
       ["Rasio", `1:${fmt(brew.ratio, 1)}`, "Dosis : total air", "ratio"],
@@ -2884,6 +2886,60 @@
 
   function recipeKey(variety, process, roast) {
     return `${variety || ""}|${process || ""}|${roast || ""}`;
+  }
+
+  function matchingRecommendationHistory(brew = {}) {
+    const key = recipeKey(brew.variety?.Variety, brew.process?.Process, brew.roast?.RoastProfile);
+    return sortBrewNewest(allBrewLogs())
+      .filter(log => {
+        if (norm(log.RecipeKey) === norm(key)) return true;
+        const sameVariety = norm(log.Variety) === norm(brew.variety?.Variety);
+        const sameProcess = norm(log.Process) === norm(brew.process?.Process);
+        const sameRoast = norm(log.RoastProfile) === norm(brew.roast?.RoastProfile);
+        return sameVariety && sameProcess && sameRoast;
+      })
+      .slice(0, 8);
+  }
+
+  function renderRecommendationEvidence(brew = {}) {
+    const confidenceEl = $("brewRecommendationConfidence");
+    const rationaleEl = $("brewRecommendationRationale");
+    const experimentEl = $("brewNextExperiment");
+    if (!confidenceEl || !rationaleEl || !experimentEl || !RECOMMENDATION_SERVICE) return;
+
+    const history = matchingRecommendationHistory(brew);
+    const explanation = RECOMMENDATION_SERVICE.explain(brew, history);
+    brew.recommendationExplanation = explanation;
+    brew.confidence = explanation.confidence.score;
+
+    confidenceEl.innerHTML = `
+      <span>Tingkat Keyakinan</span>
+      <div class="recommendation-score-line"><strong>${html(explanation.confidence.score)}</strong><span>/100 · ${html(explanation.confidence.level)}</span></div>
+      <p>${html(explanation.confidence.summary)}</p>
+      <ul class="confidence-factor-list">
+        ${explanation.confidence.items.map(item => `<li><strong>${html(item.label)}</strong><em>${html(item.score)}/${html(item.max)}</em><small>${html(item.note)}</small></li>`).join("")}
+      </ul>
+    `;
+
+    rationaleEl.innerHTML = `
+      <span>Dasar Perhitungan</span>
+      <ul class="rationale-list">
+        ${explanation.rationale.map(item => `<li><div><strong>${html(item.label)}</strong><small>${html(item.text)}</small></div></li>`).join("")}
+      </ul>
+    `;
+
+    const experiment = explanation.experiment;
+    experimentEl.innerHTML = `
+      <span>Percobaan Berikutnya</span>
+      <strong>${html(experiment.variable)}: ${html(experiment.direction)}</strong>
+      <p>${html(experiment.reason)}</p>
+      <div class="experiment-change">
+        <div><small>Saat ini</small><strong>${html(experiment.current)}</strong></div>
+        <b class="experiment-arrow">→</b>
+        <div><small>Uji berikutnya</small><strong>${html(experiment.next)}</strong></div>
+      </div>
+      <p class="experiment-hold"><strong>Pertahankan:</strong> ${html(experiment.holdConstant.join(", "))}.<br /><strong>Pembanding:</strong> ${html(experiment.reference)}</p>
+    `;
   }
 
   function renderRecipeOptions(brew) {
@@ -3342,6 +3398,53 @@
     return round(clamp(avg - (Number($("qaDefect")?.value) || 0), 0, 10), 2);
   }
 
+  function qaMetricsFromForm() {
+    return {
+      aroma: $("qaAroma")?.value,
+      flavor: $("qaFlavor")?.value,
+      aftertaste: $("qaAftertaste")?.value,
+      acidity: $("qaAcidityQuality")?.value,
+      sweetness: $("qaSweetness")?.value,
+      body: $("qaBody")?.value,
+      balance: $("qaBalance")?.value,
+      clarity: $("qaClarity")?.value,
+      finish: $("qaFinish")?.value,
+      consistency: $("qaConsistency")?.value
+    };
+  }
+
+  function qaMetricsFromRow(row = {}) {
+    return {
+      aroma: row.Aroma,
+      flavor: row.Flavor,
+      aftertaste: row.Aftertaste,
+      acidity: row.AcidityQuality,
+      sweetness: row.Sweetness,
+      body: row.Body,
+      balance: row.Balance,
+      clarity: row.Clarity,
+      finish: row.Finish,
+      consistency: row.Consistency
+    };
+  }
+
+  function previousQAContext() {
+    const draft = selectedDraftLog();
+    if (!draft) return null;
+    const directParent = draft.ParentBrewID
+      ? allQA().find(row => norm(row.BrewID) === norm(draft.ParentBrewID))
+      : null;
+    if (directParent) return { row: directParent, label: draft.ParentBrewID };
+
+    const sameBeanBrewIds = new Set(sortBrewNewest(allBrewLogs())
+      .filter(log => log.BrewID !== draft.BrewID && norm(log.BeanName || log.Variety) === norm(draft.BeanName || draft.Variety))
+      .map(log => log.BrewID));
+    const latest = allQA()
+      .filter(row => sameBeanBrewIds.has(row.BrewID))
+      .sort((a, b) => new Date(b.Date || 0) - new Date(a.Date || 0))[0];
+    return latest ? { row: latest, label: latest.BrewID } : null;
+  }
+
   function renderQAPreview() {
     const final = computeQAFromForm();
     const approvalRequested = currentUser ? $("qaApproval").value === "Yes" : true;
@@ -3349,22 +3452,60 @@
     $("qaFinalPreview").textContent = fmt(final, 2);
     $("qaStatusPreview").textContent = pass ? "QA PASS" : "RETEST";
     $("qaStatusPreview").className = pass ? "qa-pass" : "qa-retest";
+
+    if (!QA_SERVICE) return;
+    const metrics = qaMetricsFromForm();
+    const issue = $("qaPrimaryIssue")?.value || "none";
+    const target = $("qaTargetFocus")?.value || "balanced";
+    const previousContext = previousQAContext();
+    const previous = previousContext ? {
+      metrics: qaMetricsFromRow(previousContext.row),
+      finalScore: Number(previousContext.row.Final_QA || 0),
+      label: previousContext.label
+    } : null;
+    const guidance = QA_SERVICE.guidance(metrics, final, { issue, target });
+    const diagnostic = QA_SERVICE.diagnose({ metrics, finalScore: final, issue, target, previous });
+
     const guidanceEl = $("qaGuidance");
-    if (guidanceEl && QA_SERVICE) {
-      const guidance = QA_SERVICE.guidance({
-        aroma: $("qaAroma")?.value,
-        flavor: $("qaFlavor")?.value,
-        aftertaste: $("qaAftertaste")?.value,
-        acidity: $("qaAcidityQuality")?.value,
-        sweetness: $("qaSweetness")?.value,
-        body: $("qaBody")?.value,
-        balance: $("qaBalance")?.value,
-        clarity: $("qaClarity")?.value,
-        finish: $("qaFinish")?.value,
-        consistency: $("qaConsistency")?.value
-      }, final);
+    if (guidanceEl) {
       guidanceEl.innerHTML = `<strong>${html(guidance.message)}</strong><small>${html(guidance.advice)}</small>`;
       guidanceEl.dataset.status = pass ? "pass" : "review";
+    }
+
+    const planEl = $("qaDiagnosticPlan");
+    if (planEl) {
+      planEl.innerHTML = `
+        <span>Rencana Dial-in</span>
+        <strong>${html(diagnostic.status)}</strong>
+        <p>${html(diagnostic.summary)}</p>
+        <ul class="qa-action-list">
+          <li><b>Hasil yang diharapkan:</b> ${html(diagnostic.expected)}</li>
+          <li><b>Jangan diubah bersamaan:</b> ${html(diagnostic.avoid)}</li>
+          <li><b>Target:</b> ${html(target === "balanced" ? "lebih seimbang" : target)}</li>
+        </ul>
+      `;
+    }
+
+    const comparisonEl = $("qaComparisonCard");
+    if (comparisonEl) {
+      const deltaClass = diagnostic.delta > 0.05 ? "is-up" : diagnostic.delta < -0.05 ? "is-down" : "";
+      const deltaText = diagnostic.delta === null ? "Belum ada data" : `${diagnostic.delta > 0 ? "+" : ""}${fmt(diagnostic.delta, 2)}`;
+      comparisonEl.innerHTML = `
+        <span>Perbandingan</span>
+        <strong>${html(previous?.label || "Belum ada brew pembanding")}</strong>
+        <p>${html(diagnostic.comparison)}</p>
+        <p class="qa-comparison-delta ${deltaClass}">${html(deltaText)}</p>
+      `;
+    }
+
+    const metricEl = $("qaMetricMap");
+    if (metricEl) {
+      metricEl.innerHTML = `
+        <span>Peta Sensorik</span>
+        <div class="qa-metric-bars">
+          ${diagnostic.entries.map(item => `<div class="qa-metric-row"><span>${html(item.label)}</span><div class="qa-metric-track"><i style="--metric-value:${clamp(item.value * 10, 0, 100)}%"></i></div><strong>${html(fmt(item.value, 1))}</strong></div>`).join("")}
+        </div>
+      `;
     }
   }
 
@@ -3407,11 +3548,19 @@
       ? (hasVariable ? ($("qaVariable").value.trim() || "Ada perubahan variabel") : "Tidak ada perubahan variabel")
       : "Input publik tanpa draft";
 
+    const issueLabel = $("qaPrimaryIssue")?.selectedOptions?.[0]?.textContent?.trim() || "Belum ditentukan";
+    const targetLabel = $("qaTargetFocus")?.selectedOptions?.[0]?.textContent?.trim() || "Lebih seimbang";
+    const structuredNotes = [
+      $("qaNotes").value.trim(),
+      `Masalah utama: ${issueLabel}`,
+      `Target berikutnya: ${targetLabel}`
+    ].filter(Boolean).join(" | ");
+
     const qaLogFields = {
       QA_ID: qaId,
       PrimaryVariableChanged: variableText,
       Hypothesis: $("qaHypothesis").value,
-      ResultNotes: $("qaNotes").value,
+      ResultNotes: structuredNotes,
       QA_Final: final,
       QA_Status: final >= APPROVAL_THRESHOLD ? "QA PASS" : "RETEST",
       ManualApproval: approvalRequested ? "Yes" : "No",
@@ -3462,7 +3611,7 @@
       Final_QA: final,
       Status: final >= APPROVAL_THRESHOLD ? "QA PASS" : "RETEST",
       Approver: approved ? ($("qaEvaluator").value || currentBrewerName()) : "",
-      QA_Notes: $("qaNotes").value,
+      QA_Notes: structuredNotes,
       PrimaryVariableChanged: qaLogFields.PrimaryVariableChanged,
       Hypothesis: qaLogFields.Hypothesis,
       ResultNotes: qaLogFields.ResultNotes,
@@ -5914,6 +6063,7 @@
     const draft = selectedDraftLog();
     if (!draft) return;
     if ($("qaBeanName")) $("qaBeanName").value = draft.BeanName || draft.Variety || "";
+    renderQAPreview();
   }
 
   function bindEvents() {
@@ -6009,8 +6159,8 @@
     });
     $("brewLogEditForm")?.addEventListener("submit", saveBrewLogEdit);
     $("cancelBrewEdit")?.addEventListener("click", closeBrewLogEdit);
-    document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("input", renderQAPreview));
-    document.querySelectorAll(".qa-score, #qaDefect, #qaApproval").forEach(el => el.addEventListener("change", renderQAPreview));
+    document.querySelectorAll(".qa-score, #qaDefect, #qaApproval, #qaPrimaryIssue, #qaTargetFocus").forEach(el => el.addEventListener("input", renderQAPreview));
+    document.querySelectorAll(".qa-score, #qaDefect, #qaApproval, #qaPrimaryIssue, #qaTargetFocus").forEach(el => el.addEventListener("change", renderQAPreview));
     $("qaParent")?.addEventListener("change", applySelectedDraftToQA);
     $("qaHasVariable")?.addEventListener("change", e => {
       const input = $("qaVariable");
@@ -7742,7 +7892,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
   function applyReleaseMetadata() {
-    const version = APP_CONFIG.version || "39.0.0";
+    const version = APP_CONFIG.version || "40.0.0";
     const release = APP_CONFIG.release || "Core Workflow Modules";
     document.documentElement.dataset.appVersion = version;
     document.documentElement.dataset.appRelease = release;

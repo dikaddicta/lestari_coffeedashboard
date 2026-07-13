@@ -111,7 +111,7 @@
           <section class="panel output-panel brew-output-showcase">
             <div class="section-title">
               <span>Output</span>
-              <h2>Rekomendasi Seduh Dasar</h2>
+              <h2>Resep Awal</h2>
             </div>
             <div class="brew-visualizer" id="brewVisualizer" aria-hidden="true" data-mood="balanced">
               <div class="brew-visualizer-copy">
@@ -141,11 +141,24 @@
 
         <section class="panel wide brew-insight-wide-panel">
           <div class="section-title compact-title">
-            <span>Intelligence</span>
+            <span>Analisis Resep</span>
             <h2>Insight Seduh &amp; Referensi</h2>
           </div>
           <div class="brew-insight-panel wide-mode" id="brewInsightPanel" aria-live="polite"></div>
           <div class="brew-decision-grid" id="brewDecisionGrid" aria-live="polite"></div>
+        </section>
+
+        <section class="panel wide recommendation-evidence-panel">
+          <div class="section-title compact-title">
+            <span>Alasan Rekomendasi</span>
+            <h2>Kenapa resep ini dipilih</h2>
+          </div>
+          <p class="hint">Setiap angka dijelaskan melalui data profil kopi, karakter peralatan, batas aman proses, dan hasil seduh terdahulu. Gunakan bagian ini untuk memahami resep sebelum melakukan dial-in.</p>
+          <div class="recommendation-evidence-layout" aria-live="polite">
+            <div id="brewRecommendationConfidence" class="recommendation-confidence-card"></div>
+            <div id="brewRecommendationRationale" class="recommendation-rationale-card"></div>
+            <div id="brewNextExperiment" class="recommendation-experiment-card"></div>
+          </div>
         </section>
 
         <section class="panel wide dial-timeline-panel">

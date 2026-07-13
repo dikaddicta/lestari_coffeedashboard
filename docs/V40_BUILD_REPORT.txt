@@ -1,0 +1,59 @@
+Coffee Brew OS v40.0.0 — Recommendation & QA Engine
+Build date: 2026-07-13
+
+SCOPE
+- Explainable recommendation confidence
+- Parameter rationale
+- One-variable next experiment
+- QA issue diagnosis
+- Previous QA comparison
+- Sensory metric map
+- Dedicated intelligence stylesheet
+- PWA cache update
+
+NEW FILES
+- assets/services/recommendation-service.js
+- assets/css/intelligence.css
+- scripts/recommendation-qa-audit.mjs
+- docs/CHANGELOG_v40.md
+- docs/V40_ARCHITECTURE.md
+- docs/V40_BUILD_REPORT.txt
+
+UPDATED FILES
+- assets/services/qa-service.js
+- assets/app.js
+- assets/app-config.js
+- src/pages/03-rekomendasi-seduh.html
+- src/pages/07-brew-log-qa.html
+- src/shell.html
+- src/routes.json
+- sw.js
+- package.json
+- README.md
+- release and functional audit scripts
+
+VALIDATION RESULT
+- Modular pages audit: 37/37 passed
+- Clean URL audit: 64/64 passed
+- Page modules audit: 46/46 passed
+- Service-layer audit: 30/30 passed
+- Core workflow audit: 52/52 passed
+- Recommendation & QA audit: 31/31 passed
+- Functional audit: 93/93 passed
+- Total automated checks: 353 passed, 0 failed
+- HTTP smoke test: root, recommendation route, QA route, recommendation service, and intelligence CSS returned 200
+- JavaScript syntax error: 0
+- Missing local assets: 0
+- Duplicate HTML IDs: 0
+- Data counts unchanged: 180 varieties, 81 processes, 74 drippers/setups, 2 filters, 18 roast profiles, 15 waters, 16 grinders
+
+DATABASE
+- No Supabase migration is required for v40.
+- Existing schema and RLS remain unchanged.
+
+MANUAL TEST REQUIRED
+- Login and workspace selection
+- Recommendation rendering with active cloud brew history
+- QA comparison using ParentBrewID
+- Save QA and verify structured notes in Supabase
+- Mobile review at 390px and tablet review at 768px

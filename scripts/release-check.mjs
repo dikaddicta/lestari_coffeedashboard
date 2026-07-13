@@ -7,6 +7,7 @@ const steps = [
   ["Audit page modules", ["scripts/page-modules-audit.mjs"]],
   ["Audit service layer", ["scripts/service-layer-audit.mjs"]],
   ["Audit core workflow modules", ["scripts/workflow-modules-audit.mjs"]],
+  ["Audit recommendation and QA engine", ["scripts/recommendation-qa-audit.mjs"]],
   ["Functional audit", ["scripts/functional-audit.mjs"]]
 ];
 
@@ -22,4 +23,4 @@ for (const [label, args] of steps) {
   }
 }
 
-console.log("\nRelease check passed. Modular source, clean URLs, page modules, service layer, core workflow modules, validation feedback, and dashboard functionality are consistent.");
+console.log("\nRelease check passed. Modular source, clean URLs, page modules, service layer, core workflow modules, recommendation reasoning, QA diagnostics, validation feedback, and dashboard functionality are consistent.");
