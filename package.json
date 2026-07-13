@@ -1,8 +1,8 @@
 {
   "name": "coffee-brew-os",
-  "version": "40.0.0",
+  "version": "41.0.0",
   "private": true,
-  "description": "Lestari Coffee Dashboard — explainable brew recommendations, confidence breakdown, and actionable QA diagnostics",
+  "description": "Lestari Coffee Dashboard \u2014 brew quality analytics, coffee consumption, and estimated cost per cup",
   "scripts": {
     "build": "node scripts/build-pages.mjs",
     "audit": "node scripts/functional-audit.mjs",
@@ -13,7 +13,8 @@
     "audit:modules": "node scripts/page-modules-audit.mjs",
     "audit:services": "node scripts/service-layer-audit.mjs",
     "audit:workflow": "node scripts/workflow-modules-audit.mjs",
-    "audit:intelligence": "node scripts/recommendation-qa-audit.mjs"
+    "audit:intelligence": "node scripts/recommendation-qa-audit.mjs",
+    "audit:analytics": "node scripts/analytics-insight-audit.mjs"
   },
   "engines": {
     "node": ">=18"

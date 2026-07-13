@@ -14,13 +14,15 @@
     coreWorkflowModules: true,
     workflowValidation: true,
     recommendationEngine: true,
-    qaDiagnostics: true
+    qaDiagnostics: true,
+    analyticsInsight: true,
+    costPerCup: true
   });
 
   window.COFFEE_APP_CONFIG = Object.freeze({
-    version: "40.0.0",
-    release: "Recommendation & QA Engine",
-    build: "20260713-v40-recommendation-qa",
+    version: "41.0.0",
+    release: "Analytics & Cost Insight",
+    build: "20260713-v41-analytics-cost",
     environment: "production",
     features
   });

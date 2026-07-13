@@ -14,20 +14,21 @@
   <meta property="og:title" content="Coffee Brew OS — Dashboard Seduh Kopi" />
   <meta property="og:description" content="Dashboard untuk rekomendasi seduh, log seduh, QA, analitik, laporan, dan pustaka data kopi." />
   <meta property="og:type" content="website" />
-  <link rel="manifest" href="manifest.webmanifest?v=20260713-v40-recommendation-qa" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260713-v41-analytics-cost" />
   <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
   <link rel="preload" href="assets/latte-art-icon.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/welcome.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/workflow.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/intelligence.css?v=20260713-v40-recommendation-qa" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/welcome.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/workflow.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/intelligence.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/analytics-insight.css?v=20260713-v41-analytics-cost" />
 </head>
 <body class="quiet-luxury-ui modular-pages-ui modular-scripts-ui" data-initial-route="{{INITIAL_ROUTE}}">
 
@@ -160,7 +161,7 @@
           <button class="tab-btn" type="button" data-tab="beans" data-route="beans">Biji Kopi<small class="lock-pill">login</small></button>
           <button class="tab-btn" type="button" data-tab="stock" data-route="stock">Stok<small class="lock-pill">login</small></button>
           <button class="tab-btn" type="button" data-tab="qa" data-route="brew-log-qa">Log Seduh &amp; QA<small class="lock-pill">login</small></button>
-          <button class="tab-btn" type="button" data-tab="analytics" data-route="data-analytics">Analitik Data<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="analytics" data-route="data-analytics">Analitik Seduhan<small class="lock-pill">login</small></button>
           <button class="tab-btn" type="button" data-tab="quality" data-route="notification">Notifikasi<small class="lock-pill">login</small></button>
           <button class="tab-btn" type="button" data-tab="reports" data-route="export-report">Ekspor &amp; Laporan<small class="lock-pill">login</small></button>
           <button class="tab-btn" type="button" data-tab="admin" data-route="akun-role">Akun &amp; Peran<small class="lock-pill">login</small></button>
@@ -172,7 +173,7 @@
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v40.0.0 · Recommendation & QA Engine</small>
+          <small class="sidebar-build-version">v41.0.0 · Analytics & Cost Insight</small>
         </div>
       </aside>
 
@@ -201,7 +202,7 @@
                 <option value="beans">Biji Kopi</option>
                 <option value="stock">Stok</option>
                 <option value="qa">Log Seduh &amp; QA</option>
-                <option value="analytics">Analitik Data</option>
+                <option value="analytics">Analitik Seduhan</option>
                 <option value="quality">Notifikasi</option>
                 <option value="reports">Ekspor &amp; Laporan</option>
                 <option value="admin">Akun &amp; Peran</option>
@@ -220,7 +221,7 @@
           <div>
             <span class="mini-label">Mode Guest</span>
             <strong>Masuk untuk membuka menu lengkap</strong>
-            <p>Beranda, Biji Kopi, Stok, Log Seduh &amp; QA, Analitik Data, Notifikasi, Ekspor &amp; Laporan, serta Akun &amp; Peran hanya tersedia setelah masuk.</p>
+            <p>Beranda, Biji Kopi, Stok, Log Seduh &amp; QA, Analitik Seduhan, Notifikasi, Ekspor &amp; Laporan, serta Akun &amp; Peran hanya tersedia setelah masuk.</p>
           </div>
           <button class="secondary" type="button" data-jump-tab="admin">Masuk / Daftar</button>
         </div>
@@ -244,39 +245,40 @@
 
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
-  <script src="assets/app-config.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/routes.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/navigation.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/runtime.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/storage-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/event-bus.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/validation.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/app-state.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/page-modules.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/beranda.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/cara-pakai.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/rekomendasi-seduh.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/input-seduhan.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/beans.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/stock.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/brew-log-qa.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/hasil-seduhan-publik.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/data-analytics.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/notification.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/export-report.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/saran.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/akun-role.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/pustaka-data.js?v=20260713-v40-recommendation-qa"></script>
+  <script src="assets/app-config.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/routes.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/navigation.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/runtime.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/storage-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/event-bus.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/validation.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/app-state.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/page-modules.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/beranda.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/cara-pakai.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/rekomendasi-seduh.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/input-seduhan.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/beans.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/stock.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/brew-log-qa.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/hasil-seduhan-publik.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/data-analytics.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/notification.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/export-report.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/saran.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/akun-role.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/pustaka-data.js?v=20260713-v41-analytics-cost"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
-  <script src="assets/services/supabase-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/auth-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/stock-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/brew-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/recommendation-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/qa-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/notification-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/data.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/app.js?v=20260713-v40-recommendation-qa"></script>
+  <script src="assets/services/supabase-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/auth-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/stock-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/brew-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/recommendation-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/qa-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/analytics-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/notification-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/data.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/app.js?v=20260713-v41-analytics-cost"></script>
 </body>
 </html>

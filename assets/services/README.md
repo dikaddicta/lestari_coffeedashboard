@@ -1,20 +1,19 @@
-# Browser Services
+# Service Layer
 
-Release v40 memperluas service layer agar business logic tidak terus menumpuk di `assets/app.js`.
+Service pada folder ini berisi business logic yang dapat digunakan ulang tanpa bergantung langsung pada DOM.
 
-- `storage-service.js`: browser storage dan auth adapter.
-- `supabase-service.js`: validasi konfigurasi dan client Supabase.
-- `auth-service.js`: sign-in, sign-up, session, listener auth, dan local sign-out.
-- `stock-service.js`: validasi inventori, estimasi cangkir, status stok, dan RPC pengurangan stok.
-- `brew-service.js`: validasi parameter seduhan, konsistensi rasio/pour, dan perbandingan parameter.
-- `qa-service.js`: perhitungan nilai akhir serta rekomendasi berbasis parameter terlemah.
-- `notification-service.js`: pengelompokan severity untuk ringkasan notifikasi.
+## Service aktif
 
-Semua service harus dimuat sebelum `assets/app.js` dan diuji melalui `npm run audit:workflow`.
+- `storage-service.js` — penyimpanan browser dan adapter Supabase Auth.
+- `supabase-service.js` — validasi konfigurasi dan pembuatan client Supabase.
+- `auth-service.js` — operasi autentikasi.
+- `stock-service.js` — validasi stok, estimasi cangkir, status stok, dan konsumsi stok.
+- `brew-service.js` — validasi input dan struktur seduhan.
+- `recommendation-service.js` — penjelasan rekomendasi, confidence score, dan eksperimen berikutnya.
+- `qa-service.js` — perhitungan QA, diagnosis sensorik, dan perbandingan evaluasi.
+- `analytics-service.js` — periode analitik, konsumsi biji, estimasi biaya, tren, dan insight.
+- `notification-service.js` — ringkasan notifikasi kualitas data.
 
+## v41 — Analytics & Cost Insight
 
-## v40 — Recommendation & QA Engine
-
-- `recommendation-service.js` menjelaskan tingkat keyakinan, dasar parameter, dan satu eksperimen berikutnya.
-- `qa-service.js` menghasilkan diagnosis sensorik, perbandingan dengan evaluasi sebelumnya, serta rencana perubahan satu variabel.
-- Service tidak menulis langsung ke DOM atau database; orchestration tetap dilakukan oleh `assets/app.js`.
+`analytics-service.js` menerima data Brew Log dan Stock sebagai input. Service ini tidak membaca DOM dan tidak melakukan query Supabase secara langsung, sehingga perhitungannya dapat diuji melalui `npm run audit:analytics`.

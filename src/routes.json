@@ -1,5 +1,5 @@
 {
-  "version": "40.0.0",
+  "version": "41.0.0",
   "pages": [
     {
       "order": 1,
@@ -87,8 +87,8 @@
       "route": "data-analytics",
       "sectionId": "tab-analytics",
       "file": "pages/09-data-analytics.html",
-      "title": "Analitik Data",
-      "subtitle": "Baca performa seduhan, tren QA, dan pola eksperimen secara ringkas.",
+      "title": "Analitik Seduhan",
+      "subtitle": "Lihat perkembangan kualitas, pemakaian biji, biaya per cangkir, dan pola resep yang paling konsisten.",
       "access": "private"
     },
     {

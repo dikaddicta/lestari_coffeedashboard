@@ -1,0 +1,43 @@
+Coffee Brew OS v41.0.0 — Analytics & Cost Insight
+
+Scope
+- Analitik kualitas seduhan
+- Pemakaian biji
+- Estimasi biaya per cangkir
+- Rincian biaya per biji
+- Insight tren dan konsistensi
+- Integrasi laporan HTML
+
+File utama baru
+- assets/services/analytics-service.js
+- assets/css/analytics-insight.css
+- scripts/analytics-insight-audit.mjs
+
+Perbaikan penting
+- Tombol Perbarui Analitik kini memakai ID yang sama antara HTML dan JavaScript.
+- Baris publik tanpa referensi stok tidak mengambil biaya dari stok privat walaupun nama kopi sama.
+- Label harga stok diperjelas menjadi Harga Pembelian (Rp).
+
+Database
+- Tidak ada migration baru.
+- Perhitungan menggunakan price, stock_g, dan stock_usage_g yang sudah tersedia.
+- Biaya biji adalah estimasi dan tidak mencakup air, filter, listrik, susu, es, tenaga kerja, atau overhead.
+
+PWA cache
+- coffee-brew-os-v41-analytics-cost
+
+Validasi final
+- Modular pages: 37/37
+- Clean URLs: 64/64
+- Page modules: 46/46
+- Service layer: 33/33
+- Core workflow: 52/52
+- Recommendation & QA: 31/31
+- Analytics insight: 33/33
+- Functional audit: 96/96
+- HTTP smoke test: 19/19
+- Total audit checks: 392 lulus, 0 gagal
+
+Detail audit
+- docs/V41_AUDIT_RESULT.json
+- docs/V41_HTTP_SMOKE_TEST.json

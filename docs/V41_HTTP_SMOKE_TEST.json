@@ -1,0 +1,143 @@
+{
+  "generatedAt": "2026-07-13T14:42:48.267723+00:00",
+  "baseUrl": "http://127.0.0.1:4173/",
+  "summary": {
+    "pass": 19,
+    "fail": 0
+  },
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "beranda/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "cara-pakai/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "rekomendasi-seduh/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "input-seduhan/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "beans/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "stock/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "brew-log-qa/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "hasil-seduhan-publik/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "data-analytics/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "notification/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "export-report/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "saran/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "akun-role/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "pustaka-data/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "assets/services/analytics-service.js",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "assets/css/analytics-insight.css",
+      "status": 200,
+      "contentType": "text/css; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "assets/app.js",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    },
+    {
+      "path": "sw.js",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "ok": true,
+      "sampleBytes": 512
+    }
+  ]
+}

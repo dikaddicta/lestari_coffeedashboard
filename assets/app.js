@@ -13,6 +13,7 @@
   const BREW_SERVICE = SERVICES.brew || null;
   const RECOMMENDATION_SERVICE = SERVICES.recommendation || null;
   const QA_SERVICE = SERVICES.qa || null;
+  const ANALYTICS_SERVICE = SERVICES.analytics || null;
   const NOTIFICATION_SERVICE = SERVICES.notification || null;
   const SAFE_STORAGE = SERVICES.storage || RUNTIME.storage || {
     get(key, fallback = null, kind = "local") {
@@ -106,6 +107,7 @@
 
   const $ = (id) => document.getElementById(id);
   const fmt = (n, d = 0) => Number.isFinite(Number(n)) ? Number(n).toFixed(d).replace(/\.0$/, "") : "-";
+  const fmtCurrency = (n) => Number.isFinite(Number(n)) ? new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(n)) : "-";
   const clamp = (n, min, max) => Math.min(max, Math.max(min, Number(n) || 0));
   const round = (n, d = 0) => Number(Number(n || 0).toFixed(d));
   const norm = (v) => String(v || "").trim().toLowerCase();
@@ -1316,7 +1318,7 @@
           config: SUPABASE_CONFIG,
           library: window.supabase,
           storageAdapter: AUTH_STORAGE_ADAPTER,
-          clientHeader: "v40-recommendation-qa"
+          clientHeader: "v41-analytics-cost"
         });
       } else {
         const projectUrl = getSupabaseProjectUrl();
@@ -1329,7 +1331,7 @@
             storage: AUTH_STORAGE_ADAPTER
           },
           global: {
-            headers: { "x-coffee-dashboard-client": "v40-recommendation-qa" }
+            headers: { "x-coffee-dashboard-client": "v41-analytics-cost" }
           }
         });
       }
@@ -5956,7 +5958,7 @@
     const authIntent = document.body?.dataset.accessMode === "login";
     const allowAuthPanel = String(name || "") === "admin" && !currentUser && authIntent;
     if (isGuestPrivateTab(name) && !allowAuthPanel) {
-      showMessage("Masuk untuk membuka Beranda, Biji Kopi, Stok, Log Seduh & QA, Analitik Data, Notifikasi, Ekspor & Laporan, serta Akun & Peran.", "info");
+      showMessage("Masuk untuk membuka Beranda, Biji Kopi, Stok, Log Seduh & QA, Analitik Seduhan, Notifikasi, Ekspor & Laporan, serta Akun & Peran.", "info");
       name = "guide";
     }
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
@@ -6236,8 +6238,8 @@
       if (e.key === "Escape" && !$("publicBrewModal")?.classList.contains("hidden")) closePublicBrewDetail();
     });
     $("refreshPublicBrews")?.addEventListener("click", async () => { await syncFromCloud(true).catch(err => alert(`Gagal memuat hasil seduhan publik: ${err.message || err}`)); });
-    ["analyticsScope", "analyticsMinQA"].forEach(id => $(id)?.addEventListener("change", renderAnalytics));
-    $("refreshAnalytics")?.addEventListener("click", async () => {
+    ["analyticsScope", "analyticsPeriod", "analyticsMinQA"].forEach(id => $(id)?.addEventListener("change", renderAnalytics));
+    $("refreshAnalitik")?.addEventListener("click", async () => {
       await syncFromCloud(true).catch(err => showMessage(`Gagal refresh analytics: ${err.message || err}`, "error"));
       renderAnalytics();
     });
@@ -6354,10 +6356,11 @@
 
   function analyticsRows() {
     const scope = $("analyticsScope")?.value || "all";
+    const period = Number($("analyticsPeriod")?.value || 0);
     const minQA = Number($("analyticsMinQA")?.value || 0);
-    return analyticsBaseRows()
-      .filter(log => Number(log.QA_Final || 0) > 0)
-      .filter(log => scope === "all" || log.AnalyticsSource === scope)
+    let rows = analyticsBaseRows().filter(log => scope === "all" || log.AnalyticsSource === scope);
+    rows = ANALYTICS_SERVICE?.filterPeriod ? ANALYTICS_SERVICE.filterPeriod(rows, period) : rows;
+    return rows
       .filter(log => !minQA || Number(log.QA_Final || 0) >= minQA)
       .sort((a, b) => new Date(a.Date || a.CreatedAt || 0) - new Date(b.Date || b.CreatedAt || 0));
   }
@@ -6369,7 +6372,7 @@
 
   function groupAnalytics(rows, field) {
     const map = new Map();
-    rows.forEach(log => {
+    rows.filter(log => Number(log.QA_Final || 0) > 0).forEach(log => {
       const key = log[field] || "-";
       if (!map.has(key)) map.set(key, []);
       map.get(key).push(log);
@@ -6393,7 +6396,7 @@
 
   function analyticsTrend(rows) {
     const buckets = new Map();
-    rows.forEach(log => {
+    rows.filter(log => Number(log.QA_Final || 0) > 0).forEach(log => {
       const key = dateBucket(log);
       if (!buckets.has(key)) buckets.set(key, []);
       buckets.get(key).push(Number(log.QA_Final || 0));
@@ -6410,20 +6413,51 @@
       .filter(Boolean).length;
   }
 
-  function renderAnalyticsMetrics(rows) {
+  function analyticsSummary(rows) {
+    const stock = workspaceStock() || [];
+    const history = analyticsBaseRows().filter(log => log.AnalyticsSource === "workspace");
+    if (ANALYTICS_SERVICE?.summarize) return ANALYTICS_SERVICE.summarize(rows, stock, history);
+    const qaValues = rows.map(log => Number(log.QA_Final || 0)).filter(value => value > 0);
+    return {
+      enriched: rows.map(log => ({ ...log, AnalyticsUsage_g: Number(log.StockUsage_g || 0), AnalyticsCostKnown: false, AnalyticsCost: 0 })),
+      totalBrews: rows.length,
+      totalCoffeeG: rows.reduce((sum, log) => sum + Number(log.StockUsage_g || 0), 0),
+      totalCost: 0,
+      averageCost: 0,
+      costCoverage: 0,
+      costKnownBrews: 0,
+      averageQA: qaValues.length ? avg(qaValues) : 0,
+      qaDeviation: 0,
+      estimatedStockDays: 0,
+      remainingValue: 0
+    };
+  }
+
+  function renderAnalyticsFinanceNotice(summary) {
+    const target = $("analyticsFinanceNotice");
+    if (!target) return;
+    if (!summary.totalBrews) {
+      target.textContent = "Belum ada brew log pada filter aktif. Tambahkan seduhan atau ubah periode untuk melihat analitik.";
+      return;
+    }
+    if (!summary.costKnownBrews) {
+      target.textContent = "Biaya belum dapat dihitung. Hubungkan seduhan dengan biji pada menu Stok dan isi Harga Pembelian agar cost per cup dapat terbaca.";
+      return;
+    }
+    target.innerHTML = `Cakupan biaya <strong>${html(Math.round(summary.costCoverage))}%</strong> · ${html(summary.costKnownBrews)} dari ${html(summary.totalBrews)} seduhan memiliki data stok dan harga. Nilai biaya merupakan estimasi dari pemakaian biji yang tercatat.`;
+  }
+
+  function renderAnalyticsMetrics(rows, summary = analyticsSummary(rows)) {
     const grid = $("analyticsMetricGrid");
     if (!grid) return;
-    const qaValues = rows.map(log => Number(log.QA_Final || 0)).filter(Boolean);
-    const best = rows.slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0))[0];
-    const dripperBest = groupAnalytics(rows, "Dripper").find(item => item.key !== "-");
-    const processBest = groupAnalytics(rows, "Process").find(item => item.key !== "-");
+    const best = rows.filter(log => Number(log.QA_Final || 0) > 0).slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0))[0];
     const metrics = [
-      ["Total Brew", rows.length, "Jumlah brew log yang masuk filter analytics."],
-      ["Rata-rata QA", qaValues.length ? fmt(avg(qaValues), 2) : "-", "Rata-rata QA dari data yang terbaca."],
-      ["Best Cup", best ? `${best.BeanName || best.BrewID || "-"} · ${fmt(best.QA_Final, 2)}` : "-", "Seduhan dengan QA tertinggi."],
-      ["Top Dripper", dripperBest ? `${dripperBest.key} · ${fmt(dripperBest.avgQA, 2)}` : "-", "Dripper dengan average QA terbaik."],
-      ["Top Process", processBest ? `${processBest.key} · ${fmt(processBest.avgQA, 2)}` : "-", "Proses pascapanen dengan rata-rata QA terbaik."],
-      ["Recipe Ready", rows.filter(log => recipeCompletenessScore(log) >= 8).length, "Brew log dengan parameter resep cukup lengkap."]
+      ["Total Seduhan", summary.totalBrews, "Jumlah brew log pada filter aktif."],
+      ["Rata-rata QA", summary.averageQA ? fmt(summary.averageQA, 2) : "-", `Sebaran nilai ${fmt(summary.qaDeviation, 2)}.`],
+      ["Biji Terpakai", summary.totalCoffeeG ? `${fmt(summary.totalCoffeeG)} g` : "-", "Dihitung dari pemakaian stok yang tercatat."],
+      ["Biaya per Cangkir", summary.averageCost ? fmtCurrency(summary.averageCost) : "-", `Cakupan biaya ${Math.round(summary.costCoverage || 0)}%.`],
+      ["Total Biaya Biji", summary.totalCost ? fmtCurrency(summary.totalCost) : "-", "Estimasi biaya biji pada periode aktif."],
+      ["Best Cup", best ? `${best.BeanName || best.BrewID || "-"} · ${fmt(best.QA_Final, 2)}` : "-", summary.estimatedStockDays ? `Stok diperkirakan cukup ${Math.max(1, Math.round(summary.estimatedStockDays))} hari.` : "Belum cukup data konsumsi untuk estimasi stok."]
     ];
     grid.innerHTML = metrics.map(([label, value, desc], idx) => `
       <article class="analytics-metric-card cinematic-reveal" style="--stagger:${idx}">
@@ -6439,7 +6473,7 @@
     if (!chart) return;
     const trend = analyticsTrend(rows);
     if (!trend.length) {
-      chart.innerHTML = `<div class="analytics-empty">Belum ada data QA untuk trend.</div>`;
+      chart.innerHTML = `<div class="analytics-empty">Belum ada nilai QA pada periode ini.</div>`;
       return;
     }
     const values = trend.map(item => Number(item.avgQA || 0)).filter(Number.isFinite);
@@ -6459,28 +6493,14 @@
     const ticks = [minY, Math.round((minY + maxY) / 2), maxY].filter((v, i, a) => a.indexOf(v) === i);
     chart.innerHTML = `
       <div class="analytics-line-chart">
-        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="QA trend line chart">
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Grafik tren nilai QA">
           <defs>
-            <linearGradient id="qaTrendArea" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stop-color="rgba(166,112,70,.30)" />
-              <stop offset="100%" stop-color="rgba(166,112,70,0)" />
-            </linearGradient>
-            <linearGradient id="qaTrendLine" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0%" stop-color="rgba(75,46,43,.95)" />
-              <stop offset="100%" stop-color="rgba(205,146,82,.95)" />
-            </linearGradient>
+            <linearGradient id="qaTrendArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="rgba(166,112,70,.30)" /><stop offset="100%" stop-color="rgba(166,112,70,0)" /></linearGradient>
+            <linearGradient id="qaTrendLine" x1="0" x2="1" y1="0" y2="0"><stop offset="0%" stop-color="rgba(75,46,43,.95)" /><stop offset="100%" stop-color="rgba(205,146,82,.95)" /></linearGradient>
           </defs>
-          ${ticks.map(tick => {
-            const y = yFor(tick);
-            return `<g class="trend-grid-line"><line x1="${pad.left}" x2="${width - pad.right}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"></line><text x="${pad.left - 12}" y="${(y + 4).toFixed(1)}">${html(fmt(tick, 1))}</text></g>`;
-          }).join("")}
-          <path class="trend-area-path" d="${area}"></path>
-          <path class="trend-line-path" d="${line}"></path>
-          ${points.map((p, idx) => `<g class="trend-point" style="--stagger:${idx}">
-            <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5"></circle>
-            <text class="trend-value" x="${p.x.toFixed(1)}" y="${(p.y - 14).toFixed(1)}">${html(fmt(p.avgQA, 2))}</text>
-            <text class="trend-label" x="${p.x.toFixed(1)}" y="${height - 20}">${html(String(p.date || "").slice(5))}</text>
-          </g>`).join("")}
+          ${ticks.map(tick => { const y = yFor(tick); return `<g class="trend-grid-line"><line x1="${pad.left}" x2="${width - pad.right}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"></line><text x="${pad.left - 12}" y="${(y + 4).toFixed(1)}">${html(fmt(tick, 1))}</text></g>`; }).join("")}
+          <path class="trend-area-path" d="${area}"></path><path class="trend-line-path" d="${line}"></path>
+          ${points.map((p, idx) => `<g class="trend-point" style="--stagger:${idx}"><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5"></circle><text class="trend-value" x="${p.x.toFixed(1)}" y="${(p.y - 14).toFixed(1)}">${html(fmt(p.avgQA, 2))}</text><text class="trend-label" x="${p.x.toFixed(1)}" y="${height - 20}">${html(String(p.date || "").slice(5))}</text></g>`).join("")}
         </svg>
       </div>`;
   }
@@ -6490,43 +6510,25 @@
     if (!target) return;
     const groups = groupAnalytics(rows, field).filter(item => item.key && item.key !== "-").slice(0, 6);
     if (!groups.length) {
-      target.innerHTML = `<div class="analytics-empty">Belum ada data ${html(field)}.</div>`;
+      target.innerHTML = `<div class="analytics-empty">Belum ada data yang cukup.</div>`;
       return;
     }
     const maxAvg = Math.max(...groups.map(item => item.avgQA), 10);
     target.innerHTML = groups.map((item, idx) => `
       <article class="analytics-rank-item cinematic-reveal" style="--stagger:${idx}">
-        <div>
-          <span>${html(item.key)}</span>
-          <strong>Avg QA ${html(fmt(item.avgQA, 2))}</strong>
-          <small>${html(item.count)} brew · best ${html(fmt(item.bestQA, 2))}</small>
-        </div>
+        <div><span>${html(item.key)}</span><strong>Rata-rata QA ${html(fmt(item.avgQA, 2))}</strong><small>${html(item.count)} seduhan · tertinggi ${html(fmt(item.bestQA, 2))}</small></div>
         <i style="--bar:${Math.max(8, Math.round((item.avgQA / maxAvg) * 100))}%"></i>
       </article>
     `).join("");
   }
 
   function analyticsInsights(rows) {
-    if (!rows.length) return [{ title: "Belum ada data", text: "Belum ada brew log dengan QA yang bisa dianalisis. Tambahkan data seduhan dan QA untuk mulai membaca pola." }];
-    const trend = analyticsTrend(rows);
-    const first = trend[0]?.avgQA || 0;
-    const last = trend[trend.length - 1]?.avgQA || 0;
-    const dripper = groupAnalytics(rows, "Dripper").find(item => item.count >= 1 && item.key !== "-");
-    const process = groupAnalytics(rows, "Process").find(item => item.count >= 1 && item.key !== "-");
-    const roast = groupAnalytics(rows, "RoastProfile").find(item => item.count >= 1 && item.key !== "-");
-    const longBrew = rows.filter(log => Number(log.BrewTime_sec || 0) > 240);
-    const longAvg = avg(longBrew.map(log => Number(log.QA_Final || 0)));
-    const allAvg = avg(rows.map(log => Number(log.QA_Final || 0)));
-    const insights = [];
-    insights.push({
-      title: last >= first ? "Trend QA membaik / stabil" : "Trend QA menurun",
-      text: trend.length >= 2 ? `Rata-rata awal ${fmt(first, 2)} dan terbaru ${fmt(last, 2)}. ${last >= first ? "Pertahankan baseline terbaik dan ubah satu variabel per eksperimen." : "Cek perubahan grind, suhu, atau agitation pada brew terakhir."}` : "Data trend masih sedikit. Tambahkan beberapa brew lagi untuk membaca arah performa."
-    });
-    if (dripper) insights.push({ title: "Dripper paling menjanjikan", text: `${dripper.key} memiliki average QA ${fmt(dripper.avgQA, 2)} dari ${dripper.count} brew. Gunakan sebagai pembanding untuk recipe berikutnya.` });
-    if (process) insights.push({ title: "Proses paling kuat", text: `${process.key} saat ini memimpin dengan average QA ${fmt(process.avgQA, 2)}. Validasi apakah pola ini konsisten di roast dan dripper berbeda.` });
-    if (roast) insights.push({ title: "Roast profile dominan", text: `${roast.key} punya performa terbaik di data aktif. Perhatikan apakah solubility-nya cocok dengan suhu dan grind target.` });
-    if (longBrew.length >= 2) insights.push({ title: "Brew time panjang", text: `Brew time > 4 menit memiliki average QA ${fmt(longAvg, 2)} dibanding total ${fmt(allAvg, 2)}. Jika lebih rendah, pertimbangkan grind lebih kasar atau agitation lebih rendah.` });
-    return insights.slice(0, 5);
+    const stock = workspaceStock() || [];
+    const history = analyticsBaseRows().filter(log => log.AnalyticsSource === "workspace");
+    const serviceInsights = ANALYTICS_SERVICE?.insights ? ANALYTICS_SERVICE.insights(rows, stock, history) : [];
+    const dripper = groupAnalytics(rows, "Dripper").find(item => item.key !== "-");
+    if (dripper && serviceInsights.length < 5) serviceInsights.push({ title: "Dripper dengan hasil terbaik", text: `${dripper.key} mencatat rata-rata QA ${fmt(dripper.avgQA, 2)} dari ${dripper.count} seduhan. Gunakan sebagai baseline pembanding.` });
+    return serviceInsights.length ? serviceInsights.slice(0, 5) : [{ title: "Belum ada pola yang bisa dibaca", text: "Tambahkan brew log dan QA untuk mulai melihat insight." }];
   }
 
   function renderAnalyticsInsights(rows) {
@@ -6534,29 +6536,59 @@
     if (!list) return;
     list.innerHTML = analyticsInsights(rows).map((item, idx) => `
       <article class="analytics-insight-item cinematic-reveal" style="--stagger:${idx}">
-        <span>${idx + 1}</span>
-        <div><strong>${html(item.title)}</strong><p>${html(item.text)}</p></div>
+        <span>${idx + 1}</span><div><strong>${html(item.title)}</strong><p>${html(item.text)}</p></div>
       </article>
     `).join("");
   }
 
-  function renderAnalyticsTable(rows) {
+  function renderAnalyticsConsumption(summary) {
+    const target = $("analyticsConsumptionChart");
+    if (!target) return;
+    const period = Number($("analyticsPeriod")?.value || 0);
+    const trend = ANALYTICS_SERVICE?.consumptionTrend ? ANALYTICS_SERVICE.consumptionTrend(summary.enriched, period) : [];
+    if (!trend.length || !trend.some(item => Number(item.coffeeG || 0) > 0)) {
+      target.innerHTML = `<div class="analytics-empty">Belum ada pemakaian stok yang tercatat pada periode ini.</div>`;
+      return;
+    }
+    const max = Math.max(...trend.map(item => Number(item.coffeeG || 0)), 1);
+    target.innerHTML = trend.map(item => {
+      const height = Math.max(4, Math.round((Number(item.coffeeG || 0) / max) * 100));
+      const label = period && period <= 45 ? item.key.slice(5) : period && period <= 180 ? `W ${item.key.slice(5)}` : item.key;
+      return `<article class="analytics-consumption-bar"><div class="analytics-consumption-bar__plot"><span class="analytics-consumption-bar__value">${html(fmt(item.coffeeG))}g</span><i class="analytics-consumption-bar__fill" style="--height:${height}%"></i></div><small>${html(label)}<br>${html(item.brews)} brew</small></article>`;
+    }).join("");
+  }
+
+  function renderAnalyticsCostBreakdown(summary) {
+    const target = $("analyticsCostBreakdown");
+    if (!target) return;
+    const groups = ANALYTICS_SERVICE?.costBreakdown ? ANALYTICS_SERVICE.costBreakdown(summary.enriched).slice(0, 6) : [];
+    if (!groups.length) {
+      target.innerHTML = `<div class="analytics-empty">Isi harga pembelian pada stok dan hubungkan seduhan dengan stok untuk melihat rincian biaya.</div>`;
+      return;
+    }
+    const max = Math.max(...groups.map(item => Number(item.cost || 0)), 1);
+    target.innerHTML = groups.map(item => `<article class="analytics-cost-row"><div class="analytics-cost-row__head"><div><strong>${html(item.key)}</strong><small>${html(item.brews)} seduhan · ${html(fmt(item.coffeeG))}g${item.avgQA ? ` · QA ${html(fmt(item.avgQA, 2))}` : ""}</small></div><span>${html(fmtCurrency(item.cost))}</span></div><div class="analytics-cost-row__track"><i style="--width:${Math.max(6, Math.round((item.cost / max) * 100))}%"></i></div></article>`).join("");
+  }
+
+  function renderAnalyticsTable(rows, summary = analyticsSummary(rows)) {
     const table = $("analyticsTopTable");
     if (!table) return;
     const tbody = table.querySelector("tbody");
-    const top = rows.slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0)).slice(0, 10);
+    const costByKey = new Map(summary.enriched.map(log => [String(log.CloudID || log.BrewID || `${log.BeanName}|${log.Date}`), log]));
+    const top = rows.filter(log => Number(log.QA_Final || 0) > 0).slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0)).slice(0, 10);
     if (!top.length) {
-      tbody.innerHTML = emptyRow(5, "Belum ada data analytics", "Tambahkan brew log dan QA untuk melihat ranking resep.", "◇");
+      tbody.innerHTML = emptyRow(6, "Belum ada data analitik", "Tambahkan brew log dan nilai QA untuk melihat ranking resep.", "◇");
       return;
     }
     tbody.innerHTML = top.map(log => {
+      const key = String(log.CloudID || log.BrewID || `${log.BeanName}|${log.Date}`);
+      const cost = costByKey.get(key);
       const profile = [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · ") || "-";
       const recipe = [log.Dripper, log.Grinder, log.GrindSetting, log.Temp_C ? `${log.Temp_C}°C` : "", log.Ratio ? `1:${log.Ratio}` : ""].filter(Boolean).join(" · ") || "-";
       return `<tr>
         <td data-label="Kopi"><strong>${html(log.BeanName || log.BrewID || "Tanpa nama")}</strong><small>${html(log.BrewerName || "Brewer")}</small></td>
-        <td data-label="Profil">${html(profile)}</td>
-        <td data-label="Metode">${html(log.Method || "-")}</td>
-        <td data-label="Resep">${html(recipe)}</td>
+        <td data-label="Profil">${html(profile)}</td><td data-label="Metode">${html(log.Method || "-")}</td><td data-label="Resep">${html(recipe)}</td>
+        <td data-label="Biaya Biji"><span class="analytics-cost-pill ${cost?.AnalyticsCostKnown ? "" : "is-unknown"}">${cost?.AnalyticsCostKnown ? html(fmtCurrency(cost.AnalyticsCost)) : "Belum tersedia"}</span></td>
         <td data-label="QA"><span class="score-pill">${html(fmt(log.QA_Final, 2))}</span></td>
       </tr>`;
     }).join("");
@@ -6565,12 +6597,16 @@
   function renderAnalytics() {
     if (!$("analyticsMetricGrid")) return;
     const rows = analyticsRows();
-    renderAnalyticsMetrics(rows);
+    const summary = analyticsSummary(rows);
+    renderAnalyticsFinanceNotice(summary);
+    renderAnalyticsMetrics(rows, summary);
     renderAnalyticsTrend(rows);
+    renderAnalyticsConsumption(summary);
+    renderAnalyticsCostBreakdown(summary);
     renderRankList("analyticsDripperRank", rows, "Dripper");
     renderRankList("analyticsProcessRank", rows, "Process");
     renderAnalyticsInsights(rows);
-    renderAnalyticsTable(rows);
+    renderAnalyticsTable(rows, summary);
   }
 
   function qualitySources() {
@@ -7096,14 +7132,18 @@
     const qaValues = rows.brew.map(row => Number(row.QA_Final || 0)).filter(Boolean);
     const avgQA = qaValues.length ? avg(qaValues) : 0;
     const best = rows.brew.slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0))[0];
-    return { scope, rows, avgQA, best };
+    const history = analyticsBaseRows().filter(log => log.AnalyticsSource === "workspace");
+    const analytics = ANALYTICS_SERVICE?.summarize
+      ? ANALYTICS_SERVICE.summarize(rows.brew, rows.stock, history)
+      : analyticsSummary(rows.brew);
+    return { scope, rows, avgQA, best, analytics };
   }
 
   function renderReportPreview() {
     const grid = $("reportPreviewGrid");
     const sample = $("reportSampleCard");
     if (!grid || !sample) return;
-    const { scope, rows, avgQA, best } = reportMetricData();
+    const { scope, rows, avgQA, best, analytics } = reportMetricData();
     const lib = libraryExportRows();
     const cards = [
       ["Scope", scope === "all" ? "Semua data" : scope === "public" ? "Publik" : "Workspace", "Data yang dipakai untuk report."],
@@ -7111,6 +7151,8 @@
       ["QA Rows", rows.qa.length, "Jumlah QA score di workspace aktif."],
       ["Stock Rows", rows.stock.length, "Jumlah stok kopi workspace aktif."],
       ["Avg QA", avgQA ? fmt(avgQA, 2) : "-", "Rata-rata QA pada scope aktif."],
+      ["Cost / Cup", analytics.averageCost ? fmtCurrency(analytics.averageCost) : "-", `Cakupan biaya ${Math.round(analytics.costCoverage || 0)}%.`],
+      ["Coffee Used", analytics.totalCoffeeG ? `${fmt(analytics.totalCoffeeG)}g` : "-", "Pemakaian biji yang terhubung stok."],
       ["Library", `${lib.rows.length} rows`, `Dataset: ${libraryDatasetLabel ? libraryDatasetLabel(lib.dataset) : lib.dataset}`]
     ];
     grid.innerHTML = cards.map(([label, value, desc], idx) => `
@@ -7131,8 +7173,9 @@
   }
 
   function reportHtmlDocument() {
-    const { scope, rows, avgQA, best } = reportMetricData();
+    const { scope, rows, avgQA, best, analytics } = reportMetricData();
     const top = rows.brew.slice().sort((a, b) => Number(b.QA_Final || 0) - Number(a.QA_Final || 0)).slice(0, 12);
+    const costByKey = new Map((analytics.enriched || []).map(log => [String(log.CloudID || log.BrewID || `${log.BeanName}|${log.Date}`), log]));
     const drippers = groupAnalytics ? groupAnalytics(rows.brew, "Dripper").slice(0, 6) : [];
     const processes = groupAnalytics ? groupAnalytics(rows.brew, "Process").slice(0, 6) : [];
     const insightRows = analyticsInsights ? analyticsInsights(rows.brew) : [];
@@ -7153,12 +7196,14 @@ body{font-family:Inter,Arial,sans-serif;margin:40px;color:#3d2a24;background:#ff
 <div class="card"><span>Total Brew</span><strong>${rows.brew.length}</strong></div>
 <div class="card"><span>Avg QA</span><strong>${avgQA ? fmt(avgQA,2) : "-"}</strong></div>
 <div class="card"><span>Best Cup</span><strong>${best ? (best.BeanName || best.BrewID || "-") : "-"}</strong></div>
-<div class="card"><span>Stock Rows</span><strong>${rows.stock.length}</strong></div>
+<div class="card"><span>Cost / Cup</span><strong>${analytics.averageCost ? fmtCurrency(analytics.averageCost) : "-"}</strong></div>
+<div class="card"><span>Coffee Used</span><strong>${analytics.totalCoffeeG ? `${fmt(analytics.totalCoffeeG)}g` : "-"}</strong></div>
+<div class="card"><span>Total Bean Cost</span><strong>${analytics.totalCost ? fmtCurrency(analytics.totalCost) : "-"}</strong></div>
 </div>
 <h2>Insights</h2>
 ${insightRows.map(i => `<div class="insight"><strong>${i.title}</strong><p>${i.text}</p></div>`).join("") || "<p>Belum ada insight.</p>"}
 <h2>Top Recipes</h2>
-<table><thead><tr><th>Kopi</th><th>Profil</th><th>Metode</th><th>Resep</th><th>QA</th></tr></thead><tbody>${tr(top.map(log => [log.BeanName || log.BrewID || "-", [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · "), log.Method || "-", [log.Dripper, log.Grinder, log.GrindSetting, log.Temp_C ? `${log.Temp_C}°C` : "", log.Ratio ? `1:${log.Ratio}` : ""].filter(Boolean).join(" · "), fmt(log.QA_Final,2)]))}</tbody></table>
+<table><thead><tr><th>Kopi</th><th>Profil</th><th>Metode</th><th>Resep</th><th>Biaya Biji</th><th>QA</th></tr></thead><tbody>${tr(top.map(log => { const cost = costByKey.get(String(log.CloudID || log.BrewID || `${log.BeanName}|${log.Date}`)); return [log.BeanName || log.BrewID || "-", [log.Variety, log.Process, log.RoastProfile].filter(Boolean).join(" · "), log.Method || "-", [log.Dripper, log.Grinder, log.GrindSetting, log.Temp_C ? `${log.Temp_C}°C` : "", log.Ratio ? `1:${log.Ratio}` : ""].filter(Boolean).join(" · "), cost?.AnalyticsCostKnown ? fmtCurrency(cost.AnalyticsCost) : "-", fmt(log.QA_Final,2)]; }))}</tbody></table>
 <h2>Top Dripper</h2>
 <table><thead><tr><th>Dripper</th><th>Avg QA</th><th>Count</th><th>Best</th></tr></thead><tbody>${tr(drippers.map(g => [g.key, fmt(g.avgQA,2), g.count, fmt(g.bestQA,2)]))}</tbody></table>
 <h2>Top Process</h2>
@@ -7892,7 +7937,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
   function applyReleaseMetadata() {
-    const version = APP_CONFIG.version || "40.0.0";
+    const version = APP_CONFIG.version || "41.0.0";
     const release = APP_CONFIG.release || "Core Workflow Modules";
     document.documentElement.dataset.appVersion = version;
     document.documentElement.dataset.appRelease = release;

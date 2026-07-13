@@ -23,6 +23,7 @@ const serviceFiles = [
   "assets/services/brew-service.js",
   "assets/services/recommendation-service.js",
   "assets/services/qa-service.js",
+  "assets/services/analytics-service.js",
   "assets/services/notification-service.js"
 ];
 
@@ -58,12 +59,14 @@ const context = {
 vm.createContext(context);
 vm.runInContext(read("assets/services/storage-service.js"), context, { filename: "storage-service.js" });
 vm.runInContext(read("assets/services/supabase-service.js"), context, { filename: "supabase-service.js" });
+vm.runInContext(read("assets/services/analytics-service.js"), context, { filename: "analytics-service.js" });
 
 const services = context.window.COFFEE_SERVICES || {};
 check(Boolean(services.storage), "Storage service registers globally");
 check(typeof services.storage?.readJSON === "function", "Storage service exposes JSON helpers");
 check(typeof services.storage?.authAdapter?.getItem === "function", "Storage service exposes Supabase auth adapter");
 check(Boolean(services.supabase), "Supabase service registers globally");
+check(Boolean(services.analytics), "Analytics service registers globally");
 check(services.supabase?.getProjectUrl({ url: "https://example.supabase.co" }) === "https://example.supabase.co", "Supabase service validates project URL");
 check(services.supabase?.isConfigured({ enabled: true, url: "https://example.supabase.co", anonKey: "anon" }) === true, "Supabase service detects complete configuration");
 

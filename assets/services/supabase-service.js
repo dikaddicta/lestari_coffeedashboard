@@ -31,7 +31,7 @@
     return Boolean(config.enabled !== false && String(config.url || "").trim() && getAnonKey(config));
   }
 
-  function createClient({ config = {}, library = window.supabase, storageAdapter, clientHeader = "v40-recommendation-qa" } = {}) {
+  function createClient({ config = {}, library = window.supabase, storageAdapter, clientHeader = "v41-analytics-cost" } = {}) {
     if (!isConfigured(config)) {
       throw new Error("Supabase belum dikonfigurasi.");
     }

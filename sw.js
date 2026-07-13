@@ -1,4 +1,4 @@
-const CACHE_NAME = "coffee-brew-os-v40-recommendation-qa";
+const CACHE_NAME = "coffee-brew-os-v41-analytics-cost";
 const ROUTE_ENTRIES = [
   "beranda",
   "cara-pakai",
@@ -59,6 +59,7 @@ const CORE_ASSETS = [
   "./assets/css/welcome.css",
   "./assets/css/workflow.css",
   "./assets/css/intelligence.css",
+  "./assets/css/analytics-insight.css",
   "./assets/app.js",
   "./assets/data.js",
   "./assets/supabase-config.js",
@@ -68,6 +69,7 @@ const CORE_ASSETS = [
   "./assets/services/brew-service.js",
   "./assets/services/recommendation-service.js",
   "./assets/services/qa-service.js",
+  "./assets/services/analytics-service.js",
   "./assets/services/notification-service.js",
   "./assets/latte-art-icon.png",
   "./manifest.webmanifest"

@@ -14,20 +14,21 @@
   <meta property="og:title" content="Coffee Brew OS — Dashboard Seduh Kopi" />
   <meta property="og:description" content="Dashboard untuk rekomendasi seduh, log seduh, QA, analitik, laporan, dan pustaka data kopi." />
   <meta property="og:type" content="website" />
-  <link rel="manifest" href="manifest.webmanifest?v=20260713-v40-recommendation-qa" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260713-v41-analytics-cost" />
   <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
   <link rel="preload" href="assets/latte-art-icon.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/welcome.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/workflow.css?v=20260713-v40-recommendation-qa" />
-  <link rel="stylesheet" href="assets/css/intelligence.css?v=20260713-v40-recommendation-qa" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/welcome.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/workflow.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/intelligence.css?v=20260713-v41-analytics-cost" />
+  <link rel="stylesheet" href="assets/css/analytics-insight.css?v=20260713-v41-analytics-cost" />
 </head>
 <body class="quiet-luxury-ui modular-pages-ui modular-scripts-ui" data-initial-route="beans">
 
@@ -160,7 +161,7 @@
           <button class="tab-btn" type="button" data-tab="beans" data-route="beans">Biji Kopi<small class="lock-pill">login</small></button>
           <button class="tab-btn" type="button" data-tab="stock" data-route="stock">Stok<small class="lock-pill">login</small></button>
           <button class="tab-btn" type="button" data-tab="qa" data-route="brew-log-qa">Log Seduh &amp; QA<small class="lock-pill">login</small></button>
-          <button class="tab-btn" type="button" data-tab="analytics" data-route="data-analytics">Analitik Data<small class="lock-pill">login</small></button>
+          <button class="tab-btn" type="button" data-tab="analytics" data-route="data-analytics">Analitik Seduhan<small class="lock-pill">login</small></button>
           <button class="tab-btn" type="button" data-tab="quality" data-route="notification">Notifikasi<small class="lock-pill">login</small></button>
           <button class="tab-btn" type="button" data-tab="reports" data-route="export-report">Ekspor &amp; Laporan<small class="lock-pill">login</small></button>
           <button class="tab-btn" type="button" data-tab="admin" data-route="akun-role">Akun &amp; Peran<small class="lock-pill">login</small></button>
@@ -172,7 +173,7 @@
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v40.0.0 · Recommendation & QA Engine</small>
+          <small class="sidebar-build-version">v41.0.0 · Analytics & Cost Insight</small>
         </div>
       </aside>
 
@@ -201,7 +202,7 @@
                 <option value="beans">Biji Kopi</option>
                 <option value="stock">Stok</option>
                 <option value="qa">Log Seduh &amp; QA</option>
-                <option value="analytics">Analitik Data</option>
+                <option value="analytics">Analitik Seduhan</option>
                 <option value="quality">Notifikasi</option>
                 <option value="reports">Ekspor &amp; Laporan</option>
                 <option value="admin">Akun &amp; Peran</option>
@@ -220,7 +221,7 @@
           <div>
             <span class="mini-label">Mode Guest</span>
             <strong>Masuk untuk membuka menu lengkap</strong>
-            <p>Beranda, Biji Kopi, Stok, Log Seduh &amp; QA, Analitik Data, Notifikasi, Ekspor &amp; Laporan, serta Akun &amp; Peran hanya tersedia setelah masuk.</p>
+            <p>Beranda, Biji Kopi, Stok, Log Seduh &amp; QA, Analitik Seduhan, Notifikasi, Ekspor &amp; Laporan, serta Akun &amp; Peran hanya tersedia setelah masuk.</p>
           </div>
           <button class="secondary" type="button" data-jump-tab="admin">Masuk / Daftar</button>
         </div>
@@ -1086,7 +1087,7 @@
                         <label>Body<input id="stockBody" type="number" min="1" max="5" value="3" /></label>
                         <label>Stok (g)<input id="stockQty" type="number" min="0" value="100" /></label>
                         <label>Seduhan Terbaik<select id="stockBestBrew"><option value="Both">Keduanya</option><option>Hot V60</option><option>Japanese Iced</option></select></label>
-                        <label>Harga<input id="stockPrice" type="number" min="0" value="0" /></label>
+                        <label>Harga Pembelian (Rp)<input id="stockPrice" type="number" min="0" value="0" /><small>Isi harga total saat biji dibeli. Analitik memperkirakan biaya per gram dari stok dan pemakaian yang tercatat.</small></label>
                         <label>Tanggal Roast<input id="stockRoastDate" type="date" /></label>
                         <label>Aktif<select id="stockActive"><option value="Yes">Ya</option><option value="No">Tidak</option></select></label>
                         <label class="span-2">Catatan<textarea id="stockNotes" rows="3" placeholder="tasting notes, roast info, dll"></textarea></label>
@@ -1358,99 +1359,133 @@
                 </section>
 
           <section id="tab-analytics" class="tab-panel">
-                    <section class="panel page-intro-card page-intro-card--analytics">
-                      <div>
-                        <span class="page-intro-eyebrow">Insight Seduhan</span>
-                        <h2>Analitik Data</h2>
-                        <p>Baca pola performa seduhan, distribusi nilai QA, metode paling stabil, dan insight dari workspace maupun hasil publik yang disetujui.</p>
-                        <div class="page-intro-chips"><span>Khusus Pengguna Masuk</span>
-          <span>Performa</span>
-          <span>Pendukung Keputusan</span></div>
-                      </div>
-                      <div class="page-intro-actions">
-                        <button class="secondary page-intro-action" type="button" data-jump-tab="quality">Notifikasi</button>
-          <button class="secondary page-intro-action" type="button" data-jump-tab="reports">Ekspor Laporan</button>
-                      </div>
-                    </section>
+            <section class="panel page-intro-card page-intro-card--analytics">
+              <div>
+                <span class="page-intro-eyebrow">Ringkasan Seduh</span>
+                <h2>Analitik Seduhan</h2>
+                <p>Lihat perkembangan kualitas, pemakaian biji, estimasi biaya per cangkir, dan pola resep yang paling konsisten.</p>
+                <div class="page-intro-chips">
+                  <span>Khusus Pengguna Masuk</span>
+                  <span>Kualitas &amp; Konsistensi</span>
+                  <span>Biaya Seduh</span>
+                </div>
+              </div>
+              <div class="page-intro-actions">
+                <button class="secondary page-intro-action" type="button" data-jump-tab="qa">Buka Log Seduh</button>
+                <button class="secondary page-intro-action" type="button" data-jump-tab="reports">Ekspor Laporan</button>
+              </div>
+            </section>
           
-                    <section class="module-ops-strip module-ops-strip--analytics">
-                      <article><span>01</span><strong>Tren QA</strong><small>Membaca pola nilai dari workspace dan data publik yang disetujui.</small></article>
-                      <article><span>02</span><strong>Pola Metode</strong><small>Bandingkan performa dripper, proses, roast, dan metode seduh.</small></article>
-                      <article><span>03</span><strong>Pendukung Keputusan</strong><small>Gunakan insight untuk menentukan eksperimen seduh berikutnya.</small></article>
-                    </section>
+            <section class="module-ops-strip module-ops-strip--analytics">
+              <article><span>01</span><strong>Pantau kualitas</strong><small>Baca perubahan nilai QA dan tingkat konsistensi antar-seduhan.</small></article>
+              <article><span>02</span><strong>Hitung konsumsi</strong><small>Lihat jumlah biji yang dipakai dan estimasi biaya per cangkir.</small></article>
+              <article><span>03</span><strong>Tentukan langkah berikutnya</strong><small>Gunakan pola data untuk memilih eksperimen seduh yang lebih terarah.</small></article>
+            </section>
           
+            <section class="panel wide analytics-premium-panel analytics-v41">
+              <div class="section-title analytics-section-title">
+                <div>
+                  <span>Dashboard Analitik</span>
+                  <h2>Performa, konsumsi, dan biaya seduh</h2>
+                </div>
+                <small>Biaya dihitung dari harga pembelian stok dan pemakaian biji yang tercatat.</small>
+              </div>
           
-                  <section class="panel wide analytics-premium-panel">
-                    <div class="section-title">
-                      <span>Analitik Data</span>
-                      <h2>Analitik Performa Seduhan</h2>
-                    </div>
-                    <p class="hint">Baca performa seduhan dari Log Seduh workspace dan hasil publik yang sudah disetujui. Gunakan insight ini untuk menemukan pola dripper, proses, roast, dan resep yang paling konsisten.</p>
-                    <div class="analytics-toolbar">
-                      <select id="analyticsScope" aria-label="Pilih cakupan data analitik">
-                        <option value="all">Semua data terbaca</option>
-                        <option value="workspace">Workspace aktif</option>
-                        <option value="public">Publik disetujui</option>
-                      </select>
-                      <select id="analyticsMinQA" aria-label="Pilih nilai minimum QA analitik">
-                        <option value="0">Semua QA</option>
-                        <option value="6.5">QA ≥ 6.5</option>
-                        <option value="7">QA ≥ 7.0</option>
-                        <option value="8">QA ≥ 8.0</option>
-                      </select>
-                      <button id="refreshAnalitik" class="secondary" type="button">Perbarui Analitik</button>
-                    </div>
+              <div class="analytics-toolbar analytics-toolbar-v41">
+                <label>
+                  <span>Cakupan data</span>
+                  <select id="analyticsScope" aria-label="Pilih cakupan data analitik">
+                    <option value="all">Semua data terbaca</option>
+                    <option value="workspace">Workspace aktif</option>
+                    <option value="public">Publik disetujui</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Periode</span>
+                  <select id="analyticsPeriod" aria-label="Pilih periode analitik">
+                    <option value="30">30 hari terakhir</option>
+                    <option value="90" selected>90 hari terakhir</option>
+                    <option value="180">6 bulan terakhir</option>
+                    <option value="365">12 bulan terakhir</option>
+                    <option value="0">Semua waktu</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Nilai QA minimum</span>
+                  <select id="analyticsMinQA" aria-label="Pilih nilai minimum QA analitik">
+                    <option value="0">Semua QA</option>
+                    <option value="6.5">QA ≥ 6.5</option>
+                    <option value="7">QA ≥ 7.0</option>
+                    <option value="8">QA ≥ 8.0</option>
+                  </select>
+                </label>
+                <button id="refreshAnalitik" class="secondary analytics-refresh-btn" type="button">Perbarui</button>
+              </div>
           
-                    <div class="analytics-hero-grid" id="analyticsMetricGrid" aria-live="polite"></div>
+              <div id="analyticsFinanceNotice" class="analytics-finance-notice" role="status" aria-live="polite"></div>
+              <div class="analytics-hero-grid analytics-hero-grid-v41" id="analyticsMetricGrid" aria-live="polite"></div>
           
-                    <div class="analytics-layout">
-                      <section class="analytics-card analytics-trend-card">
-                        <div class="analytics-card-head">
-                          <span class="mini-label">Tren QA</span>
-                          <strong>Performa dari waktu ke waktu</strong>
-                        </div>
-                        <div class="analytics-chart" id="analyticsTrendChart"></div>
-                      </section>
-                      <section class="analytics-card analytics-insight-card">
-                        <div class="analytics-card-head">
-                          <span class="mini-label">Insight Otomatis</span>
-                          <strong>Hal yang perlu diperhatikan</strong>
-                        </div>
-                        <div class="analytics-insight-list" id="analyticsInsightList"></div>
-                      </section>
-                    </div>
-          
-                    <div class="analytics-split-grid">
-                      <section class="analytics-card">
-                        <div class="analytics-card-head">
-                          <span class="mini-label">Dripper Performa</span>
-                          <strong>Dripper dengan QA terbaik</strong>
-                        </div>
-                        <div class="analytics-rank-list" id="analyticsDripperRank"></div>
-                      </section>
-                      <section class="analytics-card">
-                        <div class="analytics-card-head">
-                          <span class="mini-label">Process Performa</span>
-                          <strong>Pasca panen paling konsisten</strong>
-                        </div>
-                        <div class="analytics-rank-list" id="analyticsProcessRank"></div>
-                      </section>
-                    </div>
-          
-                    <section class="analytics-card analytics-table-card">
-                      <div class="analytics-card-head">
-                        <span class="mini-label">Top Recipes</span>
-                        <strong>Resep dengan QA tertinggi</strong>
-                      </div>
-                      <div class="table-wrap">
-                        <table id="analyticsTopTable">
-                          <thead><tr><th>Kopi</th><th>Profil</th><th>Metode</th><th>Resep</th><th>QA</th></tr></thead>
-                          <tbody></tbody>
-                        </table>
-                      </div>
-                    </section>
-                  </section>
+              <div class="analytics-layout analytics-layout-v41">
+                <section class="analytics-card analytics-trend-card analytics-card--wide">
+                  <div class="analytics-card-head">
+                    <div><span class="mini-label">Tren QA</span><strong>Perkembangan kualitas seduhan</strong></div>
+                    <small>Rata-rata nilai QA berdasarkan tanggal seduh</small>
+                  </div>
+                  <div class="analytics-chart" id="analyticsTrendChart"></div>
                 </section>
+                <section class="analytics-card analytics-insight-card">
+                  <div class="analytics-card-head">
+                    <div><span class="mini-label">Ringkasan Otomatis</span><strong>Hal yang paling perlu diperhatikan</strong></div>
+                  </div>
+                  <div class="analytics-insight-list" id="analyticsInsightList"></div>
+                </section>
+              </div>
+          
+              <div class="analytics-layout analytics-layout-v41 analytics-layout-v41--finance">
+                <section class="analytics-card analytics-card--wide">
+                  <div class="analytics-card-head">
+                    <div><span class="mini-label">Konsumsi</span><strong>Pemakaian biji dari waktu ke waktu</strong></div>
+                    <small>Hanya seduhan yang terhubung dengan stok</small>
+                  </div>
+                  <div class="analytics-consumption-chart" id="analyticsConsumptionChart"></div>
+                </section>
+                <section class="analytics-card">
+                  <div class="analytics-card-head">
+                    <div><span class="mini-label">Biaya per Biji</span><strong>Kontributor biaya seduh</strong></div>
+                  </div>
+                  <div class="analytics-cost-breakdown" id="analyticsCostBreakdown"></div>
+                </section>
+              </div>
+          
+              <div class="analytics-split-grid">
+                <section class="analytics-card">
+                  <div class="analytics-card-head">
+                    <div><span class="mini-label">Performa Dripper</span><strong>Dripper dengan QA terbaik</strong></div>
+                  </div>
+                  <div class="analytics-rank-list" id="analyticsDripperRank"></div>
+                </section>
+                <section class="analytics-card">
+                  <div class="analytics-card-head">
+                    <div><span class="mini-label">Performa Proses</span><strong>Pascapanen paling konsisten</strong></div>
+                  </div>
+                  <div class="analytics-rank-list" id="analyticsProcessRank"></div>
+                </section>
+              </div>
+          
+              <section class="analytics-card analytics-table-card">
+                <div class="analytics-card-head">
+                  <div><span class="mini-label">Seduhan Terbaik</span><strong>Resep dengan nilai QA tertinggi</strong></div>
+                  <small>Biaya tampil jika seduhan terhubung dengan stok yang memiliki harga.</small>
+                </div>
+                <div class="table-wrap">
+                  <table id="analyticsTopTable">
+                    <thead><tr><th>Kopi</th><th>Profil</th><th>Metode</th><th>Resep</th><th>Biaya Biji</th><th>QA</th></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </section>
+            </section>
+          </section>
 
           <section id="tab-quality" class="tab-panel">
                     <section class="panel page-intro-card page-intro-card--quality">
@@ -2026,39 +2061,40 @@
 
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
-  <script src="assets/app-config.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/routes.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/navigation.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/runtime.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/storage-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/event-bus.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/validation.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/app-state.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/core/page-modules.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/beranda.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/cara-pakai.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/rekomendasi-seduh.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/input-seduhan.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/beans.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/stock.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/brew-log-qa.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/hasil-seduhan-publik.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/data-analytics.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/notification.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/export-report.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/saran.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/akun-role.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/pages/pustaka-data.js?v=20260713-v40-recommendation-qa"></script>
+  <script src="assets/app-config.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/routes.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/navigation.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/runtime.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/storage-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/event-bus.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/validation.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/app-state.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/core/page-modules.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/beranda.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/cara-pakai.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/rekomendasi-seduh.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/input-seduhan.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/beans.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/stock.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/brew-log-qa.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/hasil-seduhan-publik.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/data-analytics.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/notification.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/export-report.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/saran.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/akun-role.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/pages/pustaka-data.js?v=20260713-v41-analytics-cost"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
-  <script src="assets/services/supabase-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/auth-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/stock-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/brew-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/recommendation-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/qa-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/services/notification-service.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/data.js?v=20260713-v40-recommendation-qa"></script>
-  <script src="assets/app.js?v=20260713-v40-recommendation-qa"></script>
+  <script src="assets/services/supabase-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/auth-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/stock-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/brew-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/recommendation-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/qa-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/analytics-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/services/notification-service.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/data.js?v=20260713-v41-analytics-cost"></script>
+  <script src="assets/app.js?v=20260713-v41-analytics-cost"></script>
 </body>
 </html>

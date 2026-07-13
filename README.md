@@ -4,26 +4,22 @@ Coffee Brew OS adalah dashboard web untuk menyusun rekomendasi seduh, mencatat e
 
 ## Release aktif
 
-**v40.0.0 — Recommendation & QA Engine**
+**v41.0.0 — Analytics & Cost Insight**
 
-Fokus release ini adalah rekomendasi yang dapat dijelaskan dan evaluasi QA yang langsung menghasilkan rencana dial-in berikutnya.
-
-- Skor keyakinan rekomendasi 0–100 dengan rincian faktor.
-- Alasan suhu, rasio, gilingan, agitasi, dan komposisi Japanese Iced.
-- Satu eksperimen berikutnya dengan variabel lain tetap dikunci.
-- Diagnosis masalah rasa dan perbandingan QA dengan brew terdahulu.
-
-Release ini memindahkan fondasi workflow utama dari satu file aplikasi besar ke modul yang dapat diuji dan digunakan ulang. Fokusnya bukan menambah dekorasi, tetapi membuat alur stok, seduhan, dan QA lebih aman untuk dikembangkan.
+Release ini memperkuat menu Analitik Seduhan agar tidak hanya menampilkan nilai QA, tetapi juga membantu membaca konsumsi kopi dan estimasi biaya biji per cangkir.
 
 Pembaruan utama:
 
-- state aplikasi dipusatkan melalui `assets/core/app-state.js`;
-- lifecycle fitur memakai event bus melalui `assets/core/event-bus.js`;
-- validasi form dipusatkan melalui `assets/core/validation.js`;
-- auth, stok, seduhan, QA, dan notifikasi mulai menggunakan service terpisah;
-- Input Seduhan memiliki pemeriksaan konsistensi dosis, rasio, total air, suhu, waktu, dan detail pour;
-- QA memberi arahan otomatis berdasarkan parameter sensorik terlemah;
-- tabel stok menampilkan estimasi jumlah cangkir dan status ketersediaan.
+- filter analitik berdasarkan cakupan, periode, dan nilai QA minimum;
+- metrik total seduhan, rata-rata QA, pemakaian biji, biaya per cangkir, dan total biaya biji;
+- grafik tren QA dan konsumsi biji;
+- rincian biaya berdasarkan biji kopi;
+- insight otomatis untuk konsistensi, arah kualitas, kelengkapan data biaya, konsumsi, dan estimasi daya tahan stok;
+- biaya biji pada tabel resep terbaik dan laporan HTML;
+- perbaikan tombol refresh Analitik yang sebelumnya memakai ID berbeda;
+- label harga stok diperjelas menjadi Harga Pembelian.
+
+Perhitungan biaya menggunakan harga pembelian pada data stok. Berat pembelian diperkirakan dari stok tersisa ditambah seluruh pemakaian stok yang tercatat. Karena itu, nilai biaya ditampilkan sebagai estimasi dan akan lebih akurat jika setiap seduhan selalu dihubungkan ke stok.
 
 ## Fitur utama
 
@@ -31,8 +27,9 @@ Pembaruan utama:
 - Input seduhan manual dengan 1–3 varietas, proses manual, detail pour, Switch valve plan, QA, dan validasi resep.
 - Hasil seduhan publik dengan batas QA minimum 6.5.
 - Biji kopi dan stok privat per workspace.
-- Pengurangan stok saat draft seduhan menggunakan biji dari inventori serta pemulihan stok saat log dihapus melalui RPC Supabase yang sudah tersedia.
-- Log Seduh & QA, moderasi, analitik, notifikasi kualitas, ekspor, dan laporan.
+- Pengurangan stok saat draft seduhan menggunakan biji dari inventori serta pemulihan stok saat log dihapus.
+- Log Seduh & QA dengan diagnosis masalah rasa dan saran dial-in berikutnya.
+- Analitik kualitas, konsumsi, biaya per cangkir, dan insight otomatis.
 - Role Admin, QA, Brewer, serta mode Guest dan Demo.
 - Pustaka data varietas, proses, dripper/setup, filter kertas, profil sangrai, air, dan grinder.
 - PWA dengan clean URL untuk 14 menu.
@@ -55,39 +52,35 @@ Pembaruan utama:
 .
 ├─ index.html
 ├─ 404.html
-├─ <route>/index.html            # 14 clean URL entry points
+├─ <route>/index.html
 ├─ src/
 │  ├─ shell.html
 │  ├─ routes.json
-│  └─ pages/                     # satu fragment HTML per menu
+│  └─ pages/
 ├─ assets/
-│  ├─ app.js                     # orchestration lama yang sedang diperkecil bertahap
+│  ├─ app.js
 │  ├─ app-config.js
 │  ├─ data.js
 │  ├─ core/
-│  │  ├─ app-state.js
-│  │  ├─ event-bus.js
-│  │  ├─ validation.js
-│  │  ├─ navigation.js
-│  │  ├─ page-modules.js
-│  │  ├─ routes.js
-│  │  └─ runtime.js
+│  ├─ pages/
 │  ├─ services/
+│  │  ├─ analytics-service.js
 │  │  ├─ auth-service.js
 │  │  ├─ brew-service.js
 │  │  ├─ notification-service.js
 │  │  ├─ qa-service.js
+│  │  ├─ recommendation-service.js
 │  │  ├─ stock-service.js
 │  │  ├─ storage-service.js
 │  │  └─ supabase-service.js
-│  ├─ pages/
 │  └─ css/
+│     ├─ analytics-insight.css
+│     ├─ intelligence.css
 │     ├─ welcome.css
-│     ├─ workflow.css
-│     └─ ...
+│     └─ workflow.css
 ├─ scripts/
+│  ├─ analytics-insight-audit.mjs
 │  ├─ build-pages.mjs
-│  ├─ workflow-modules-audit.mjs
 │  ├─ functional-audit.mjs
 │  └─ release-check.mjs
 ├─ supabase/
@@ -119,13 +112,15 @@ Buka `http://127.0.0.1:4173/`.
 
 ## Audit sebelum release
 
-`npm run check` menjalankan build, audit modular page, clean URL, page module, service layer, core workflow module, functional audit, asset check, PWA check, konfigurasi browser Supabase, dan validasi jumlah dataset.
+`npm run check` menjalankan build dan seluruh audit modular page, clean URL, page module, service layer, core workflow, recommendation engine, QA diagnostics, analytics insight, asset, PWA, konfigurasi Supabase, dan validasi dataset.
 
-Hasil functional audit tersimpan pada `docs/V39_AUDIT_RESULT.json`.
+Hasil functional audit tersimpan pada `docs/V41_AUDIT_RESULT.json`.
 
 ## Supabase
 
-Gunakan hanya Project URL dan anon/public key pada `assets/supabase-config.js`. Jangan meletakkan `service_role` key di frontend. Tidak ada migrasi database baru pada v40; release ini menggunakan schema dan RPC yang sudah ada.
+Gunakan hanya Project URL dan anon/public key pada `assets/supabase-config.js`. Jangan meletakkan `service_role` key di frontend.
+
+Tidak ada migrasi database baru pada v41. Analitik biaya menggunakan field `price`, `stock_g`, dan histori `stock_usage_g` yang sudah tersedia pada schema sebelumnya.
 
 ## Workflow Git
 
@@ -133,7 +128,7 @@ Gunakan hanya Project URL dan anon/public key pada `assets/supabase-config.js`. 
 powershell -ExecutionPolicy Bypass -File .\scripts\git-safe-update.ps1
 npm run check
 git add -A
-git commit -m "Release v40 recommendation and QA engine"
+git commit -m "Release v41 analytics and cost insight"
 git push origin main
 ```
 
@@ -144,14 +139,15 @@ Project menggunakan `fetch` dan `merge --ff-only`, bukan rebase otomatis.
 Cache aktif:
 
 ```text
-coffee-brew-os-v40-recommendation-qa
+coffee-brew-os-v41-analytics-cost
 ```
 
-Setelah deployment besar, uji melalui Incognito atau hapus service worker lama satu kali bila browser masih menampilkan asset versi sebelumnya.
+Setelah deployment besar, uji melalui Incognito atau hapus service worker lama satu kali bila browser masih menampilkan aset versi sebelumnya.
 
 ## Batasan release
 
+- Nilai biaya merupakan estimasi biaya biji, belum mencakup air, listrik, filter, susu, es, tenaga kerja, atau overhead coffee shop.
+- Akurasi biaya bergantung pada harga stok dan hubungan Brew Log dengan stok yang benar.
 - Sebagian besar orchestration UI masih berada di `assets/app.js`; pemisahan dilakukan bertahap untuk mengurangi risiko regresi.
-- Penyimpanan draft seduhan dan pengurangan stok masih dua operasi terpisah. Race condition ekstrem hanya dapat dihilangkan melalui RPC transaksi gabungan pada tahap database berikutnya.
 - Audit otomatis tidak menggantikan pengujian end-to-end dengan akun, workspace, role, dan database Supabase aktif.
 - Rekomendasi resep merupakan baseline dial-in, bukan jaminan hasil rasa identik pada setiap kopi dan alat.

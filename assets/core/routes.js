@@ -79,8 +79,8 @@
     "tab": "analytics",
     "route": "data-analytics",
     "sectionId": "tab-analytics",
-    "title": "Analitik Data",
-    "subtitle": "Baca performa seduhan, tren QA, dan pola eksperimen secara ringkas.",
+    "title": "Analitik Seduhan",
+    "subtitle": "Lihat perkembangan kualitas, pemakaian biji, biaya per cangkir, dan pola resep yang paling konsisten.",
     "access": "private"
   },
   {
@@ -133,7 +133,7 @@
   const byRoute = Object.fromEntries(pages.map(page => [page.route, byTab[page.tab]]));
 
   window.COFFEE_PAGES = Object.freeze({
-    version: "40.0.0",
+    version: "41.0.0",
     pages: Object.freeze(pages.map(page => byTab[page.tab])),
     byTab: Object.freeze(byTab),
     byRoute: Object.freeze(byRoute),
