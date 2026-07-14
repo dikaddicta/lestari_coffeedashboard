@@ -1,0 +1,31 @@
+{
+  "version": "44.0.0-rc.1",
+  "release": "Release Candidate 1",
+  "build": "20260714-v44-rc1",
+  "releasedAt": "2026-07-14T03:56:00Z",
+  "environment": "production",
+  "siteUrl": "https://dikaddicta.github.io/lestari_coffeedashboard/",
+  "productName": "Coffee Brew OS",
+  "brandName": "Lestari Coffee",
+  "applicationName": "Coffee Brew OS",
+  "tagline": "Seduh lebih rapi. Hasil lebih konsisten.",
+  "description": "Susun resep, catat percobaan, pantau stok, dan evaluasi hasil seduh dalam satu dashboard.",
+  "themeColor": "#1F1D1A",
+  "backgroundColor": "#F3F1EC",
+  "socialImage": "assets/social-preview.png",
+  "icon": "assets/latte-art-icon.png",
+  "legalVersion": "1.0",
+  "supportPath": "saran/",
+  "securityPath": ".well-known/security.txt",
+  "monitoring": {
+    "enabled": false,
+    "endpoint": "",
+    "sampleRate": 1,
+    "timeoutMs": 5000
+  },
+  "maintenance": {
+    "enabled": false,
+    "title": "Pemeliharaan terjadwal",
+    "message": "Beberapa fitur untuk sementara tidak tersedia. Data lokal tetap tersimpan di browser."
+  }
+}

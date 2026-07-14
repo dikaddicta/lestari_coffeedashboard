@@ -1,0 +1,7 @@
+200 158065 /
+200 158005 /beranda/
+200 158035 /cara-pakai/
+200 4842 /status/
+200 5910 /rilis/
+200 612 /release.json
+200 95036 /assets/social-preview.png

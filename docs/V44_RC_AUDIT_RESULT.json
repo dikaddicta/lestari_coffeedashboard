@@ -1,0 +1,428 @@
+{
+  "version": "44.0.0-rc.1",
+  "generatedAt": "2026-07-14T04:07:19.881Z",
+  "passed": 84,
+  "failed": 0,
+  "checks": [
+    {
+      "ok": true,
+      "label": "src/site.json tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "scripts/build-release.mjs tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/services/release-service.js tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/services/monitoring-service.js tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/public/release-page.js tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/social-preview.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "release.json tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "docs/V44_PRODUCTION_DEPLOYMENT.md tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "docs/V44_SUPABASE_EMAIL_SETUP.md tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "docs/V44_DATABASE_BACKUP_RUNBOOK.md tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "docs/email-templates/confirmation.html tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "docs/email-templates/password-reset.html tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "docs/email-templates/magic-link.html tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "scripts/build-release.mjs valid secara sintaks",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/services/release-service.js valid secara sintaks",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/services/monitoring-service.js valid secara sintaks",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/public/release-page.js valid secara sintaks",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Versi sumber adalah v44.0.0-rc.1",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Versi package sinkron dengan site config",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Release manifest sinkron dengan site config",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Release manifest menandai tahap candidate",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Site URL menggunakan HTTPS",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Site URL memiliki trailing slash",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "PWA manifest memakai site identity final",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "PWA mulai dari landing root",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Social preview berukuran 1200×630",
+      "detail": "1200×630"
+    },
+    {
+      "ok": true,
+      "label": "index.html tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "index.html memiliki Open Graph image",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "index.html memiliki Twitter card",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "index.html memiliki canonical URL",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "index.html bebas placeholder build",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "beranda/index.html tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "beranda/index.html memiliki Open Graph image",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "beranda/index.html memiliki Twitter card",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "beranda/index.html memiliki canonical URL",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "beranda/index.html bebas placeholder build",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "cara-pakai/index.html tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "cara-pakai/index.html memiliki Open Graph image",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "cara-pakai/index.html memiliki Twitter card",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "cara-pakai/index.html memiliki canonical URL",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "cara-pakai/index.html bebas placeholder build",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "privasi/index.html tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "privasi/index.html memiliki Open Graph image",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "privasi/index.html memiliki Twitter card",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "privasi/index.html memiliki canonical URL",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "privasi/index.html bebas placeholder build",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "status/index.html tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "status/index.html memiliki Open Graph image",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "status/index.html memiliki Twitter card",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "status/index.html memiliki canonical URL",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "status/index.html bebas placeholder build",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "rilis/index.html tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "rilis/index.html memiliki Open Graph image",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "rilis/index.html memiliki Twitter card",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "rilis/index.html memiliki canonical URL",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "rilis/index.html bebas placeholder build",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Dashboard memuat release service",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Dashboard memuat monitoring service",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Label release candidate terlihat dan sinkron",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Landing atau shell menautkan catatan rilis",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Navigasi publik menautkan catatan rilis",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Runtime config menggunakan v44 RC1",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Feature flag release candidate aktif",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Monitoring cloud default nonaktif",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Monitoring menghormati kondisi nonaktif",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Monitoring menggunakan sanitasi diagnostik",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Monitoring tidak membaca data workspace langsung",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memakai cache v44 RC1",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/services/release-service.js",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/services/monitoring-service.js",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/social-preview.png",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./release.json",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/public/release-page.js",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat route /rilis/",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Cache v43 tidak tersisa",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Custom domain belum diaktifkan tanpa keputusan domain final",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Panduan deployment menjelaskan status release candidate",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Runbook membedakan backup lokal dan database",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "confirmation.html mempertahankan variabel Supabase",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "confirmation.html tidak memuat secret",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "password-reset.html mempertahankan variabel Supabase",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "password-reset.html tidak memuat secret",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "magic-link.html mempertahankan variabel Supabase",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "magic-link.html tidak memuat secret",
+      "detail": ""
+    }
+  ]
+}

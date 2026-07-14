@@ -1,26 +1,25 @@
-# Coffee Brew OS — Lestari Coffee Dashboard
+# Coffee Brew OS — Lestari Coffee
 
 Coffee Brew OS adalah dashboard web untuk menyusun rekomendasi seduh, mencatat eksperimen, mengelola stok biji kopi, melakukan QA, membaca analitik, mengekspor laporan, serta menjelajahi pustaka referensi kopi.
 
 ## Release aktif
 
-**v43.0.0 — Commercial Readiness**
+**v44.0.0-rc.1 — Release Candidate 1**
 
-Release ini menyiapkan fondasi operasional sebelum produk dipakai secara lebih luas. Fokusnya adalah transparansi layanan, pemulihan data, diagnostik, status sistem, maintenance mode, SEO dasar, dan persetujuan kebijakan saat pendaftaran.
+Release ini memusatkan identitas produk dan metadata deployment, menambahkan manifest rilis, social preview, monitoring error yang bersifat opt-in, halaman catatan rilis, template email autentikasi, serta runbook produksi. Status release candidate berarti build sudah memasuki validasi akhir, tetapi integrasi cloud belum boleh dianggap lulus sebelum diuji pada project Supabase aktif.
 
 Pembaruan utama:
 
-- halaman Kebijakan Privasi, Ketentuan Penggunaan, Batasan Rekomendasi, Status Sistem, dan Pemeliharaan;
-- persetujuan kebijakan yang wajib dicentang saat membuat akun;
-- backup lokal berformat terstruktur dengan checksum SHA-256 bila Web Crypto tersedia;
-- pemeriksaan format, versi, checksum, dan jumlah data sebelum pemulihan;
-- pencatatan maksimal 25 error lokal yang telah disanitasi;
-- ekspor diagnostik tanpa kata sandi, token, atau isi workspace;
-- konfigurasi maintenance mode melalui `assets/app-config.js`;
-- metadata title, description, Open Graph, dan canonical URL per clean route;
-- `robots.txt`, `sitemap.xml`, dan `.well-known/security.txt`;
-- halaman 404 yang lebih jelas;
-- audit otomatis melalui `npm run audit:commercial`.
+- `src/site.json` menjadi sumber konfigurasi versi, URL, identitas produk, maintenance, dan monitoring;
+- `release.json` untuk verifikasi versi runtime dan build yang sedang ter-deploy;
+- Open Graph dan Twitter Card pada root, clean route, serta halaman publik;
+- social preview 1200×630;
+- halaman publik `/rilis/`;
+- status browser memeriksa HTTPS, release manifest, monitoring, PWA, storage, dan diagnostik;
+- monitoring cloud nonaktif secara default dan tidak mengirim data tanpa endpoint yang dikonfigurasi;
+- template email konfirmasi akun, reset password, dan magic link untuk Supabase Auth;
+- panduan deployment produksi, konfigurasi email, serta backup dan recovery database;
+- audit baru melalui `npm run audit:rc`.
 
 ## Fitur utama
 
@@ -31,8 +30,9 @@ Pembaruan utama:
 - Analitik kualitas, konsumsi, biaya biji per cangkir, dan insight otomatis.
 - Role Admin, QA, Brewer, serta mode Guest dan Demo.
 - Matriks izin, RLS, perlindungan admin terakhir, dan audit trail workspace.
+- Backup lokal terverifikasi, diagnostik tersanitasi, maintenance mode, dan halaman legal.
 - Pustaka data varietas, proses, dripper/setup, filter, sangrai, air, dan grinder.
-- PWA dengan clean URL untuk 14 menu dan lima halaman informasi publik.
+- PWA dengan clean URL untuk 14 menu dan enam halaman informasi publik.
 
 ## Data referensi
 
@@ -51,6 +51,7 @@ Pembaruan utama:
 ```text
 .
 ├─ index.html
+├─ release.json
 ├─ 404.html
 ├─ <route>/index.html
 ├─ privasi/
@@ -58,7 +59,9 @@ Pembaruan utama:
 ├─ disclaimer/
 ├─ status/
 ├─ maintenance/
+├─ rilis/
 ├─ src/
+│  ├─ site.json
 │  ├─ shell.html
 │  ├─ public-shell.html
 │  ├─ routes.json
@@ -68,38 +71,37 @@ Pembaruan utama:
 ├─ assets/
 │  ├─ app.js
 │  ├─ app-config.js
+│  ├─ social-preview.png
 │  ├─ core/
 │  ├─ pages/
 │  ├─ public/
 │  ├─ services/
+│  │  ├─ release-service.js
+│  │  ├─ monitoring-service.js
 │  │  ├─ backup-service.js
 │  │  ├─ error-service.js
-│  │  ├─ security-service.js
 │  │  └─ ...
 │  └─ css/
-│     ├─ commercial-readiness.css
-│     ├─ public-pages.css
-│     └─ ...
 ├─ scripts/
+│  ├─ build-release.mjs
 │  ├─ build-all.mjs
 │  ├─ build-pages.mjs
 │  ├─ build-public-pages.mjs
-│  ├─ commercial-readiness-audit.mjs
+│  ├─ release-candidate-audit.mjs
 │  └─ release-check.mjs
 ├─ supabase/
 └─ docs/
 ```
 
-## Mengubah halaman
+## Sumber konfigurasi
 
-- Menu dashboard: `src/pages/`
-- Metadata route: `src/routes.json`
-- Kerangka dashboard: `src/shell.html`
-- Halaman informasi publik: `src/public/`
-- Metadata halaman publik: `src/public-pages.json`
-- Kerangka halaman publik: `src/public-shell.html`
+Perubahan identitas produk, URL deployment, versi, maintenance, dan monitoring dilakukan melalui:
 
-Jangan mengedit `index.html` atau folder route hasil build secara langsung.
+```text
+src/site.json
+```
+
+Jangan mengedit `assets/app-config.js`, `release.json`, `manifest.webmanifest`, `index.html`, atau folder route hasil build secara langsung. File tersebut dihasilkan ulang oleh build.
 
 ```powershell
 npm run build
@@ -121,40 +123,57 @@ Buka:
 ```text
 http://127.0.0.1:4173/
 http://127.0.0.1:4173/status/
-http://127.0.0.1:4173/privasi/
+http://127.0.0.1:4173/rilis/
 ```
 
-## Backup dan pemulihan
+## Monitoring
 
-Gunakan menu **Ekspor & Laporan → Backup & pemulihan lokal**. Pemulihan mengganti data lokal browser, tetapi tidak otomatis menulis atau menghapus data Supabase.
+Monitoring cloud default-nya nonaktif:
 
-Panduan detail tersedia pada `docs/V43_BACKUP_RECOVERY_GUIDE.md`.
-
-## Maintenance mode
-
-Ubah nilai berikut pada `assets/app-config.js`:
-
-```js
-maintenance: {
-  enabled: true,
-  title: "Pemeliharaan terjadwal",
-  message: "Dashboard kembali tersedia setelah pemeliharaan selesai."
+```json
+"monitoring": {
+  "enabled": false,
+  "endpoint": ""
 }
 ```
 
-Jalankan `npm run build`, lalu deploy. Halaman privasi, ketentuan, disclaimer, status, dan maintenance tetap dapat dibuka.
+Ketika nonaktif, diagnostik hanya tersimpan lokal di browser. Aktivasi monitoring harus disertai endpoint yang aman, CORS, rate limit, retensi, dan pembaruan Kebijakan Privasi.
+
+## Backup dan pemulihan
+
+- Backup menu **Ekspor & Laporan** hanya melindungi data lokal browser.
+- Backup tersebut tidak menggantikan backup database Supabase.
+- Panduan database tersedia pada `docs/V44_DATABASE_BACKUP_RUNBOOK.md`.
+- Panduan deployment tersedia pada `docs/V44_PRODUCTION_DEPLOYMENT.md`.
+
+## Maintenance mode
+
+Ubah `maintenance.enabled` pada `src/site.json`, lalu jalankan build:
+
+```powershell
+npm run build
+npm run check
+```
+
+Halaman privasi, ketentuan, disclaimer, status, maintenance, dan catatan rilis tetap dapat dibuka.
 
 ## Supabase
 
 Frontend hanya boleh menggunakan Project URL dan `anon/public key` pada `assets/supabase-config.js`. Jangan meletakkan `service_role` key di frontend.
 
-Untuk project aktif, migration keamanan v42 tetap wajib diterapkan dan diuji:
+Migration keamanan v42 tetap wajib diterapkan dan diuji:
 
 ```text
 supabase/migration_v42_security_audit_rls.sql
 ```
 
-v43 tidak menambahkan migration database baru.
+v44 tidak menambahkan migration database baru.
+
+Template autentikasi tersedia pada:
+
+```text
+docs/email-templates/
+```
 
 ## Workflow Git
 
@@ -162,7 +181,7 @@ v43 tidak menambahkan migration database baru.
 powershell -ExecutionPolicy Bypass -File .\scripts\git-safe-update.ps1
 npm run check
 git add -A
-git commit -m "Release v43 commercial readiness"
+git commit -m "Release v44 RC1"
 git push origin main
 ```
 
@@ -171,15 +190,15 @@ Project menggunakan `fetch` dan `merge --ff-only`, bukan rebase otomatis.
 ## PWA dan cache
 
 ```text
-coffee-brew-os-v43-commercial-readiness
+coffee-brew-os-v44-rc1
 ```
 
-Setelah deployment besar, uji melalui Incognito atau hapus service worker lama satu kali bila browser masih menampilkan aset lama.
+Setelah deployment besar, uji melalui Incognito atau hapus service worker lama satu kali apabila browser masih menampilkan aset lama.
 
-## Batasan release
+## Batasan release candidate
 
-- Dokumen kebijakan masih perlu review hukum dan identitas badan usaha sebelum layanan berbayar diluncurkan.
-- Backup v43 melindungi data lokal browser, bukan pengganti backup database Supabase.
-- Status Sistem hanya memeriksa komponen yang dapat dilihat dari browser.
-- Diagnostik disimpan lokal dan bukan sistem monitoring server terpusat.
-- Pengujian end-to-end tetap perlu dilakukan dengan akun, role, workspace, dan database Supabase aktif.
+- Belum dilakukan pengujian end-to-end terhadap seluruh role dan workspace pada database Supabase aktif dari environment build ini.
+- Migration keamanan v42 harus diverifikasi melalui test plan sebelum produksi.
+- SMTP, custom domain, monitoring cloud, dan backup database off-site belum otomatis aktif.
+- Dokumen legal masih membutuhkan review hukum dan identitas badan usaha sebelum layanan berbayar.
+- Release candidate belum sama dengan general availability.

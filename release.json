@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "product": "Coffee Brew OS",
+  "brand": "Lestari Coffee",
+  "version": "44.0.0-rc.1",
+  "release": "Release Candidate 1",
+  "build": "20260714-v44-rc1",
+  "commit": "not-recorded",
+  "releasedAt": "2026-07-14T03:56:00Z",
+  "environment": "production",
+  "siteUrl": "https://dikaddicta.github.io/lestari_coffeedashboard/",
+  "statusUrl": "https://dikaddicta.github.io/lestari_coffeedashboard/status/",
+  "supportUrl": "https://dikaddicta.github.io/lestari_coffeedashboard/saran/",
+  "legalVersion": "1.0",
+  "databaseMigration": "v42_security_audit_rls",
+  "releaseStage": "candidate"
+}

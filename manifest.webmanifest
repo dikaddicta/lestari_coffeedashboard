@@ -1,7 +1,8 @@
 {
-  "name": "Coffee Brew OS — Lestari Coffee Dashboard",
+  "id": "https://dikaddicta.github.io/lestari_coffeedashboard/",
+  "name": "Coffee Brew OS — Lestari Coffee",
   "short_name": "Coffee Brew OS",
-  "description": "Workspace seduh kopi dengan rekomendasi, QA, analitik, backup terverifikasi, pembagian peran, dan riwayat aktivitas.",
+  "description": "Susun resep, catat percobaan, pantau stok, dan evaluasi hasil seduh dalam satu dashboard.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

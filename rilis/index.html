@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <base href="../" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Catatan Rilis — Coffee Brew OS</title>
+  <meta name="description" content="Versi aktif, cakupan release candidate, perubahan utama, dan status kesiapan Coffee Brew OS." />
+  <meta name="theme-color" content="#1F1D1A" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://dikaddicta.github.io/lestari_coffeedashboard/rilis/" />
+  <meta property="og:title" content="Catatan Rilis — Coffee Brew OS" />
+  <meta property="og:description" content="Versi aktif, cakupan release candidate, perubahan utama, dan status kesiapan Coffee Brew OS." />
+  <meta property="og:url" content="https://dikaddicta.github.io/lestari_coffeedashboard/rilis/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Coffee Brew OS" />
+  <meta property="og:locale" content="id_ID" />
+  <meta property="og:image" content="https://dikaddicta.github.io/lestari_coffeedashboard/assets/social-preview.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Coffee Brew OS — Seduh lebih rapi. Hasil lebih konsisten." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Catatan Rilis — Coffee Brew OS" />
+  <meta name="twitter:description" content="Versi aktif, cakupan release candidate, perubahan utama, dan status kesiapan Coffee Brew OS." />
+  <meta name="twitter:image" content="https://dikaddicta.github.io/lestari_coffeedashboard/assets/social-preview.png" />
+  <link rel="icon" href="assets/latte-art-icon.png" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=20260714-v44-rc1" />
+  <link rel="stylesheet" href="assets/css/public-pages.css?v=20260714-v44-rc1" />
+</head>
+<body class="public-page" data-public-page="rilis">
+  <header class="public-header">
+    <a class="public-brand" href="./" aria-label="Kembali ke Coffee Brew OS">
+      <span><img src="assets/latte-art-icon.png" alt="" /></span>
+      <div><strong>Coffee Brew OS</strong><small>Lestari Coffee Dashboard</small></div>
+    </a>
+    <nav aria-label="Navigasi kebijakan">
+      <a href="privasi/">Privasi</a>
+      <a href="ketentuan/">Ketentuan</a>
+      <a href="disclaimer/">Batasan</a>
+      <a href="status/">Status Sistem</a>
+      <a href="rilis/">Rilis</a>
+    </nav>
+  </header>
+
+  <main class="public-main">
+    <!-- PUBLIC_PAGE_CONTENT -->
+<article class="public-article public-release-page">
+  <div class="public-hero">
+    <span class="public-kicker">Release Candidate</span>
+    <h1>Catatan Rilis</h1>
+    <p>Ringkasan versi aktif, fondasi yang sudah stabil, dan pekerjaan yang masih perlu diselesaikan sebelum peluncuran produksi.</p>
+  </div>
+
+  <section class="release-summary" id="releaseSummary" aria-live="polite">
+    <div>
+      <span>Versi Aktif</span>
+      <strong>Memuat…</strong>
+      <small>Manifest rilis sedang diperiksa.</small>
+    </div>
+    <div>
+      <span>Tahap</span>
+      <strong>Release Candidate</strong>
+      <small>Belum dinyatakan sebagai general availability.</small>
+    </div>
+    <div>
+      <span>Database</span>
+      <strong>Migration v42</strong>
+      <small>Harus sudah diterapkan dan diuji pada project Supabase aktif.</small>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cakupan kandidat rilis</h2>
+    <ul>
+      <li>Clean URL, modular page, dan service layer untuk fitur inti.</li>
+      <li>Workflow biji kopi, stok, input seduhan, QA, rekomendasi, analitik, dan laporan.</li>
+      <li>Role, RLS, audit trail, backup lokal terverifikasi, diagnostik, serta halaman legal.</li>
+      <li>Metadata sosial, manifest rilis, status publik, dan monitoring yang bersifat opt-in.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Sebelum dinyatakan siap produksi</h2>
+    <ul>
+      <li>Uji end-to-end dengan akun Admin, QA, Brewer, Guest, dan workspace berbeda.</li>
+      <li>Verifikasi migration keamanan v42 pada Supabase dan jalankan skenario RLS.</li>
+      <li>Siapkan backup database off-site dan uji pemulihan pada environment terpisah.</li>
+      <li>Konfigurasikan SMTP, template email, domain final, dan monitoring hanya setelah kebijakan privasi ditinjau.</li>
+    </ul>
+  </section>
+
+  <section class="public-note">
+    <h2>Status release candidate</h2>
+    <p>Release candidate berarti build ini sudah memasuki tahap validasi akhir. Status tersebut bukan jaminan bahwa seluruh integrasi cloud sudah diuji pada project produksi.</p>
+    <div class="public-actions">
+      <a class="button-link" href="status/">Periksa Status Sistem</a>
+      <a class="button-link secondary" href="./">Kembali ke Dashboard</a>
+    </div>
+  </section>
+</article>
+  </main>
+
+  <footer class="public-footer">
+    <div>
+      <strong>Coffee Brew OS</strong>
+      <p>Dashboard seduh untuk merancang resep, mencatat hasil, dan mengevaluasi kualitas secara lebih konsisten.</p>
+    </div>
+    <div class="public-footer-links">
+      <a href="./">Kembali ke Dashboard</a>
+      <a href="saran/">Kirim Saran</a>
+      <a href="privasi/">Kebijakan Privasi</a>
+      <a href="ketentuan/">Ketentuan Penggunaan</a>
+      <a href="rilis/">Catatan Rilis</a>
+    </div>
+    <small>Versi dokumen 1.0 · Diperbarui 14 Juli 2026</small>
+  </footer>
+
+  <script src="assets/app-config.js?v=20260714-v44-rc1"></script>
+  <script src="assets/services/storage-service.js?v=20260714-v44-rc1"></script>
+  <script src="assets/services/error-service.js?v=20260714-v44-rc1"></script>
+  <script src="assets/services/release-service.js?v=20260714-v44-rc1"></script>
+  <script src="assets/services/monitoring-service.js?v=20260714-v44-rc1"></script>
+  <script src="assets/public/release-page.js?v=20260714-v44-rc1"></script>
+</body>
+</html>

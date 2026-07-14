@@ -129,14 +129,14 @@ const configContext = { window: {} };
 vm.createContext(configContext);
 vm.runInContext(read("assets/app-config.js"), configContext, { filename: "assets/app-config.js" });
 const appConfig = configContext.window.COFFEE_APP_CONFIG || {};
-record(appConfig.version === "43.0.0", "Application version is 43.0.0", String(appConfig.version || "missing"));
+record(appConfig.version === "44.0.0-rc.1", "Application version is 44.0.0-rc.1", String(appConfig.version || "missing"));
 record(appConfig.features?.debugTools === false, "Production debug tools are disabled");
 record(appConfig.features?.mascot === false, "Production mascot is disabled");
 
 const packageJson = JSON.parse(read("package.json"));
 record(packageJson.version === appConfig.version, "package.json version matches app config", String(packageJson.version || "missing"));
 record(html.includes(`v${appConfig.version} · ${appConfig.release}`), "Visible release label matches app config");
-record(read("sw.js").includes("coffee-brew-os-v43-commercial-readiness"), "Service-worker cache name matches v43 release");
+record(read("sw.js").includes("coffee-brew-os-v44-rc1"), "Service-worker cache name matches v44 release candidate");
 record(exists("supabase/schema.sql"), "Canonical Supabase schema exists");
 record(exists("supabase/README.md"), "Supabase setup guide exists");
 
@@ -242,6 +242,6 @@ const report = {
   },
   results
 };
-fs.writeFileSync(path.join(root, "docs/V43_AUDIT_RESULT.json"), JSON.stringify(report, null, 2));
+fs.writeFileSync(path.join(root, "docs/V44_AUDIT_RESULT.json"), JSON.stringify(report, null, 2));
 console.log(`\nAudit summary: ${report.summary.pass} passed, ${report.summary.fail} failed.`);
 if (failed) process.exit(1);

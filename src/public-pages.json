@@ -1,5 +1,5 @@
 {
-  "version": "43.0.0",
+  "version": "44.0.0-rc.1",
   "siteUrl": "https://dikaddicta.github.io/lestari_coffeedashboard/",
   "pages": [
     {
@@ -29,7 +29,7 @@
       "title": "Status Sistem — Coffee Brew OS",
       "description": "Pemeriksaan status browser, penyimpanan lokal, PWA, koneksi, dan konfigurasi Coffee Brew OS.",
       "robots": "noindex,follow",
-      "script": "assets/public/status-page.js?v=20260714-v43-commercial"
+      "script": "assets/public/status-page.js"
     },
     {
       "slug": "maintenance",
@@ -37,7 +37,15 @@
       "title": "Pemeliharaan Sistem — Coffee Brew OS",
       "description": "Informasi pemeliharaan dan jalur kembali ke Coffee Brew OS.",
       "robots": "noindex,nofollow",
-      "script": "assets/public/maintenance-page.js?v=20260714-v43-commercial"
+      "script": "assets/public/maintenance-page.js"
+    },
+    {
+      "slug": "rilis",
+      "file": "public/rilis.html",
+      "title": "Catatan Rilis — Coffee Brew OS",
+      "description": "Versi aktif, cakupan release candidate, perubahan utama, dan status kesiapan Coffee Brew OS.",
+      "robots": "index,follow",
+      "script": "assets/public/release-page.js"
     }
   ]
 }

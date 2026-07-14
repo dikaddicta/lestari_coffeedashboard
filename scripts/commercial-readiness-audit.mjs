@@ -30,9 +30,9 @@ for (const file of [
 }
 
 const config = read("assets/app-config.js");
-check(config.includes('version: "43.0.0"'), "Versi aplikasi v43.0.0");
-check(config.includes("maintenance: Object.freeze"), "Konfigurasi maintenance tersedia");
-check(config.includes("commercialReadiness: true"), "Feature flag commercial readiness aktif");
+check(config.includes('\"version\": \"44.0.0-rc.1\"'), "Versi aplikasi v44.0.0-rc.1");
+check(config.includes('"maintenance": {'), "Konfigurasi maintenance tersedia");
+check(config.includes('"commercialReadiness": true'), "Feature flag commercial readiness aktif");
 
 for (const slug of ["privasi", "ketentuan", "disclaimer", "status", "maintenance"]) {
   const file = `${slug}/index.html`;
@@ -59,7 +59,7 @@ check(app.includes("BACKUP_SERVICE.parse"), "Pemulihan memvalidasi backup");
 check(app.includes("ERROR_SERVICE?.capture"), "Runtime error dicatat secara tersanitasi");
 
 const sw = read("sw.js");
-check(sw.includes("coffee-brew-os-v43-commercial-readiness"), "Cache PWA menggunakan namespace v43");
+check(sw.includes("coffee-brew-os-v44-rc1"), "Cache PWA menggunakan namespace v44 RC1");
 for (const route of ["privasi", "ketentuan", "disclaimer", "status", "maintenance"]) {
   check(sw.includes(`"${route}"`), `Service worker memuat route /${route}/`);
 }

@@ -6,24 +6,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{{DOCUMENT_TITLE}}</title>
   <meta name="description" content="{{DOCUMENT_DESCRIPTION}}" />
-  <meta name="theme-color" content="#1F1D1A" />
+  <meta name="theme-color" content="{{THEME_COLOR}}" />
   <meta name="robots" content="{{ROBOTS}}" />
   <link rel="canonical" href="{{CANONICAL_URL}}" />
-  <link rel="icon" href="assets/latte-art-icon.png" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=20260714-v43-commercial" />
-  <link rel="stylesheet" href="assets/css/public-pages.css?v=20260714-v43-commercial" />
+  <meta property="og:title" content="{{DOCUMENT_TITLE}}" />
+  <meta property="og:description" content="{{DOCUMENT_DESCRIPTION}}" />
+  <meta property="og:url" content="{{CANONICAL_URL}}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="{{PRODUCT_NAME}}" />
+  <meta property="og:locale" content="id_ID" />
+  <meta property="og:image" content="{{SOCIAL_IMAGE_URL}}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="{{PRODUCT_NAME}} — {{TAGLINE}}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{DOCUMENT_TITLE}}" />
+  <meta name="twitter:description" content="{{DOCUMENT_DESCRIPTION}}" />
+  <meta name="twitter:image" content="{{SOCIAL_IMAGE_URL}}" />
+  <link rel="icon" href="{{ICON_PATH}}" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v={{ASSET_VERSION}}" />
+  <link rel="stylesheet" href="assets/css/public-pages.css?v={{ASSET_VERSION}}" />
 </head>
 <body class="public-page" data-public-page="{{PAGE_SLUG}}">
   <header class="public-header">
-    <a class="public-brand" href="./" aria-label="Kembali ke Coffee Brew OS">
+    <a class="public-brand" href="./" aria-label="Kembali ke {{PRODUCT_NAME}}">
       <span><img src="assets/latte-art-icon.png" alt="" /></span>
-      <div><strong>Coffee Brew OS</strong><small>Lestari Coffee Dashboard</small></div>
+      <div><strong>{{PRODUCT_NAME}}</strong><small>{{BRAND_NAME}} Dashboard</small></div>
     </a>
     <nav aria-label="Navigasi kebijakan">
       <a href="privasi/">Privasi</a>
       <a href="ketentuan/">Ketentuan</a>
       <a href="disclaimer/">Batasan</a>
       <a href="status/">Status Sistem</a>
+      <a href="rilis/">Rilis</a>
     </nav>
   </header>
 
@@ -33,7 +48,7 @@
 
   <footer class="public-footer">
     <div>
-      <strong>Coffee Brew OS</strong>
+      <strong>{{PRODUCT_NAME}}</strong>
       <p>Dashboard seduh untuk merancang resep, mencatat hasil, dan mengevaluasi kualitas secara lebih konsisten.</p>
     </div>
     <div class="public-footer-links">
@@ -41,13 +56,16 @@
       <a href="saran/">Kirim Saran</a>
       <a href="privasi/">Kebijakan Privasi</a>
       <a href="ketentuan/">Ketentuan Penggunaan</a>
+      <a href="rilis/">Catatan Rilis</a>
     </div>
-    <small>Versi dokumen 1.0 · Diperbarui 14 Juli 2026</small>
+    <small>Versi dokumen {{LEGAL_VERSION}} · Diperbarui 14 Juli 2026</small>
   </footer>
 
-  <script src="assets/app-config.js?v=20260714-v43-commercial"></script>
-  <script src="assets/services/storage-service.js?v=20260714-v43-commercial"></script>
-  <script src="assets/services/error-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/app-config.js?v={{ASSET_VERSION}}"></script>
+  <script src="assets/services/storage-service.js?v={{ASSET_VERSION}}"></script>
+  <script src="assets/services/error-service.js?v={{ASSET_VERSION}}"></script>
+  <script src="assets/services/release-service.js?v={{ASSET_VERSION}}"></script>
+  <script src="assets/services/monitoring-service.js?v={{ASSET_VERSION}}"></script>
   {{PAGE_SCRIPT}}
 </body>
 </html>

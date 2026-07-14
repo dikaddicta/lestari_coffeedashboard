@@ -1,0 +1,54 @@
+<article class="public-article public-release-page">
+  <div class="public-hero">
+    <span class="public-kicker">Release Candidate</span>
+    <h1>Catatan Rilis</h1>
+    <p>Ringkasan versi aktif, fondasi yang sudah stabil, dan pekerjaan yang masih perlu diselesaikan sebelum peluncuran produksi.</p>
+  </div>
+
+  <section class="release-summary" id="releaseSummary" aria-live="polite">
+    <div>
+      <span>Versi Aktif</span>
+      <strong>Memuat…</strong>
+      <small>Manifest rilis sedang diperiksa.</small>
+    </div>
+    <div>
+      <span>Tahap</span>
+      <strong>Release Candidate</strong>
+      <small>Belum dinyatakan sebagai general availability.</small>
+    </div>
+    <div>
+      <span>Database</span>
+      <strong>Migration v42</strong>
+      <small>Harus sudah diterapkan dan diuji pada project Supabase aktif.</small>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cakupan kandidat rilis</h2>
+    <ul>
+      <li>Clean URL, modular page, dan service layer untuk fitur inti.</li>
+      <li>Workflow biji kopi, stok, input seduhan, QA, rekomendasi, analitik, dan laporan.</li>
+      <li>Role, RLS, audit trail, backup lokal terverifikasi, diagnostik, serta halaman legal.</li>
+      <li>Metadata sosial, manifest rilis, status publik, dan monitoring yang bersifat opt-in.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Sebelum dinyatakan siap produksi</h2>
+    <ul>
+      <li>Uji end-to-end dengan akun Admin, QA, Brewer, Guest, dan workspace berbeda.</li>
+      <li>Verifikasi migration keamanan v42 pada Supabase dan jalankan skenario RLS.</li>
+      <li>Siapkan backup database off-site dan uji pemulihan pada environment terpisah.</li>
+      <li>Konfigurasikan SMTP, template email, domain final, dan monitoring hanya setelah kebijakan privasi ditinjau.</li>
+    </ul>
+  </section>
+
+  <section class="public-note">
+    <h2>Status release candidate</h2>
+    <p>Release candidate berarti build ini sudah memasuki tahap validasi akhir. Status tersebut bukan jaminan bahwa seluruh integrasi cloud sudah diuji pada project produksi.</p>
+    <div class="public-actions">
+      <a class="button-link" href="status/">Periksa Status Sistem</a>
+      <a class="button-link secondary" href="./">Kembali ke Dashboard</a>
+    </div>
+  </section>
+</article>

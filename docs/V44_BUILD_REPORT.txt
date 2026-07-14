@@ -1,0 +1,50 @@
+Coffee Brew OS v44.0.0-rc.1 — Build Report
+==================================================
+Release       : Release Candidate 1
+Build ID      : 20260714-v44-rc1
+Environment   : production configuration
+Database      : no new migration; v42 security migration remains required
+
+Scope
+-----
+- Central release and brand configuration
+- Generated runtime config, PWA manifest, release manifest, and security.txt
+- Open Graph and Twitter Card metadata
+- Social preview 1200x630
+- Public release notes page
+- Release consistency verification
+- Opt-in sanitized error monitoring
+- Production, email, and database backup runbooks
+- Supabase Auth email templates
+
+Automated validation
+--------------------
+Modular pages                : 37/37
+Clean URLs                   : 64/64
+Page modules                 : 46/46
+Service layer                : 38/38
+Core workflow                : 52/52
+Recommendation and QA        : 31/31
+Analytics and cost insight   : 33/33
+Security and audit           : 55/55
+Commercial readiness         : 60/60
+Release candidate            : 84/84
+Functional audit             : 115/115
+TOTAL                         : 615 passed, 0 failed
+
+Local HTTP smoke test
+---------------------
+/                              : 200
+/beranda/                      : 200
+/cara-pakai/                   : 200
+/status/                       : 200
+/rilis/                        : 200
+/release.json                  : 200
+/assets/social-preview.png     : 200
+
+Limitations
+-----------
+- Active Supabase sessions, role policies, SMTP, and database backup were not executed from the build environment.
+- Cloud monitoring is deliberately disabled until an endpoint and privacy decision are finalized.
+- Custom domain is not activated.
+- Legal pages remain drafts requiring review before a paid launch.

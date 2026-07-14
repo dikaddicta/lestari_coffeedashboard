@@ -1,4 +1,4 @@
-const CACHE_NAME = "coffee-brew-os-v43-commercial-readiness";
+const CACHE_NAME = "coffee-brew-os-v44-rc1";
 const ROUTE_ENTRIES = [
   "beranda",
   "cara-pakai",
@@ -18,7 +18,8 @@ const ROUTE_ENTRIES = [
   "ketentuan",
   "disclaimer",
   "status",
-  "maintenance"
+  "maintenance",
+  "rilis"
 ].map(route => `./${route}/`);
 
 const PAGE_MODULES = [
@@ -50,6 +51,8 @@ const CORE_ASSETS = [
   "./assets/core/maintenance.js",
   "./assets/services/storage-service.js",
   "./assets/services/error-service.js",
+  "./assets/services/release-service.js",
+  "./assets/services/monitoring-service.js",
   "./assets/services/backup-service.js",
   "./assets/services/security-service.js",
   "./assets/services/audit-service.js",
@@ -85,7 +88,10 @@ const CORE_ASSETS = [
   "./assets/services/analytics-service.js",
   "./assets/services/notification-service.js",
   "./assets/latte-art-icon.png",
+  "./assets/social-preview.png",
+  "./release.json",
   "./assets/public/status-page.js",
+  "./assets/public/release-page.js",
   "./assets/public/maintenance-page.js",
   "./manifest.webmanifest",
   "./robots.txt",

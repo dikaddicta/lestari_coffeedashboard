@@ -6,6 +6,7 @@ const root = process.cwd();
 const srcDir = path.join(root, "src");
 const shellPath = path.join(srcDir, "shell.html");
 const manifestPath = path.join(srcDir, "routes.json");
+const sitePath = path.join(srcDir, "site.json");
 const outputPath = path.join(root, "index.html");
 const notFoundPath = path.join(root, "404.html");
 const routesOutputPath = path.join(root, "assets", "core", "routes.js");
@@ -15,7 +16,7 @@ const routePlaceholder = "{{INITIAL_ROUTE}}";
 const titlePlaceholder = "{{DOCUMENT_TITLE}}";
 const descriptionPlaceholder = "{{DOCUMENT_DESCRIPTION}}";
 const canonicalPlaceholder = "{{CANONICAL_URL}}";
-const SITE_URL = "https://dikaddicta.github.io/lestari_coffeedashboard/";
+
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -25,22 +26,33 @@ function jsString(value) {
   return JSON.stringify(value, null, 2);
 }
 
-function renderDocument(shell, pageContent, { baseHref, initialRoute, title, description, canonicalUrl }) {
+function renderDocument(shell, pageContent, site, { baseHref, initialRoute, title, description, canonicalUrl }) {
+  const socialImageUrl = new URL(site.socialImage, site.siteUrl).toString();
   return shell
     .replace(pagePlaceholder, `${pagePlaceholder}\n${pageContent}`)
     .replaceAll(basePlaceholder, baseHref)
     .replaceAll(routePlaceholder, initialRoute || "")
     .replaceAll(titlePlaceholder, title || "Coffee Brew OS — Dashboard Seduh Kopi")
     .replaceAll(descriptionPlaceholder, description || "Dashboard seduh kopi untuk rekomendasi resep, pencatatan, QA, analitik, laporan, dan pustaka data berbasis referensi.")
-    .replaceAll(canonicalPlaceholder, canonicalUrl || SITE_URL);
+    .replaceAll(canonicalPlaceholder, canonicalUrl || site.siteUrl)
+    .replaceAll("{{THEME_COLOR}}", site.themeColor)
+    .replaceAll("{{PRODUCT_NAME}}", site.productName)
+    .replaceAll("{{BRAND_NAME}}", site.brandName)
+    .replaceAll("{{TAGLINE}}", site.tagline)
+    .replaceAll("{{SOCIAL_IMAGE_URL}}", socialImageUrl)
+    .replaceAll("{{ICON_PATH}}", site.icon)
+    .replaceAll("{{ASSET_VERSION}}", site.build)
+    .replaceAll("{{LEGAL_VERSION}}", site.legalVersion || "1.0");
 }
 
 async function main() {
-  const [shell, manifestRaw] = await Promise.all([
+  const [shell, manifestRaw, siteRaw] = await Promise.all([
     readFile(shellPath, "utf8"),
-    readFile(manifestPath, "utf8")
+    readFile(manifestPath, "utf8"),
+    readFile(sitePath, "utf8")
   ]);
   const manifest = JSON.parse(manifestRaw);
+  const site = JSON.parse(siteRaw);
   const pages = [...(manifest.pages || [])].sort((a, b) => a.order - b.order);
 
   assert(shell.includes(pagePlaceholder), `Placeholder tidak ditemukan di ${path.relative(root, shellPath)}.`);
@@ -76,12 +88,12 @@ async function main() {
     .map(fragment => fragment.split("\n").map(line => `          ${line}`).join("\n"))
     .join("\n\n");
 
-  const rootHtml = renderDocument(shell, pageContent, {
+  const rootHtml = renderDocument(shell, pageContent, site, {
     baseHref: "./",
     initialRoute: "",
-    title: "Coffee Brew OS — Dashboard Seduh Kopi",
-    description: "Susun resep, catat percobaan, pantau stok, dan evaluasi hasil seduh dalam satu dashboard.",
-    canonicalUrl: SITE_URL
+    title: `${site.productName} — Dashboard Seduh Kopi`,
+    description: site.description,
+    canonicalUrl: site.siteUrl
   });
   await writeFile(outputPath, rootHtml, "utf8");
 
@@ -89,12 +101,12 @@ async function main() {
     const routeDir = path.join(root, page.route);
     await rm(routeDir, { recursive: true, force: true });
     await mkdir(routeDir, { recursive: true });
-    const routeHtml = renderDocument(shell, pageContent, {
+    const routeHtml = renderDocument(shell, pageContent, site, {
       baseHref: "../",
       initialRoute: page.route,
-      title: `${page.title} — Coffee Brew OS`,
+      title: `${page.title} — ${site.productName}`,
       description: page.subtitle,
-      canonicalUrl: new URL(`${page.route}/`, SITE_URL).toString()
+      canonicalUrl: new URL(`${page.route}/`, site.siteUrl).toString()
     });
     await writeFile(path.join(routeDir, "index.html"), routeHtml, "utf8");
   }
@@ -109,7 +121,7 @@ async function main() {
     access
   }));
 
-  const routesJs = `(function () {\n  "use strict";\n\n  const pages = ${jsString(routes)};\n  const byTab = Object.fromEntries(pages.map(page => [page.tab, Object.freeze({ ...page })]));\n  const byRoute = Object.fromEntries(pages.map(page => [page.route, byTab[page.tab]]));\n\n  window.COFFEE_PAGES = Object.freeze({\n    version: ${JSON.stringify(manifest.version || "0.0.0")},\n    pages: Object.freeze(pages.map(page => byTab[page.tab])),\n    byTab: Object.freeze(byTab),\n    byRoute: Object.freeze(byRoute),\n    routeFor(tab) {\n      return byTab[String(tab || "")]?.route || "cara-pakai";\n    },\n    tabFor(route) {\n      return byRoute[String(route || "").toLowerCase()]?.tab || "";\n    },\n    metaFor(tab) {\n      const page = byTab[String(tab || "")] || byTab.home || pages[0];\n      return Object.freeze({ title: page.title, subtitle: page.subtitle });\n    }\n  });\n})();\n`;
+  const routesJs = `(function () {\n  "use strict";\n\n  const pages = ${jsString(routes)};\n  const byTab = Object.fromEntries(pages.map(page => [page.tab, Object.freeze({ ...page })]));\n  const byRoute = Object.fromEntries(pages.map(page => [page.route, byTab[page.tab]]));\n\n  window.COFFEE_PAGES = Object.freeze({\n    version: ${JSON.stringify(site.version || manifest.version || "0.0.0")},\n    pages: Object.freeze(pages.map(page => byTab[page.tab])),\n    byTab: Object.freeze(byTab),\n    byRoute: Object.freeze(byRoute),\n    routeFor(tab) {\n      return byTab[String(tab || "")]?.route || "cara-pakai";\n    },\n    tabFor(route) {\n      return byRoute[String(route || "").toLowerCase()]?.tab || "";\n    },\n    metaFor(tab) {\n      const page = byTab[String(tab || "")] || byTab.home || pages[0];\n      return Object.freeze({ title: page.title, subtitle: page.subtitle });\n    }\n  });\n})();\n`;
   await writeFile(routesOutputPath, routesJs, "utf8");
 
   console.log(`Built ${pages.length} modular pages into index.html.`);
