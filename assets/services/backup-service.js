@@ -47,7 +47,7 @@
 
     const legacy = !parsed.format && (Array.isArray(parsed.userStock) || Array.isArray(parsed.userBrewLogs));
     const data = normalizeState(legacy ? parsed : parsed.data);
-    if (!legacy && parsed.format !== FORMAT) throw new Error("File bukan backup Coffee Brew OS.");
+    if (!legacy && parsed.format !== FORMAT) throw new Error("File bukan backup Lestari Coffee Dashboard.");
     if (!legacy && Number(parsed.schemaVersion) > SCHEMA_VERSION) throw new Error("Versi backup lebih baru dari aplikasi ini.");
 
     const expected = legacy ? "legacy" : String(parsed.checksum || "");

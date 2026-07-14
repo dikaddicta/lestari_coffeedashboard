@@ -50,7 +50,7 @@
 
   function snapshot(extra = {}) {
     return {
-      product: "Coffee Brew OS",
+      product: "Lestari Coffee Dashboard",
       generatedAt: new Date().toISOString(),
       app: {
         version: window.COFFEE_APP_CONFIG?.version || "unknown",

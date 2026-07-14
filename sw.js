@@ -1,4 +1,4 @@
-const CACHE_NAME = "coffee-brew-os-v44-rc2";
+const CACHE_NAME = "lestari-coffee-dashboard-v44-rc3-brand";
 const ROUTE_ENTRIES = [
   "beranda",
   "cara-pakai",
@@ -87,7 +87,15 @@ const CORE_ASSETS = [
   "./assets/services/qa-service.js",
   "./assets/services/analytics-service.js",
   "./assets/services/notification-service.js",
-  "./assets/latte-art-icon.png",
+  "./assets/brand/lestari-logo.png",
+  "./assets/brand/lestari-logo-512.png",
+  "./assets/icons/favicon-16x16.png",
+  "./assets/icons/favicon-32x32.png",
+  "./assets/icons/apple-touch-icon.png",
+  "./assets/icons/icon-192.png",
+  "./assets/icons/icon-512.png",
+  "./favicon.ico",
+  "./assets/css/brand.css",
   "./assets/social-preview.png",
   "./release.json",
   "./assets/public/status-page.js",

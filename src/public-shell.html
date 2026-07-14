@@ -23,15 +23,19 @@
   <meta name="twitter:title" content="{{DOCUMENT_TITLE}}" />
   <meta name="twitter:description" content="{{DOCUMENT_DESCRIPTION}}" />
   <meta name="twitter:image" content="{{SOCIAL_IMAGE_URL}}" />
-  <link rel="icon" href="{{ICON_PATH}}" />
+  <link rel="icon" type="image/png" sizes="16x16" href="{{FAVICON_16_PATH}}" />
+  <link rel="icon" type="image/png" sizes="32x32" href="{{FAVICON_32_PATH}}" />
+  <link rel="shortcut icon" href="{{FAVICON_ICO_PATH}}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{APPLE_TOUCH_ICON_PATH}}" />
   <link rel="stylesheet" href="assets/css/tokens.css?v={{ASSET_VERSION}}" />
   <link rel="stylesheet" href="assets/css/public-pages.css?v={{ASSET_VERSION}}" />
+  <link rel="stylesheet" href="assets/css/brand.css?v={{ASSET_VERSION}}" />
 </head>
 <body class="public-page" data-public-page="{{PAGE_SLUG}}">
   <header class="public-header">
     <a class="public-brand" href="./" aria-label="Kembali ke {{PRODUCT_NAME}}">
-      <span><img src="assets/latte-art-icon.png" alt="" /></span>
-      <div><strong>{{PRODUCT_NAME}}</strong><small>{{BRAND_NAME}} Dashboard</small></div>
+      <span><img src="{{LOGO_PATH}}" alt="" /></span>
+      <div><strong>{{PRODUCT_NAME}}</strong><small>Dashboard seduh kopi</small></div>
     </a>
     <nav aria-label="Navigasi kebijakan">
       <a href="privasi/">Privasi</a>

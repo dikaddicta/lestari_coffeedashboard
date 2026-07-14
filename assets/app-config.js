@@ -8,19 +8,19 @@
   }
 
   window.COFFEE_APP_CONFIG = deepFreeze({
-  "version": "44.0.0-rc.2",
-  "release": "Release Candidate 2",
-  "build": "20260714-v44-rc2",
+  "version": "44.0.0-rc.3",
+  "release": "Release Candidate 3",
+  "build": "20260714-v44-rc3-brand-logo",
   "commit": "not-recorded",
-  "releasedAt": "2026-07-14T09:20:00Z",
+  "releasedAt": "2026-07-14T15:10:00Z",
   "environment": "production",
   "site": {
     "url": "https://dikaddicta.github.io/lestari_coffeedashboard/",
-    "productName": "Coffee Brew OS",
-    "brandName": "Lestari Coffee",
-    "applicationName": "Coffee Brew OS",
-    "tagline": "Seduh lebih rapi. Hasil lebih konsisten.",
-    "description": "Susun resep, catat percobaan, pantau stok, dan evaluasi hasil seduh dalam satu dashboard.",
+    "productName": "Lestari Coffee Dashboard",
+    "brandName": "Lestari",
+    "applicationName": "Lestari",
+    "tagline": "Jelajahi berbagai rekomendasi seduh dan bagikan pengalaman seduhmu.",
+    "description": "Dashboard yang dibuat dari kebutuhan pribadi untuk membantu proses seduh menjadi lebih rapi, terukur, dan mudah dibagikan.",
     "socialImage": "https://dikaddicta.github.io/lestari_coffeedashboard/assets/social-preview.png",
     "supportUrl": "https://dikaddicta.github.io/lestari_coffeedashboard/saran/",
     "legalVersion": "1.0"

@@ -31,6 +31,11 @@ function render(content, page, baseHref = "../") {
     .replaceAll("{{TAGLINE}}", site.tagline)
     .replaceAll("{{SOCIAL_IMAGE_URL}}", new URL(site.socialImage, site.siteUrl).toString())
     .replaceAll("{{ICON_PATH}}", site.icon)
+    .replaceAll("{{LOGO_PATH}}", site.logo || site.icon)
+    .replaceAll("{{FAVICON_16_PATH}}", site.favicon16 || site.icon)
+    .replaceAll("{{FAVICON_32_PATH}}", site.favicon32 || site.icon)
+    .replaceAll("{{FAVICON_ICO_PATH}}", site.faviconIco || site.icon)
+    .replaceAll("{{APPLE_TOUCH_ICON_PATH}}", site.appleTouchIcon || site.icon)
     .replaceAll("{{ASSET_VERSION}}", site.build)
     .replaceAll("{{LEGAL_VERSION}}", site.legalVersion || "1.0");
 }

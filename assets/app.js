@@ -2,6 +2,7 @@
   "use strict";
 
   const APP_CONFIG = window.COFFEE_APP_CONFIG || {};
+  const PRODUCT_NAME = APP_CONFIG?.site?.productName || "Lestari Coffee Dashboard";
   const RUNTIME = window.COFFEE_RUNTIME || {};
   const SERVICES = window.COFFEE_SERVICES || {};
   const CORE = window.COFFEE_CORE || {};
@@ -6028,7 +6029,7 @@
   function showRootWelcome() {
     showTab("guide", { skipRoute: true });
     $("welcomeScreen")?.classList.remove("is-hidden");
-    document.title = "Coffee Brew OS — Dashboard Seduh Kopi";
+    document.title = `${PRODUCT_NAME} — Dashboard Seduh Kopi`;
     if (document.body) document.body.dataset.page = "welcome";
   }
 
@@ -6090,8 +6091,8 @@
     $("pageSubtitle") && ($("pageSubtitle").textContent = meta.subtitle);
     $("pageBreadcrumb") && ($("pageBreadcrumb").textContent = `Workspace Kopi / ${meta.title}`);
     document.title = welcomeVisible
-      ? "Coffee Brew OS — Dashboard Seduh Kopi"
-      : `${meta.title} — Coffee Brew OS`;
+      ? `${PRODUCT_NAME} — Dashboard Seduh Kopi`
+      : `${meta.title} — ${PRODUCT_NAME}`;
     syncRouteHint(key);
     if (document.body) {
       document.body.dataset.page = welcomeVisible ? "welcome" : key;
@@ -7657,13 +7658,13 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>Coffee Brew OS Analytics Report</title>
+<title>Lestari Coffee Dashboard Analytics Report</title>
 <style>
 body{font-family:Inter,Arial,sans-serif;margin:40px;color:#3d2a24;background:#fffaf4}h1{font-size:44px;margin:0 0 6px}h2{margin-top:34px}.meta{color:#7a655c}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}.card{padding:16px;border:1px solid #eadbd0;border-radius:18px;background:#fff}strong{display:block;font-size:22px}table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden}td,th{padding:10px;border-bottom:1px solid #eee0d5;text-align:left;font-size:13px}th{background:#4b2e2b;color:#fff}.insight{padding:14px;border:1px solid #eadbd0;border-radius:16px;background:#fff;margin:10px 0}@media print{body{margin:20px}.no-print{display:none}}
 </style>
 </head>
 <body>
-<h1>Coffee Brew OS Report</h1>
+<h1>Lestari Coffee Dashboard Report</h1>
 <p class="meta">Generated ${new Date().toLocaleString()} · Scope: ${scope}</p>
 <div class="cards">
 <div class="card"><span>Total Brew</span><strong>${rows.brew.length}</strong></div>
@@ -7690,7 +7691,7 @@ ${insightRows.map(i => `<div class="insight"><strong>${i.title}</strong><p>${i.t
     if (!brew) return showMessage("Rekomendasi seduh belum siap.", "error");
     const htmlDoc = `<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Recipe Card</title><style>
 body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:0;padding:40px}.card{max-width:720px;margin:auto;padding:34px;border-radius:32px;background:#fffaf4;border:1px solid #e7d5c5;box-shadow:0 22px 60px rgba(61,42,36,.16)}h1{font-size:40px;margin:0 0 8px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}.box{padding:16px;border-radius:18px;background:#f2e5d8}.box span{font-size:11px;text-transform:uppercase;font-weight:900;color:#8a7165}.box strong{display:block;margin-top:8px;font-size:22px}.note{line-height:1.65}@media print{body{background:#fff}.card{box-shadow:none}}</style></head><body><div class="card">
-<p><b>Coffee Brew OS · Recipe Card</b></p><h1>${brew.intent?.label || "Recommended Brew"}</h1>
+<p><b>Lestari Coffee Dashboard · Recipe Card</b></p><h1>${brew.intent?.label || "Recommended Brew"}</h1>
 <p>${brew.variety?.Variety || $("brewVariety")?.value || "-"} · ${brew.process?.Process || $("brewProcess")?.value || "-"} · ${brew.roast?.RoastProfile || $("brewRoast")?.value || "-"}</p>
 <div class="grid">
 <div class="box"><span>Temp</span><strong>${brew.temp}°C</strong></div><div class="box"><span>Ratio</span><strong>1:${fmt(brew.ratio,1)}</strong></div><div class="box"><span>Water</span><strong>${brew.totalWater}ml</strong></div>

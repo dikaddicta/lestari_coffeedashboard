@@ -9,7 +9,7 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-for (const key of ["version", "release", "build", "siteUrl", "productName", "brandName", "description", "themeColor", "backgroundColor", "socialImage", "icon"]) {
+for (const key of ["version", "release", "build", "siteUrl", "productName", "brandName", "description", "themeColor", "backgroundColor", "socialImage", "icon", "logo"]) {
   assert(String(source[key] || "").trim(), `src/site.json: ${key} wajib diisi.`);
 }
 assert(/^https:\/\//.test(source.siteUrl), "src/site.json: siteUrl harus menggunakan HTTPS.");
@@ -112,14 +112,14 @@ const manifest = {
   theme_color: source.themeColor,
   orientation: "any",
   icons: [
-    { src: source.icon, sizes: "192x192", type: "image/png", purpose: "any maskable" },
-    { src: source.icon, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+    { src: source.icon192 || source.icon, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+    { src: source.icon512 || source.icon, sizes: "512x512", type: "image/png", purpose: "any maskable" }
   ],
   categories: ["productivity", "food", "utilities"],
   lang: "id",
   shortcuts: [
-    { name: "Rekomendasi Seduh", short_name: "Brew", description: "Buka modul rekomendasi seduh.", url: "./rekomendasi-seduh/", icons: [{ src: source.icon, sizes: "192x192", type: "image/png" }] },
-    { name: "Pustaka Data", short_name: "Pustaka", description: "Buka knowledge base kopi.", url: "./pustaka-data/", icons: [{ src: source.icon, sizes: "192x192", type: "image/png" }] }
+    { name: "Rekomendasi Seduh", short_name: "Brew", description: "Buka modul rekomendasi seduh.", url: "./rekomendasi-seduh/", icons: [{ src: source.icon192 || source.icon, sizes: "192x192", type: "image/png" }] },
+    { name: "Pustaka Data", short_name: "Pustaka", description: "Buka knowledge base kopi.", url: "./pustaka-data/", icons: [{ src: source.icon192 || source.icon, sizes: "192x192", type: "image/png" }] }
   ]
 };
 await writeFile(path.join(root, "manifest.webmanifest"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");

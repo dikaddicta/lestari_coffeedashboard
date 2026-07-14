@@ -1,0 +1,153 @@
+{
+  "version": "44.0.0-rc.3",
+  "generatedAt": "2026-07-14T15:01:56.466Z",
+  "passed": 29,
+  "failed": 0,
+  "checks": [
+    {
+      "ok": true,
+      "label": "assets/brand/lestari-logo-original.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/brand/lestari-logo.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/favicon-16x16.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/favicon-32x32.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/favicon-48x48.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/apple-touch-icon.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/icon-192.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/icon-512.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "favicon.ico tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/css/brand.css tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/favicon-16x16.png berukuran 16×16",
+      "detail": "16×16"
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/favicon-32x32.png berukuran 32×32",
+      "detail": "32×32"
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/favicon-48x48.png berukuran 48×48",
+      "detail": "48×48"
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/apple-touch-icon.png berukuran 180×180",
+      "detail": "180×180"
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/icon-192.png berukuran 192×192",
+      "detail": "192×192"
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/icon-512.png berukuran 512×512",
+      "detail": "512×512"
+    },
+    {
+      "ok": true,
+      "label": "Nama produk final terpasang",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Nama singkat terpasang",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Path logo utama terpusat",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Dashboard memakai logo Lestari",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Dashboard memakai favicon 16 px",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Dashboard memakai favicon 32 px",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Dashboard memakai Apple Touch Icon",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Logo lama tidak digunakan pada dashboard",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/brand/lestari-logo.png",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/icons/icon-192.png",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/icons/icon-512.png",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./favicon.ico",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Aset logo lama telah dihapus",
+      "detail": ""
+    }
+  ]
+}

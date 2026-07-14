@@ -75,11 +75,11 @@
   }
 
   function log(...args) {
-    if (debugEnabled) console.log("[Coffee Brew OS]", ...args);
+    if (debugEnabled) console.log("[Lestari Coffee Dashboard]", ...args);
   }
 
   function warn(...args) {
-    if (debugEnabled) console.warn("[Coffee Brew OS]", ...args);
+    if (debugEnabled) console.warn("[Lestari Coffee Dashboard]", ...args);
   }
 
   function setButtonBusy(button, busy, busyLabel = "Memproses...") {

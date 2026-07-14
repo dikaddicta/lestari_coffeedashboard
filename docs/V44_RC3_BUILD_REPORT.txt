@@ -1,0 +1,38 @@
+Lestari Coffee Dashboard v44.0.0-rc.3
+Brand Logo Integration Build Report
+
+Status: PASSED
+
+Brand identity implemented:
+- Product name: Lestari Coffee Dashboard
+- Short name: Lestari
+- Tagline: Jelajahi berbagai rekomendasi seduh dan bagikan pengalaman seduhmu.
+- Main logo source: user-uploaded lestari.png
+- Original logo SHA-256: 966e6c4bf242756c93bc7ab0569e71ef7e7200ce25715b14e19cd2aad4d8266d
+- Exact byte-for-byte copy stored at: assets/brand/lestari-logo-original.png
+
+Generated from the uploaded logo only:
+- assets/brand/lestari-logo.png (1024x1024 transparent)
+- assets/brand/lestari-logo-512.png
+- assets/brand/lestari-logo-256.png
+- favicon 16/32/48 PNG
+- favicon.ico
+- Apple Touch Icon 180x180
+- PWA icons 192x192 and 512x512
+
+No generated/recreated flower logo is included in the dashboard.
+The favicon background is an espresso surface added only so the original white petals remain visible at small sizes.
+
+Validation:
+- npm run check: PASSED
+- Brand asset audit: 29/29
+- Functional audit: 115/115
+- Missing active assets: 0
+- JavaScript syntax errors: 0
+- Supabase migration required: no
+
+Pending brand items:
+- final brand color palette
+- support email
+- final Open Graph social preview
+- final sender name and sender email

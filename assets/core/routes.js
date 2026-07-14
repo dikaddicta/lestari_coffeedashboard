@@ -107,7 +107,7 @@
     "route": "saran",
     "sectionId": "tab-suggestion",
     "title": "Saran",
-    "subtitle": "Kirim masukan untuk membantu pengembangan Coffee Brew OS.",
+    "subtitle": "Kirim masukan untuk membantu pengembangan Lestari Coffee Dashboard.",
     "access": "public"
   },
   {
@@ -133,7 +133,7 @@
   const byRoute = Object.fromEntries(pages.map(page => [page.route, byTab[page.tab]]));
 
   window.COFFEE_PAGES = Object.freeze({
-    version: "44.0.0-rc.2",
+    version: "44.0.0-rc.3",
     pages: Object.freeze(pages.map(page => byTab[page.tab])),
     byTab: Object.freeze(byTab),
     byRoute: Object.freeze(byRoute),

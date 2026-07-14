@@ -32,7 +32,7 @@
     const timer = setTimeout(() => controller.abort(), Number(config.timeoutMs || 5000));
     try {
       const payload = {
-        product: window.COFFEE_APP_CONFIG?.site?.productName || "Coffee Brew OS",
+        product: window.COFFEE_APP_CONFIG?.site?.productName || "Lestari Coffee Dashboard",
         version: window.COFFEE_APP_CONFIG?.version || "unknown",
         build: window.COFFEE_APP_CONFIG?.build || "unknown",
         environment: window.COFFEE_APP_CONFIG?.environment || "unknown",

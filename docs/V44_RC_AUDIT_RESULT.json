@@ -1,7 +1,7 @@
 {
-  "version": "44.0.0-rc.2",
-  "generatedAt": "2026-07-14T09:09:01.234Z",
-  "passed": 84,
+  "version": "44.0.0-rc.3",
+  "generatedAt": "2026-07-14T15:01:56.314Z",
+  "passed": 99,
   "failed": 0,
   "checks": [
     {
@@ -32,6 +32,46 @@
     {
       "ok": true,
       "label": "assets/social-preview.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/brand/lestari-logo-original.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/brand/lestari-logo.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/favicon-16x16.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/favicon-32x32.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/apple-touch-icon.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/icon-192.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "assets/icons/icon-512.png tersedia",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "favicon.ico tersedia",
       "detail": ""
     },
     {
@@ -91,7 +131,7 @@
     },
     {
       "ok": true,
-      "label": "Versi sumber adalah v44.0.0-rc.2",
+      "label": "Versi sumber adalah v44.0.0-rc.3",
       "detail": ""
     },
     {
@@ -311,7 +351,7 @@
     },
     {
       "ok": true,
-      "label": "Runtime config menggunakan v44 RC2",
+      "label": "Runtime config menggunakan v44 RC3",
       "detail": ""
     },
     {
@@ -341,7 +381,7 @@
     },
     {
       "ok": true,
-      "label": "Service worker memakai cache v44 RC2",
+      "label": "Service worker memakai cache RC3 brand",
       "detail": ""
     },
     {
@@ -357,6 +397,41 @@
     {
       "ok": true,
       "label": "Service worker memuat ./assets/social-preview.png",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/brand/lestari-logo.png",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/icons/favicon-16x16.png",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/icons/favicon-32x32.png",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/icons/apple-touch-icon.png",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/icons/icon-192.png",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./assets/icons/icon-512.png",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Service worker memuat ./favicon.ico",
       "detail": ""
     },
     {

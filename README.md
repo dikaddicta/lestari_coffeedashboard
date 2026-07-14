@@ -1,12 +1,12 @@
-# Coffee Brew OS — Lestari Coffee
+# Lestari Coffee Dashboard
 
-Coffee Brew OS adalah dashboard web untuk menyusun rekomendasi seduh, mencatat eksperimen, mengelola stok biji kopi, melakukan QA, membaca analitik, mengekspor laporan, serta menjelajahi pustaka referensi kopi.
+Lestari Coffee Dashboard adalah dashboard web untuk menyusun rekomendasi seduh, mencatat eksperimen, mengelola stok biji kopi, melakukan QA, membaca analitik, mengekspor laporan, serta menjelajahi pustaka referensi kopi.
 
 ## Release aktif
 
-**v44.0.0-rc.1 — Release Candidate 1**
+**v44.0.0-rc.3 — Release Candidate 3**
 
-Release ini memusatkan identitas produk dan metadata deployment, menambahkan manifest rilis, social preview, monitoring error yang bersifat opt-in, halaman catatan rilis, template email autentikasi, serta runbook produksi. Status release candidate berarti build sudah memasuki validasi akhir, tetapi integrasi cloud belum boleh dianggap lulus sebelum diuji pada project Supabase aktif.
+Release ini mengintegrasikan identitas sementara **Lestari Coffee Dashboard** dan memakai gambar bunga yang dikirim pengguna sebagai logo utama, favicon, Apple Touch Icon, serta icon PWA. Bentuk logo tidak digambar ulang; adaptasi hanya berupa resize, padding, dan penempatan pada bidang espresso untuk icon kecil. Social preview dan detail brand lain masih bersifat placeholder hingga aset final disiapkan.
 
 Pembaruan utama:
 
@@ -72,6 +72,8 @@ Pembaruan utama:
 │  ├─ app.js
 │  ├─ app-config.js
 │  ├─ social-preview.png
+│  ├─ brand/
+│  ├─ icons/
 │  ├─ core/
 │  ├─ pages/
 │  ├─ public/

@@ -28,6 +28,14 @@ for (const file of [
   "assets/services/monitoring-service.js",
   "assets/public/release-page.js",
   "assets/social-preview.png",
+  "assets/brand/lestari-logo-original.png",
+  "assets/brand/lestari-logo.png",
+  "assets/icons/favicon-16x16.png",
+  "assets/icons/favicon-32x32.png",
+  "assets/icons/apple-touch-icon.png",
+  "assets/icons/icon-192.png",
+  "assets/icons/icon-512.png",
+  "favicon.ico",
   "release.json",
   "docs/V44_PRODUCTION_DEPLOYMENT.md",
   "docs/V44_SUPABASE_EMAIL_SETUP.md",
@@ -51,7 +59,7 @@ const site = JSON.parse(read("src/site.json"));
 const release = JSON.parse(read("release.json"));
 const packageJson = JSON.parse(read("package.json"));
 const manifest = JSON.parse(read("manifest.webmanifest"));
-check(site.version === "44.0.0-rc.2", "Versi sumber adalah v44.0.0-rc.2");
+check(site.version === "44.0.0-rc.3", "Versi sumber adalah v44.0.0-rc.3");
 check(packageJson.version === site.version, "Versi package sinkron dengan site config");
 check(release.version === site.version && release.build === site.build, "Release manifest sinkron dengan site config");
 check(release.releaseStage === "candidate", "Release manifest menandai tahap candidate");
@@ -75,14 +83,14 @@ for (const file of ["index.html", "beranda/index.html", "cara-pakai/index.html",
 const index = read("index.html");
 check(index.includes("assets/services/release-service.js"), "Dashboard memuat release service");
 check(index.includes("assets/services/monitoring-service.js"), "Dashboard memuat monitoring service");
-check(index.includes("v44.0.0-rc.2 · Release Candidate 2"), "Label release candidate terlihat dan sinkron");
+check(index.includes("v44.0.0-rc.3 · Release Candidate 3"), "Label release candidate terlihat dan sinkron");
 check(index.includes('href="rilis/"'), "Landing atau shell menautkan catatan rilis");
 
 const publicShell = read("src/public-shell.html");
 check(publicShell.includes('href="rilis/"'), "Navigasi publik menautkan catatan rilis");
 
 const appConfig = read("assets/app-config.js");
-check(appConfig.includes('"version": "44.0.0-rc.2"'), "Runtime config menggunakan v44 RC2");
+check(appConfig.includes('"version": "44.0.0-rc.3"'), "Runtime config menggunakan v44 RC3");
 check(appConfig.includes('"releaseCandidate": true'), "Feature flag release candidate aktif");
 check(appConfig.includes('"enabled": false'), "Monitoring cloud default nonaktif");
 
@@ -92,11 +100,18 @@ check(monitoring.includes("errors?.redact"), "Monitoring menggunakan sanitasi di
 check(!monitoring.includes("localStorage"), "Monitoring tidak membaca data workspace langsung");
 
 const sw = read("sw.js");
-check(sw.includes("coffee-brew-os-v44-rc2"), "Service worker memakai cache v44 RC2");
+check(sw.includes("lestari-coffee-dashboard-v44-rc3-brand"), "Service worker memakai cache RC3 brand");
 for (const asset of [
   "./assets/services/release-service.js",
   "./assets/services/monitoring-service.js",
   "./assets/social-preview.png",
+  "./assets/brand/lestari-logo.png",
+  "./assets/icons/favicon-16x16.png",
+  "./assets/icons/favicon-32x32.png",
+  "./assets/icons/apple-touch-icon.png",
+  "./assets/icons/icon-192.png",
+  "./assets/icons/icon-512.png",
+  "./favicon.ico",
   "./release.json",
   "./assets/public/release-page.js"
 ]) check(sw.includes(asset), `Service worker memuat ${asset}`);

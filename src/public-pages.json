@@ -5,45 +5,45 @@
     {
       "slug": "privasi",
       "file": "public/privasi.html",
-      "title": "Kebijakan Privasi — Coffee Brew OS",
-      "description": "Penjelasan mengenai data yang diproses, tujuan penggunaan, penyimpanan, keamanan, dan pilihan pengguna Coffee Brew OS.",
+      "title": "Kebijakan Privasi — Lestari Coffee Dashboard",
+      "description": "Penjelasan mengenai data yang diproses, tujuan penggunaan, penyimpanan, keamanan, dan pilihan pengguna Lestari Coffee Dashboard.",
       "robots": "index,follow"
     },
     {
       "slug": "ketentuan",
       "file": "public/ketentuan.html",
-      "title": "Ketentuan Penggunaan — Coffee Brew OS",
-      "description": "Ketentuan penggunaan dashboard, akun, workspace, konten, dan tanggung jawab pengguna Coffee Brew OS.",
+      "title": "Ketentuan Penggunaan — Lestari Coffee Dashboard",
+      "description": "Ketentuan penggunaan dashboard, akun, workspace, konten, dan tanggung jawab pengguna Lestari Coffee Dashboard.",
       "robots": "index,follow"
     },
     {
       "slug": "disclaimer",
       "file": "public/disclaimer.html",
-      "title": "Batasan Rekomendasi — Coffee Brew OS",
-      "description": "Batasan penggunaan rekomendasi seduh, penilaian QA, dan estimasi biaya pada Coffee Brew OS.",
+      "title": "Batasan Rekomendasi — Lestari Coffee Dashboard",
+      "description": "Batasan penggunaan rekomendasi seduh, penilaian QA, dan estimasi biaya pada Lestari Coffee Dashboard.",
       "robots": "index,follow"
     },
     {
       "slug": "status",
       "file": "public/status.html",
-      "title": "Status Sistem — Coffee Brew OS",
-      "description": "Pemeriksaan status browser, penyimpanan lokal, PWA, koneksi, dan konfigurasi Coffee Brew OS.",
+      "title": "Status Sistem — Lestari Coffee Dashboard",
+      "description": "Pemeriksaan status browser, penyimpanan lokal, PWA, koneksi, dan konfigurasi Lestari Coffee Dashboard.",
       "robots": "noindex,follow",
       "script": "assets/public/status-page.js"
     },
     {
       "slug": "maintenance",
       "file": "public/maintenance.html",
-      "title": "Pemeliharaan Sistem — Coffee Brew OS",
-      "description": "Informasi pemeliharaan dan jalur kembali ke Coffee Brew OS.",
+      "title": "Pemeliharaan Sistem — Lestari Coffee Dashboard",
+      "description": "Informasi pemeliharaan dan jalur kembali ke Lestari Coffee Dashboard.",
       "robots": "noindex,nofollow",
       "script": "assets/public/maintenance-page.js"
     },
     {
       "slug": "rilis",
       "file": "public/rilis.html",
-      "title": "Catatan Rilis — Coffee Brew OS",
-      "description": "Versi aktif, cakupan release candidate, perubahan utama, dan status kesiapan Coffee Brew OS.",
+      "title": "Catatan Rilis — Lestari Coffee Dashboard",
+      "description": "Versi aktif, cakupan release candidate, perubahan utama, dan status kesiapan Lestari Coffee Dashboard.",
       "robots": "index,follow",
       "script": "assets/public/release-page.js"
     }

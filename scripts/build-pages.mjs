@@ -32,7 +32,7 @@ function renderDocument(shell, pageContent, site, { baseHref, initialRoute, titl
     .replace(pagePlaceholder, `${pagePlaceholder}\n${pageContent}`)
     .replaceAll(basePlaceholder, baseHref)
     .replaceAll(routePlaceholder, initialRoute || "")
-    .replaceAll(titlePlaceholder, title || "Coffee Brew OS — Dashboard Seduh Kopi")
+    .replaceAll(titlePlaceholder, title || `${site.productName} — Dashboard Seduh Kopi`)
     .replaceAll(descriptionPlaceholder, description || "Dashboard seduh kopi untuk rekomendasi resep, pencatatan, QA, analitik, laporan, dan pustaka data berbasis referensi.")
     .replaceAll(canonicalPlaceholder, canonicalUrl || site.siteUrl)
     .replaceAll("{{THEME_COLOR}}", site.themeColor)
@@ -41,6 +41,11 @@ function renderDocument(shell, pageContent, site, { baseHref, initialRoute, titl
     .replaceAll("{{TAGLINE}}", site.tagline)
     .replaceAll("{{SOCIAL_IMAGE_URL}}", socialImageUrl)
     .replaceAll("{{ICON_PATH}}", site.icon)
+    .replaceAll("{{LOGO_PATH}}", site.logo || site.icon)
+    .replaceAll("{{FAVICON_16_PATH}}", site.favicon16 || site.icon)
+    .replaceAll("{{FAVICON_32_PATH}}", site.favicon32 || site.icon)
+    .replaceAll("{{FAVICON_ICO_PATH}}", site.faviconIco || site.icon)
+    .replaceAll("{{APPLE_TOUCH_ICON_PATH}}", site.appleTouchIcon || site.icon)
     .replaceAll("{{ASSET_VERSION}}", site.build)
     .replaceAll("{{LEGAL_VERSION}}", site.legalVersion || "1.0");
 }

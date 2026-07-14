@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-14T09:09:04.163Z",
-  "version": "44.0.0-rc.2",
+  "generatedAt": "2026-07-14T15:01:59.128Z",
+  "version": "44.0.0-rc.3",
   "summary": {
     "pass": 115,
     "fail": 0
@@ -283,13 +283,13 @@
     },
     {
       "status": "PASS",
-      "message": "Root landing title remains product title",
+      "message": "Root landing title follows configured product name",
       "detail": ""
     },
     {
       "status": "PASS",
-      "message": "Application version is 44.0.0-rc.2",
-      "detail": "44.0.0-rc.2"
+      "message": "Application version is 44.0.0-rc.3",
+      "detail": "44.0.0-rc.3"
     },
     {
       "status": "PASS",
@@ -304,7 +304,7 @@
     {
       "status": "PASS",
       "message": "package.json version matches app config",
-      "detail": "44.0.0-rc.2"
+      "detail": "44.0.0-rc.3"
     },
     {
       "status": "PASS",
@@ -313,7 +313,7 @@
     },
     {
       "status": "PASS",
-      "message": "Service-worker cache name matches v44 release candidate",
+      "message": "Service-worker cache name matches RC3 brand integration",
       "detail": ""
     },
     {
@@ -338,7 +338,7 @@
     },
     {
       "status": "PASS",
-      "message": "55 service-worker core assets exist",
+      "message": "63 service-worker core assets exist",
       "detail": ""
     },
     {

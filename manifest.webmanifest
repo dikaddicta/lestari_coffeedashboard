@@ -1,8 +1,8 @@
 {
   "id": "https://dikaddicta.github.io/lestari_coffeedashboard/",
-  "name": "Coffee Brew OS — Lestari Coffee",
-  "short_name": "Coffee Brew OS",
-  "description": "Susun resep, catat percobaan, pantau stok, dan evaluasi hasil seduh dalam satu dashboard.",
+  "name": "Lestari Coffee Dashboard — Lestari",
+  "short_name": "Lestari Coffee Dashboard",
+  "description": "Dashboard yang dibuat dari kebutuhan pribadi untuk membantu proses seduh menjadi lebih rapi, terukur, dan mudah dibagikan.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -11,13 +11,13 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "assets/latte-art-icon.png",
+      "src": "assets/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/latte-art-icon.png",
+      "src": "assets/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -37,7 +37,7 @@
       "url": "./rekomendasi-seduh/",
       "icons": [
         {
-          "src": "assets/latte-art-icon.png",
+          "src": "assets/icons/icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -50,7 +50,7 @@
       "url": "./pustaka-data/",
       "icons": [
         {
-          "src": "assets/latte-art-icon.png",
+          "src": "assets/icons/icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
