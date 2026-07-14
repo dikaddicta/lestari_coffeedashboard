@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-14T04:07:22.663Z",
-  "version": "44.0.0-rc.1",
+  "generatedAt": "2026-07-14T09:09:04.163Z",
+  "version": "44.0.0-rc.2",
   "summary": {
     "pass": 115,
     "fail": 0
@@ -288,8 +288,8 @@
     },
     {
       "status": "PASS",
-      "message": "Application version is 44.0.0-rc.1",
-      "detail": "44.0.0-rc.1"
+      "message": "Application version is 44.0.0-rc.2",
+      "detail": "44.0.0-rc.2"
     },
     {
       "status": "PASS",
@@ -304,7 +304,7 @@
     {
       "status": "PASS",
       "message": "package.json version matches app config",
-      "detail": "44.0.0-rc.1"
+      "detail": "44.0.0-rc.2"
     },
     {
       "status": "PASS",

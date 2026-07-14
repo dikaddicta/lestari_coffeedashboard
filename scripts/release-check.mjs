@@ -12,6 +12,7 @@ const steps = [
   ["Audit roles, RLS, and activity trail", ["scripts/security-audit.mjs"]],
   ["Audit commercial readiness", ["scripts/commercial-readiness-audit.mjs"]],
   ["Audit release candidate", ["scripts/release-candidate-audit.mjs"]],
+  ["Audit visual contrast and public error states", ["scripts/visual-contrast-audit.mjs"]],
   ["Functional audit", ["scripts/functional-audit.mjs"]]
 ];
 
@@ -27,4 +28,4 @@ for (const [label, args] of steps) {
   }
 }
 
-console.log("\nRelease check passed. Modular source, clean URLs, page modules, service layer, core workflow modules, recommendation reasoning, QA diagnostics, analytics insight, cost estimation, role safeguards, RLS hardening, append-only audit trail, legal pages, verified backup, diagnostics, maintenance controls, branded metadata, release manifest, opt-in monitoring, production runbooks, validation feedback, and dashboard functionality are consistent.");
+console.log("\nRelease check passed. Modular source, clean URLs, page modules, service layer, core workflow modules, recommendation reasoning, QA diagnostics, analytics insight, cost estimation, role safeguards, RLS hardening, append-only audit trail, legal pages, verified backup, diagnostics, maintenance controls, branded metadata, release manifest, opt-in monitoring, public CTA contrast, resilient 404 routing, production runbooks, validation feedback, and dashboard functionality are consistent.");

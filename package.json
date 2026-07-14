@@ -1,8 +1,8 @@
 {
   "name": "coffee-brew-os",
-  "version": "44.0.0-rc.1",
+  "version": "44.0.0-rc.2",
   "private": true,
-  "description": "Coffee Brew OS — release candidate with branded metadata, release manifest, opt-in monitoring, social preview, production runbooks, and existing brew workflow modules",
+  "description": "Coffee Brew OS — release candidate 2 with corrected public CTA contrast, resilient 404 routing, branded metadata, monitoring, and existing brew workflow modules",
   "scripts": {
     "build": "node scripts/build-all.mjs",
     "audit": "node scripts/functional-audit.mjs",
@@ -17,7 +17,8 @@
     "audit:analytics": "node scripts/analytics-insight-audit.mjs",
     "audit:security": "node scripts/security-audit.mjs",
     "audit:commercial": "node scripts/commercial-readiness-audit.mjs",
-    "audit:rc": "node scripts/release-candidate-audit.mjs"
+    "audit:rc": "node scripts/release-candidate-audit.mjs",
+    "audit:contrast": "node scripts/visual-contrast-audit.mjs"
   },
   "engines": {
     "node": ">=18"

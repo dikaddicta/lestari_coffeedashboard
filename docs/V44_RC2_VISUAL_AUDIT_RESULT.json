@@ -1,0 +1,148 @@
+{
+  "version": "44.0.0-rc.2",
+  "build": "20260714-v44-rc2",
+  "passed": 28,
+  "failed": 0,
+  "results": [
+    {
+      "status": "pass",
+      "label": "Primary public CTA has a higher-specificity text rule",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "Primary public CTA declares light text",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "Secondary public CTA has an explicit surface rule",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "Public CTA keyboard focus is visible",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "Public CTA meets the 44px touch target baseline",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "Primary CTA contrast meets WCAG AA",
+      "detail": "16.81"
+    },
+    {
+      "status": "pass",
+      "label": "Secondary CTA contrast meets WCAG AA",
+      "detail": "16.81"
+    },
+    {
+      "status": "pass",
+      "label": "Inline public link contrast meets WCAG AA",
+      "detail": "7.54"
+    },
+    {
+      "status": "pass",
+      "label": "404.html action links use the shared button-link component",
+      "detail": "2 action(s)"
+    },
+    {
+      "status": "pass",
+      "label": "404.html: Kembali ke Dashboard keeps the button-link class",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "404.html: Periksa Status Sistem keeps the button-link class",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "maintenance.html action links use the shared button-link component",
+      "detail": "2 action(s)"
+    },
+    {
+      "status": "pass",
+      "label": "maintenance.html: Periksa Status keeps the button-link class",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "maintenance.html: Coba Buka Dashboard keeps the button-link class",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "rilis.html action links use the shared button-link component",
+      "detail": "2 action(s)"
+    },
+    {
+      "status": "pass",
+      "label": "rilis.html: Periksa Status Sistem keeps the button-link class",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "rilis.html: Kembali ke Dashboard keeps the button-link class",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "status.html action links use the shared button-link component",
+      "detail": "1 action(s)"
+    },
+    {
+      "status": "pass",
+      "label": "status.html: Kembali ke Dashboard keeps the button-link class",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "Generated 404 includes a base URL",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "404 assets and links resolve from the project root",
+      "detail": "/lestari_coffeedashboard/"
+    },
+    {
+      "status": "pass",
+      "label": "404 status action resolves through the project-root base",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "404 dashboard action resolves through the project-root base",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "Dashboard primary buttons retain light text on dark surfaces",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "Dashboard secondary actions retain dark text on light surfaces",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "confirmation.html CTA uses light text on the dark button",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "magic-link.html CTA uses light text on the dark button",
+      "detail": ""
+    },
+    {
+      "status": "pass",
+      "label": "password-reset.html CTA uses light text on the dark button",
+      "detail": ""
+    }
+  ]
+}

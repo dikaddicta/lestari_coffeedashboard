@@ -43,12 +43,16 @@ for (const page of manifest.pages) {
 }
 
 const notFound = (await readFile(path.join(src, "public/404.html"), "utf8")).trim();
+// GitHub Pages serves 404.html while preserving the unknown URL in the address bar.
+// An absolute project-root base keeps CSS, scripts, and action links valid even for
+// deeply nested missing paths such as /foo/bar/baz/.
+const notFoundBaseHref = new URL(site.siteUrl).pathname;
 await writeFile(path.join(root, "404.html"), render(notFound, {
   slug: "404",
   title: `Halaman Tidak Ditemukan — ${site.productName}`,
   description: "Halaman yang diminta tidak tersedia.",
   robots: "noindex,nofollow"
-}, "./"), "utf8");
+}, notFoundBaseHref), "utf8");
 
 const sitemapUrls = [
   site.siteUrl,

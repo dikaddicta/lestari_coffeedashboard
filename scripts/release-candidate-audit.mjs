@@ -51,7 +51,7 @@ const site = JSON.parse(read("src/site.json"));
 const release = JSON.parse(read("release.json"));
 const packageJson = JSON.parse(read("package.json"));
 const manifest = JSON.parse(read("manifest.webmanifest"));
-check(site.version === "44.0.0-rc.1", "Versi sumber adalah v44.0.0-rc.1");
+check(site.version === "44.0.0-rc.2", "Versi sumber adalah v44.0.0-rc.2");
 check(packageJson.version === site.version, "Versi package sinkron dengan site config");
 check(release.version === site.version && release.build === site.build, "Release manifest sinkron dengan site config");
 check(release.releaseStage === "candidate", "Release manifest menandai tahap candidate");
@@ -75,14 +75,14 @@ for (const file of ["index.html", "beranda/index.html", "cara-pakai/index.html",
 const index = read("index.html");
 check(index.includes("assets/services/release-service.js"), "Dashboard memuat release service");
 check(index.includes("assets/services/monitoring-service.js"), "Dashboard memuat monitoring service");
-check(index.includes("v44.0.0-rc.1 · Release Candidate 1"), "Label release candidate terlihat dan sinkron");
+check(index.includes("v44.0.0-rc.2 · Release Candidate 2"), "Label release candidate terlihat dan sinkron");
 check(index.includes('href="rilis/"'), "Landing atau shell menautkan catatan rilis");
 
 const publicShell = read("src/public-shell.html");
 check(publicShell.includes('href="rilis/"'), "Navigasi publik menautkan catatan rilis");
 
 const appConfig = read("assets/app-config.js");
-check(appConfig.includes('"version": "44.0.0-rc.1"'), "Runtime config menggunakan v44 RC1");
+check(appConfig.includes('"version": "44.0.0-rc.2"'), "Runtime config menggunakan v44 RC2");
 check(appConfig.includes('"releaseCandidate": true'), "Feature flag release candidate aktif");
 check(appConfig.includes('"enabled": false'), "Monitoring cloud default nonaktif");
 
@@ -92,7 +92,7 @@ check(monitoring.includes("errors?.redact"), "Monitoring menggunakan sanitasi di
 check(!monitoring.includes("localStorage"), "Monitoring tidak membaca data workspace langsung");
 
 const sw = read("sw.js");
-check(sw.includes("coffee-brew-os-v44-rc1"), "Service worker memakai cache v44 RC1");
+check(sw.includes("coffee-brew-os-v44-rc2"), "Service worker memakai cache v44 RC2");
 for (const asset of [
   "./assets/services/release-service.js",
   "./assets/services/monitoring-service.js",

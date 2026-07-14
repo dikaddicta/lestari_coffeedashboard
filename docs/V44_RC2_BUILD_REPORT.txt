@@ -1,0 +1,15 @@
+Coffee Brew OS v44.0.0-rc.2
+Build: 20260714-v44-rc2
+Focus: Public CTA contrast, consistent action states, and resilient 404 routing.
+
+Resolved:
+- Brown/bronze text appearing on dark public CTA surfaces.
+- The same specificity conflict on Release Notes, Maintenance, and 404 actions.
+- 404 assets and navigation becoming relative to an unknown nested URL.
+- Missing shared focus, hover, and touch-target treatment on public actions.
+
+Validation:
+- Full build and release check.
+- Existing modular, clean URL, service, workflow, intelligence, analytics, security, commercial, RC, and functional audits.
+- New visual contrast and public error-state audit.
+- No database migration.

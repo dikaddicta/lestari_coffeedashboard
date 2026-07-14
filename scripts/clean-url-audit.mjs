@@ -8,6 +8,8 @@ const navigation = await readFile(path.join(root, "assets/core/navigation.js"), 
 const index = await readFile(path.join(root, "index.html"), "utf8");
 const notFound = await readFile(path.join(root, "404.html"), "utf8");
 const webManifest = JSON.parse(await readFile(path.join(root, "manifest.webmanifest"), "utf8"));
+const site = JSON.parse(await readFile(path.join(root, "src/site.json"), "utf8"));
+const projectRootBase = new URL(site.siteUrl).pathname;
 const failures = [];
 let checks = 0;
 
@@ -19,7 +21,7 @@ function check(condition, label) {
 check(index.includes('<base href="./"'), "Root index harus memakai base ./");
 check(index.includes('data-initial-route=""'), "Root index harus memiliki initial route kosong");
 check(!index.includes("{{BASE_HREF}}") && !index.includes("{{INITIAL_ROUTE}}"), "Root index tidak boleh menyisakan placeholder");
-check(notFound.includes('<base href="./"'), "404 fallback harus menunjuk ke root assets");
+check(notFound.includes(`<base href="${projectRootBase}"`), "404 fallback harus menunjuk ke root project assets");
 check(navigation.includes("pushState") && navigation.includes("replaceState"), "Navigation module harus memakai History API");
 check(navigation.includes("legacy-hash-migration"), "Navigation module harus memigrasikan hash route lama");
 check(webManifest.start_url === "./", "PWA start_url harus membuka landing page root");

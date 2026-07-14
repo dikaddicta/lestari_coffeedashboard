@@ -1,6 +1,6 @@
 {
-  "version": "44.0.0-rc.1",
-  "generatedAt": "2026-07-14T04:07:19.881Z",
+  "version": "44.0.0-rc.2",
+  "generatedAt": "2026-07-14T09:09:01.234Z",
   "passed": 84,
   "failed": 0,
   "checks": [
@@ -91,7 +91,7 @@
     },
     {
       "ok": true,
-      "label": "Versi sumber adalah v44.0.0-rc.1",
+      "label": "Versi sumber adalah v44.0.0-rc.2",
       "detail": ""
     },
     {
@@ -311,7 +311,7 @@
     },
     {
       "ok": true,
-      "label": "Runtime config menggunakan v44 RC1",
+      "label": "Runtime config menggunakan v44 RC2",
       "detail": ""
     },
     {
@@ -341,7 +341,7 @@
     },
     {
       "ok": true,
-      "label": "Service worker memakai cache v44 RC1",
+      "label": "Service worker memakai cache v44 RC2",
       "detail": ""
     },
     {

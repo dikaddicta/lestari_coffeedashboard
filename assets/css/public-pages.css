@@ -58,8 +58,54 @@ a{color:inherit}
 .status-item[data-state="ok"] strong{color:var(--public-success)}
 .status-item[data-state="warning"] strong{color:var(--public-warning)}
 .public-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.public-actions button,.button-link{appearance:none;border:1px solid #1f1d1a;background:#1f1d1a;color:#fff;border-radius:12px;padding:12px 16px;font:inherit;font-size:13px;font-weight:800;text-decoration:none;cursor:pointer}
-.public-actions .secondary{background:#fff;color:#1f1d1a;border-color:var(--public-line)}
+.public-actions button,
+.public-actions .button-link{
+  appearance:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  border:1px solid #1f1d1a;
+  border-radius:12px;
+  padding:11px 17px;
+  background:#1f1d1a;
+  color:#fff;
+  font:inherit;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.25;
+  text-align:center;
+  text-decoration:none;
+  cursor:pointer;
+  transition:background-color .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease;
+}
+/* The generic article-link rule must never recolor primary CTA text. */
+.public-article .public-actions button:not(.secondary),
+.public-article .public-actions .button-link:not(.secondary){
+  color:#fff;
+}
+.public-article .public-actions button:not(.secondary):hover,
+.public-article .public-actions .button-link:not(.secondary):hover{
+  background:#302c27;
+  border-color:#302c27;
+  color:#fff;
+}
+.public-article .public-actions .secondary{
+  background:#fff;
+  color:#1f1d1a;
+  border-color:var(--public-line);
+}
+.public-article .public-actions .secondary:hover{
+  background:#f5f1eb;
+  border-color:#cfc6bb;
+  color:#1f1d1a;
+}
+.public-actions button:focus-visible,
+.public-actions .button-link:focus-visible{
+  outline:3px solid rgba(155,107,63,.28);
+  outline-offset:3px;
+}
+.public-actions button:disabled{opacity:.58;cursor:not-allowed}
 .maintenance-mark{width:70px;height:70px;display:grid;place-items:center;border-radius:22px;background:var(--public-accent-soft);font-size:32px;margin-bottom:24px}
 @media(max-width:760px){
   .public-header{align-items:flex-start;flex-direction:column}
