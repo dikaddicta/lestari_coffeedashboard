@@ -1,4 +1,4 @@
-const CACHE_NAME = "coffee-brew-os-v42-2-browser-title";
+const CACHE_NAME = "coffee-brew-os-v43-commercial-readiness";
 const ROUTE_ENTRIES = [
   "beranda",
   "cara-pakai",
@@ -13,7 +13,12 @@ const ROUTE_ENTRIES = [
   "export-report",
   "saran",
   "akun-role",
-  "pustaka-data"
+  "pustaka-data",
+  "privasi",
+  "ketentuan",
+  "disclaimer",
+  "status",
+  "maintenance"
 ].map(route => `./${route}/`);
 
 const PAGE_MODULES = [
@@ -42,7 +47,10 @@ const CORE_ASSETS = [
   "./assets/core/routes.js",
   "./assets/core/navigation.js",
   "./assets/core/runtime.js",
+  "./assets/core/maintenance.js",
   "./assets/services/storage-service.js",
+  "./assets/services/error-service.js",
+  "./assets/services/backup-service.js",
   "./assets/services/security-service.js",
   "./assets/services/audit-service.js",
   "./assets/core/event-bus.js",
@@ -63,6 +71,8 @@ const CORE_ASSETS = [
   "./assets/css/intelligence.css",
   "./assets/css/analytics-insight.css",
   "./assets/css/security-audit.css",
+  "./assets/css/commercial-readiness.css",
+  "./assets/css/public-pages.css",
   "./assets/app.js",
   "./assets/data.js",
   "./assets/supabase-config.js",
@@ -75,7 +85,12 @@ const CORE_ASSETS = [
   "./assets/services/analytics-service.js",
   "./assets/services/notification-service.js",
   "./assets/latte-art-icon.png",
-  "./manifest.webmanifest"
+  "./assets/public/status-page.js",
+  "./assets/public/maintenance-page.js",
+  "./manifest.webmanifest",
+  "./robots.txt",
+  "./sitemap.xml",
+  "./.well-known/security.txt"
 ];
 
 function normalizedRequest(request) {

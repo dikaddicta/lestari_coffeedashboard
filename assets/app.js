@@ -17,6 +17,8 @@
   const NOTIFICATION_SERVICE = SERVICES.notification || null;
   const SECURITY_SERVICE = SERVICES.security || null;
   const AUDIT_SERVICE = SERVICES.audit || null;
+  const ERROR_SERVICE = SERVICES.errors || null;
+  const BACKUP_SERVICE = SERVICES.backup || null;
   const SAFE_STORAGE = SERVICES.storage || RUNTIME.storage || {
     get(key, fallback = null, kind = "local") {
       try {
@@ -111,6 +113,7 @@
   let sessionKeepAliveTimer = null;
   let autosaveTimer = null;
   let pendingSyncRunning = false;
+  let pendingRecovery = null;
 
   const $ = (id) => document.getElementById(id);
   const fmt = (n, d = 0) => Number.isFinite(Number(n)) ? Number(n).toFixed(d).replace(/\.0$/, "") : "-";
@@ -131,11 +134,20 @@
 
   window.addEventListener("unhandledrejection", event => {
     console.error("Unhandled promise rejection", event.reason);
+    ERROR_SERVICE?.capture?.({ type: "unhandledrejection", reason: event.reason, message: event.reason?.message || event.reason });
     showMessage(`Terjadi error proses: ${event.reason?.message || event.reason || "unknown error"}`, "error");
   });
 
   window.addEventListener("error", event => {
     console.error("Unhandled error", event.error || event.message);
+    ERROR_SERVICE?.capture?.({
+      type: "error",
+      error: event.error,
+      message: event.message,
+      source: event.filename,
+      line: event.lineno,
+      column: event.colno
+    });
     showMessage(`Terjadi error aplikasi: ${event.message || "unknown error"}`, "error");
   });
 
@@ -825,6 +837,7 @@
     const requestedRole = $("signupRole")?.value || "admin";
     const requestedWorkspaceId = $("signupWorkspace")?.value || "";
     if (!email || !password) return showMessage("Isi email dan kata sandi untuk daftar akun baru.", "error");
+    if (!$("signupConsent")?.checked) return showMessage("Setujui Ketentuan Penggunaan dan Kebijakan Privasi sebelum membuat akun.", "error");
     if (password.length < 8) return showMessage("Gunakan kata sandi minimal 8 karakter.", "error");
     if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) return showMessage("Kata sandi perlu memuat huruf dan angka.", "error");
     if (["brewer", "qa"].includes(requestedRole) && !requestedWorkspaceId) {
@@ -834,7 +847,9 @@
     const signupMetadata = {
       display_name: displayName,
       requested_role: requestedRole,
-      requested_workspace_id: requestedWorkspaceId || null
+      requested_workspace_id: requestedWorkspaceId || null,
+      legal_consent_version: "2026-07-14-v1",
+      legal_consent_at: new Date().toISOString()
     };
     const { data, error } = AUTH_SERVICE
       ? await AUTH_SERVICE.signUp(supabaseClient, { email, password, redirectTo, metadata: signupMetadata })
@@ -5854,32 +5869,79 @@
   }
 
 
-  function exportJson() {
-    const blob = new Blob([JSON.stringify({ ...state, exportedAt: new Date().toISOString() }, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `coffee-dashboard-export-${todayISO()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+  async function exportJson() {
+    try {
+      const payload = BACKUP_SERVICE
+        ? await BACKUP_SERVICE.create(state, {
+            workspace: currentWorkspace ? { id: currentWorkspace.id, name: currentWorkspace.name } : null
+          })
+        : { ...state, exportedAt: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `coffee-brew-os-backup-${todayISO()}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showMessage("Backup lokal berhasil dibuat.", "success");
+    } catch (error) {
+      ERROR_SERVICE?.capture?.({ type: "backup-export", error });
+      showMessage(`Gagal membuat backup: ${error.message || error}`, "error");
+    }
+  }
+
+  async function inspectBackupFile(file) {
+    const preview = $("recoveryPreview");
+    const fileName = $("recoveryFileName");
+    const restoreBtn = $("restoreBackupBtn");
+    pendingRecovery = null;
+    if (restoreBtn) restoreBtn.disabled = true;
+    if (fileName) fileName.textContent = file?.name || "Belum ada file dipilih.";
+    if (!file) return;
+    try {
+      const parsed = BACKUP_SERVICE
+        ? await BACKUP_SERVICE.parse(await file.text())
+        : { valid: true, legacy: true, data: JSON.parse(await file.text()), metadata: {} };
+      pendingRecovery = parsed;
+      const counts = parsed.metadata?.counts || {};
+      if (preview) preview.innerHTML = `<strong>Backup valid${parsed.legacy ? " (format lama)" : ""}.</strong><br>Stok: ${counts.stock ?? parsed.data.userStock?.length ?? 0} · Log seduh: ${counts.brewLogs ?? parsed.data.userBrewLogs?.length ?? 0} · QA: ${counts.qaScores ?? parsed.data.userQA?.length ?? 0} · Saran: ${counts.suggestions ?? parsed.data.suggestions?.length ?? 0}<br>Versi aplikasi: ${html(parsed.metadata?.appVersion || "legacy")} · Dibuat: ${html(parsed.metadata?.exportedAt || "tidak tercatat")}`;
+      if (restoreBtn) restoreBtn.disabled = false;
+    } catch (error) {
+      ERROR_SERVICE?.capture?.({ type: "backup-inspection", error });
+      if (preview) preview.innerHTML = `<strong>Backup tidak dapat digunakan.</strong><br>${html(error.message || error)}`;
+      showMessage(`File backup tidak valid: ${error.message || error}`, "error");
+    }
+  }
+
+  function restoreInspectedBackup() {
+    if (!pendingRecovery?.valid) return showMessage("Pilih dan periksa file backup terlebih dahulu.", "error");
+    const counts = pendingRecovery.metadata?.counts || {};
+    const message = `Pulihkan ${counts.stock ?? 0} stok, ${counts.brewLogs ?? 0} log seduh, dan ${counts.qaScores ?? 0} nilai QA ke penyimpanan lokal? Data lokal saat ini akan diganti. Data cloud tidak berubah.`;
+    if (!confirm(message)) return;
+    try {
+      if (BACKUP_SERVICE) BACKUP_SERVICE.apply(state, pendingRecovery.data);
+      else Object.assign(state, pendingRecovery.data);
+      persist();
+      renderAll();
+      pendingRecovery = null;
+      if ($("restoreBackupBtn")) $("restoreBackupBtn").disabled = true;
+      if ($("recoveryPreview")) $("recoveryPreview").innerHTML = "Pemulihan selesai. Data lokal sudah dimuat ulang.";
+      showMessage("Backup berhasil dipulihkan ke browser. Data cloud tidak diubah.", "success");
+    } catch (error) {
+      ERROR_SERVICE?.capture?.({ type: "backup-restore", error });
+      showMessage(`Pemulihan gagal: ${error.message || error}`, "error");
+    }
   }
 
   function importJson(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result);
-        state.userStock = Array.isArray(data.userStock) ? data.userStock : state.userStock;
-        state.userBrewLogs = Array.isArray(data.userBrewLogs) ? data.userBrewLogs : state.userBrewLogs;
-        state.userQA = Array.isArray(data.userQA) ? data.userQA : state.userQA;
-        persist();
-        renderAll();
-        alert("Import berhasil ke penyimpanan lokal. Untuk memasukkan data ke database publik, unggah ulang data penting lewat aplikasi atau import langsung melalui Supabase.");
-      } catch (err) {
-        alert("File JSON tidak valid.");
-      }
-    };
-    reader.readAsText(file);
+    inspectBackupFile(file).then(() => {
+      if (pendingRecovery?.valid && confirm("File backup valid. Pulihkan sekarang ke penyimpanan lokal?")) restoreInspectedBackup();
+    });
+  }
+
+  function renderDiagnosticsSummary() {
+    const rows = ERROR_SERVICE?.list?.() || [];
+    if ($("diagnosticErrorCount")) $("diagnosticErrorCount").textContent = rows.length;
   }
 
   function syncMobileTabSelect(name) {
@@ -6421,6 +6483,23 @@
       if (!btn) return;
       handleReportAction(btn.dataset.reportAction);
     });
+    $("createSecureBackupBtn")?.addEventListener("click", exportJson);
+    $("selectBackupFileBtn")?.addEventListener("click", () => $("restoreBackupInput")?.click());
+    $("restoreBackupInput")?.addEventListener("change", event => inspectBackupFile(event.target.files?.[0]));
+    $("restoreBackupBtn")?.addEventListener("click", restoreInspectedBackup);
+    $("downloadDiagnosticsBtn")?.addEventListener("click", () => ERROR_SERVICE?.download?.({
+      user: currentUser ? { id: currentUser.id, email: currentUser.email } : null,
+      workspace: currentWorkspace ? { id: currentWorkspace.id, name: currentWorkspace.name } : null,
+      role: currentRole
+    }));
+    $("clearDiagnosticsBtn")?.addEventListener("click", () => {
+      if (!confirm("Hapus seluruh riwayat error lokal?")) return;
+      ERROR_SERVICE?.clear?.();
+      renderDiagnosticsSummary();
+      showMessage("Riwayat error lokal sudah dihapus.", "success");
+    });
+    window.addEventListener("coffee:diagnostic", renderDiagnosticsSummary);
+    window.addEventListener("coffee:diagnostic-cleared", renderDiagnosticsSummary);
     $("mobileQuickBrew")?.addEventListener("click", () => {
       showTab("brew");
       document.querySelector("#tab-brew")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -8167,6 +8246,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
   function renderAll() {
+    renderDiagnosticsSummary();
     if (currentUser) {
       document.body.dataset.accessMode = "login";
       document.body.classList.add("experience-entered", "access-login");
@@ -8333,8 +8413,8 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   }
 
   function applyReleaseMetadata() {
-    const version = APP_CONFIG.version || "42.2.0";
-    const release = APP_CONFIG.release || "Browser Title Hotfix";
+    const version = APP_CONFIG.version || "43.0.0";
+    const release = APP_CONFIG.release || "Commercial Readiness";
     document.documentElement.dataset.appVersion = version;
     document.documentElement.dataset.appRelease = release;
     const buildLabel = document.querySelector(".sidebar-build-version");

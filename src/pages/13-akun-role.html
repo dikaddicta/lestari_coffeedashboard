@@ -91,6 +91,10 @@
               <select id="signupWorkspace"></select>
             </label>
             <p id="signupApprovalHint" class="hint small-note span-2 hidden">Permintaan Brewer atau QA akan ditinjau oleh Admin Workspace sebelum akses diaktifkan.</p>
+            <label class="signup-consent span-2">
+              <input id="signupConsent" type="checkbox" />
+              <span>Saya telah membaca dan menyetujui <a href="ketentuan/" target="_blank" rel="noopener">Ketentuan Penggunaan</a> serta <a href="privasi/" target="_blank" rel="noopener">Kebijakan Privasi</a>.</span>
+            </label>
             <div class="span-2 inline-actions">
               <button class="secondary" id="signupBtn" type="button">Buat Akun</button>
             </div>
@@ -147,6 +151,31 @@
       </div>
     </section>
   </div>
+
+  <section class="panel wide commercial-readiness-panel" id="diagnosticsPanel">
+    <div class="section-title">
+      <span>Kesiapan Operasional</span>
+      <h2>Status aplikasi &amp; diagnostik</h2>
+    </div>
+    <p class="hint">Diagnostik menyimpan maksimal 25 error teknis yang telah disanitasi. Kata sandi, token, dan isi workspace tidak dimasukkan.</p>
+    <div class="commercial-grid">
+      <article class="commercial-card">
+        <span class="mini-label">Status Sistem</span>
+        <h3>Pemeriksaan browser</h3>
+        <p>Lihat koneksi, penyimpanan lokal, dukungan PWA, versi aplikasi, dan mode pemeliharaan.</p>
+        <div class="inline-actions"><a class="secondary" href="status/">Buka Status Sistem</a></div>
+      </article>
+      <article class="commercial-card">
+        <span class="mini-label">Riwayat Error</span>
+        <h3><span id="diagnosticErrorCount" class="diagnostic-count">0</span> catatan tersimpan</h3>
+        <p>Gunakan file diagnostik ketika melaporkan gangguan agar proses pemeriksaan lebih cepat.</p>
+        <div class="inline-actions">
+          <button id="downloadDiagnosticsBtn" class="secondary" type="button">Unduh Diagnostik</button>
+          <button id="clearDiagnosticsBtn" class="ghost" type="button">Hapus Riwayat</button>
+        </div>
+      </article>
+    </div>
+  </section>
 
   <section class="panel wide account-role-path-panel">
     <div class="section-title">

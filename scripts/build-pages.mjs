@@ -12,6 +12,10 @@ const routesOutputPath = path.join(root, "assets", "core", "routes.js");
 const pagePlaceholder = "<!-- PAGE_CONTENT: generated from src/pages via npm run build -->";
 const basePlaceholder = "{{BASE_HREF}}";
 const routePlaceholder = "{{INITIAL_ROUTE}}";
+const titlePlaceholder = "{{DOCUMENT_TITLE}}";
+const descriptionPlaceholder = "{{DOCUMENT_DESCRIPTION}}";
+const canonicalPlaceholder = "{{CANONICAL_URL}}";
+const SITE_URL = "https://dikaddicta.github.io/lestari_coffeedashboard/";
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -21,11 +25,14 @@ function jsString(value) {
   return JSON.stringify(value, null, 2);
 }
 
-function renderDocument(shell, pageContent, { baseHref, initialRoute }) {
+function renderDocument(shell, pageContent, { baseHref, initialRoute, title, description, canonicalUrl }) {
   return shell
     .replace(pagePlaceholder, `${pagePlaceholder}\n${pageContent}`)
     .replaceAll(basePlaceholder, baseHref)
-    .replaceAll(routePlaceholder, initialRoute || "");
+    .replaceAll(routePlaceholder, initialRoute || "")
+    .replaceAll(titlePlaceholder, title || "Coffee Brew OS — Dashboard Seduh Kopi")
+    .replaceAll(descriptionPlaceholder, description || "Dashboard seduh kopi untuk rekomendasi resep, pencatatan, QA, analitik, laporan, dan pustaka data berbasis referensi.")
+    .replaceAll(canonicalPlaceholder, canonicalUrl || SITE_URL);
 }
 
 async function main() {
@@ -39,6 +46,9 @@ async function main() {
   assert(shell.includes(pagePlaceholder), `Placeholder tidak ditemukan di ${path.relative(root, shellPath)}.`);
   assert(shell.includes(basePlaceholder), `Base placeholder tidak ditemukan di ${path.relative(root, shellPath)}.`);
   assert(shell.includes(routePlaceholder), `Route placeholder tidak ditemukan di ${path.relative(root, shellPath)}.`);
+  assert(shell.includes(titlePlaceholder), `Title placeholder tidak ditemukan di ${path.relative(root, shellPath)}.`);
+  assert(shell.includes(descriptionPlaceholder), `Description placeholder tidak ditemukan di ${path.relative(root, shellPath)}.`);
+  assert(shell.includes(canonicalPlaceholder), `Canonical placeholder tidak ditemukan di ${path.relative(root, shellPath)}.`);
   assert(pages.length > 0, "Manifest halaman kosong.");
 
   const seenTabs = new Set();
@@ -66,15 +76,26 @@ async function main() {
     .map(fragment => fragment.split("\n").map(line => `          ${line}`).join("\n"))
     .join("\n\n");
 
-  const rootHtml = renderDocument(shell, pageContent, { baseHref: "./", initialRoute: "" });
+  const rootHtml = renderDocument(shell, pageContent, {
+    baseHref: "./",
+    initialRoute: "",
+    title: "Coffee Brew OS — Dashboard Seduh Kopi",
+    description: "Susun resep, catat percobaan, pantau stok, dan evaluasi hasil seduh dalam satu dashboard.",
+    canonicalUrl: SITE_URL
+  });
   await writeFile(outputPath, rootHtml, "utf8");
-  await writeFile(notFoundPath, rootHtml, "utf8");
 
   for (const page of pages) {
     const routeDir = path.join(root, page.route);
     await rm(routeDir, { recursive: true, force: true });
     await mkdir(routeDir, { recursive: true });
-    const routeHtml = renderDocument(shell, pageContent, { baseHref: "../", initialRoute: page.route });
+    const routeHtml = renderDocument(shell, pageContent, {
+      baseHref: "../",
+      initialRoute: page.route,
+      title: `${page.title} — Coffee Brew OS`,
+      description: page.subtitle,
+      canonicalUrl: new URL(`${page.route}/`, SITE_URL).toString()
+    });
     await writeFile(path.join(routeDir, "index.html"), routeHtml, "utf8");
   }
 

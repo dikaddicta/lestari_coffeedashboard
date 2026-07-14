@@ -1,0 +1,6 @@
+Contact: https://dikaddicta.github.io/lestari_coffeedashboard/saran/
+Expires: 2027-07-14T23:59:59Z
+Preferred-Languages: id, en
+Canonical: https://dikaddicta.github.io/lestari_coffeedashboard/.well-known/security.txt
+Policy: https://dikaddicta.github.io/lestari_coffeedashboard/ketentuan/
+Acknowledgments: https://dikaddicta.github.io/lestari_coffeedashboard/status/

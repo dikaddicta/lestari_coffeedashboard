@@ -1,0 +1,53 @@
+Coffee Brew OS v43.0.0 — Commercial Readiness
+Build date: 2026-07-14
+
+SCOPE
+- Public legal and operational pages
+- Registration consent
+- Verified local backup and recovery
+- Sanitized local diagnostics
+- Maintenance mode
+- Route-specific metadata and canonical URLs
+- robots.txt, sitemap.xml, security.txt, and custom 404
+- PWA cache update
+
+AUTOMATED VALIDATION
+- Modular pages: 37/37
+- Clean URLs: 64/64
+- Page modules: 46/46
+- Service layer: 38/38
+- Core workflow: 52/52
+- Recommendation & QA: 31/31
+- Analytics & cost: 33/33
+- Security & audit: 55/55
+- Commercial readiness: 60/60
+- Functional audit: 115/115
+- Total: 531 passed, 0 failed
+
+RUNTIME CHECKS
+- Root and 12 representative URLs returned HTTP 200 locally.
+- Frozen service registration test passed.
+- Backup create/parse roundtrip passed.
+- Error redaction test passed.
+- No missing local assets detected.
+- No JavaScript syntax errors detected.
+- No duplicate HTML IDs detected.
+
+DATA INTEGRITY
+- Varieties: 180
+- Processes: 81
+- Drippers/setup: 74
+- Paper filters: 2
+- Roast profiles: 18
+- Water profiles: 15
+- Grinders: 16
+
+DATABASE
+- No new Supabase migration in v43.
+- v42 security/RLS migration remains required for an active project.
+
+LIMITATIONS
+- Legal pages are operational drafts and require legal review before paid launch.
+- Local backup is not a replacement for Supabase database backup.
+- Status page checks browser-visible components, not complete backend health.
+- End-to-end Supabase tests still require the user's active project and sessions.

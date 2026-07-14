@@ -4,32 +4,35 @@
   <meta charset="utf-8" />
   <base href="../" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Coffee Brew OS — Dashboard Seduh Kopi</title>
-  <meta name="description" content="Dashboard seduh kopi untuk rekomendasi resep, pencatatan, QA, analitik, laporan, dan pustaka data berbasis referensi." />
+  <title>Saran — Coffee Brew OS</title>
+  <meta name="description" content="Kirim masukan untuk membantu pengembangan Coffee Brew OS." />
+  <link rel="canonical" href="https://dikaddicta.github.io/lestari_coffeedashboard/saran/" />
   <meta name="theme-color" content="#1F1D1A" />
   <meta name="application-name" content="Coffee Brew OS" />
   <meta name="apple-mobile-web-app-title" content="Coffee Brew OS" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta property="og:title" content="Coffee Brew OS — Dashboard Seduh Kopi" />
-  <meta property="og:description" content="Dashboard untuk rekomendasi seduh, log seduh, QA, analitik, laporan, dan pustaka data kopi." />
+  <meta property="og:title" content="Saran — Coffee Brew OS" />
+  <meta property="og:description" content="Kirim masukan untuk membantu pengembangan Coffee Brew OS." />
+  <meta property="og:url" content="https://dikaddicta.github.io/lestari_coffeedashboard/saran/" />
   <meta property="og:type" content="website" />
-  <link rel="manifest" href="manifest.webmanifest?v=20260713-v42-1-landing-route" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260714-v43-commercial" />
   <link rel="apple-touch-icon" href="assets/latte-art-icon.png" />
   <link rel="preload" href="assets/latte-art-icon.png" as="image" />
-  <link rel="stylesheet" href="assets/styles.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/css/base.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/css/layout.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/css/components.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/css/pages.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/css/welcome.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/css/workflow.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/css/intelligence.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/css/analytics-insight.css?v=20260713-v42-1-landing-route" />
-  <link rel="stylesheet" href="assets/css/security-audit.css?v=20260713-v42-1-landing-route" />
+  <link rel="stylesheet" href="assets/styles.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/styles-v35-quiet-luxury.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/styles-v35-1-functional.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/base.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/layout.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/components.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/pages.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/welcome.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/workflow.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/intelligence.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/analytics-insight.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/security-audit.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/commercial-readiness.css?v=20260714-v43-commercial" />
 </head>
 <body class="quiet-luxury-ui modular-pages-ui modular-scripts-ui" data-initial-route="saran">
 
@@ -109,6 +112,12 @@
         </div>
       </aside>
     </div>
+    <nav class="welcome-legal-links" aria-label="Informasi layanan">
+      <a href="privasi/">Privasi</a><span aria-hidden="true">·</span>
+      <a href="ketentuan/">Ketentuan</a><span aria-hidden="true">·</span>
+      <a href="disclaimer/">Batasan Rekomendasi</a><span aria-hidden="true">·</span>
+      <a href="status/">Status Sistem</a>
+    </nav>
   </section>
 
 <div class="app-shell">
@@ -174,7 +183,13 @@
           <span class="mini-label">Welcome Screen</span>
           <p>Pilih guest untuk akses cepat atau login untuk membuka semua modul.</p>
           <button id="returnWelcomeBtn" class="secondary" type="button">Kembali ke Welcome</button>
-          <small class="sidebar-build-version">v42.2.0 · Browser Title Hotfix</small>
+          <nav class="sidebar-legal-links" aria-label="Informasi layanan">
+            <a href="privasi/">Privasi</a>
+            <a href="ketentuan/">Ketentuan</a>
+            <a href="disclaimer/">Batasan</a>
+            <a href="status/">Status</a>
+          </nav>
+          <small class="sidebar-build-version">v43.0.0 · Commercial Readiness</small>
         </div>
       </aside>
 
@@ -211,6 +226,7 @@
                 <option value="library">Pustaka Data</option>
               </select>
             </div>
+            <a class="secondary topbar-status-link" href="status/">Status</a>
             <button id="topbarDemoBtn" class="secondary demo-recipe-btn" type="button">Coba Demo SOLO</button>
             <button id="installAppBtn" class="secondary install-app-btn hidden" type="button">Install App</button>
             <button id="topbarSignupBtn" class="secondary topbar-signup-btn" type="button">Daftar</button>
@@ -1733,6 +1749,34 @@
                       </article>
                     </div>
           
+                    <section class="commercial-recovery-center">
+                      <div class="section-title">
+                        <span>Pemulihan</span>
+                        <h2>Backup &amp; pemulihan lokal</h2>
+                      </div>
+                      <p class="hint">Backup v43 memiliki checksum untuk membantu mendeteksi file yang berubah atau rusak. Pemulihan hanya mengganti data lokal browser dan tidak otomatis menulis ke database cloud.</p>
+                      <div class="commercial-grid">
+                        <article class="commercial-card">
+                          <span class="mini-label">Buat Backup</span>
+                          <h3>Arsip lengkap browser</h3>
+                          <p>Simpan stok lokal, log seduh lokal, nilai QA lokal, dan saran lokal dalam satu file JSON terstruktur.</p>
+                          <div class="inline-actions"><button id="createSecureBackupBtn" class="primary" type="button">Unduh Backup Terverifikasi</button></div>
+                        </article>
+                        <article class="commercial-card">
+                          <span class="mini-label">Pulihkan Backup</span>
+                          <h3>Periksa sebelum memulihkan</h3>
+                          <p>Pilih file backup. Sistem akan memeriksa format, versi, checksum, dan jumlah data sebelum pemulihan.</p>
+                          <input id="restoreBackupInput" type="file" accept="application/json,.json" class="sr-only" />
+                          <div class="inline-actions">
+                            <button id="selectBackupFileBtn" class="secondary" type="button">Pilih File Backup</button>
+                            <button id="restoreBackupBtn" class="primary" type="button" disabled>Pulihkan ke Browser</button>
+                          </div>
+                          <span id="recoveryFileName" class="recovery-file-name">Belum ada file dipilih.</span>
+                          <div id="recoveryPreview" class="recovery-preview" aria-live="polite">Pratinjau backup akan muncul di sini.</div>
+                        </article>
+                      </div>
+                    </section>
+          
                     <section class="report-sample-card" id="reportSampleCard" aria-live="polite"></section>
                   </section>
                 </section>
@@ -1884,6 +1928,10 @@
                         <select id="signupWorkspace"></select>
                       </label>
                       <p id="signupApprovalHint" class="hint small-note span-2 hidden">Permintaan Brewer atau QA akan ditinjau oleh Admin Workspace sebelum akses diaktifkan.</p>
+                      <label class="signup-consent span-2">
+                        <input id="signupConsent" type="checkbox" />
+                        <span>Saya telah membaca dan menyetujui <a href="ketentuan/" target="_blank" rel="noopener">Ketentuan Penggunaan</a> serta <a href="privasi/" target="_blank" rel="noopener">Kebijakan Privasi</a>.</span>
+                      </label>
                       <div class="span-2 inline-actions">
                         <button class="secondary" id="signupBtn" type="button">Buat Akun</button>
                       </div>
@@ -1940,6 +1988,31 @@
                 </div>
               </section>
             </div>
+          
+            <section class="panel wide commercial-readiness-panel" id="diagnosticsPanel">
+              <div class="section-title">
+                <span>Kesiapan Operasional</span>
+                <h2>Status aplikasi &amp; diagnostik</h2>
+              </div>
+              <p class="hint">Diagnostik menyimpan maksimal 25 error teknis yang telah disanitasi. Kata sandi, token, dan isi workspace tidak dimasukkan.</p>
+              <div class="commercial-grid">
+                <article class="commercial-card">
+                  <span class="mini-label">Status Sistem</span>
+                  <h3>Pemeriksaan browser</h3>
+                  <p>Lihat koneksi, penyimpanan lokal, dukungan PWA, versi aplikasi, dan mode pemeliharaan.</p>
+                  <div class="inline-actions"><a class="secondary" href="status/">Buka Status Sistem</a></div>
+                </article>
+                <article class="commercial-card">
+                  <span class="mini-label">Riwayat Error</span>
+                  <h3><span id="diagnosticErrorCount" class="diagnostic-count">0</span> catatan tersimpan</h3>
+                  <p>Gunakan file diagnostik ketika melaporkan gangguan agar proses pemeriksaan lebih cepat.</p>
+                  <div class="inline-actions">
+                    <button id="downloadDiagnosticsBtn" class="secondary" type="button">Unduh Diagnostik</button>
+                    <button id="clearDiagnosticsBtn" class="ghost" type="button">Hapus Riwayat</button>
+                  </div>
+                </article>
+              </div>
+            </section>
           
             <section class="panel wide account-role-path-panel">
               <div class="section-title">
@@ -2139,42 +2212,45 @@
 
   <template id="metricTemplate"><div class="metric"><strong></strong><span></span></div></template>
 
-  <script src="assets/app-config.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/core/routes.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/core/navigation.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/core/runtime.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/services/storage-service.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/services/security-service.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/services/audit-service.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/core/event-bus.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/core/validation.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/core/app-state.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/core/page-modules.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/beranda.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/cara-pakai.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/rekomendasi-seduh.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/input-seduhan.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/beans.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/stock.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/brew-log-qa.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/hasil-seduhan-publik.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/data-analytics.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/notification.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/export-report.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/saran.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/akun-role.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/pages/pustaka-data.js?v=20260713-v42-1-landing-route"></script>
+  <script src="assets/app-config.js?v=20260714-v43-commercial"></script>
+  <script src="assets/core/maintenance.js?v=20260714-v43-commercial"></script>
+  <script src="assets/core/routes.js?v=20260714-v43-commercial"></script>
+  <script src="assets/core/navigation.js?v=20260714-v43-commercial"></script>
+  <script src="assets/core/runtime.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/storage-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/error-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/backup-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/security-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/audit-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/core/event-bus.js?v=20260714-v43-commercial"></script>
+  <script src="assets/core/validation.js?v=20260714-v43-commercial"></script>
+  <script src="assets/core/app-state.js?v=20260714-v43-commercial"></script>
+  <script src="assets/core/page-modules.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/beranda.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/cara-pakai.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/rekomendasi-seduh.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/input-seduhan.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/beans.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/stock.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/brew-log-qa.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/hasil-seduhan-publik.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/data-analytics.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/notification.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/export-report.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/saran.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/akun-role.js?v=20260714-v43-commercial"></script>
+  <script src="assets/pages/pustaka-data.js?v=20260714-v43-commercial"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/supabase-config.js?v=20260603-stable-v8"></script>
-  <script src="assets/services/supabase-service.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/services/auth-service.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/services/stock-service.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/services/brew-service.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/services/recommendation-service.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/services/qa-service.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/services/analytics-service.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/services/notification-service.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/data.js?v=20260713-v42-1-landing-route"></script>
-  <script src="assets/app.js?v=20260713-v42-1-landing-route"></script>
+  <script src="assets/services/supabase-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/auth-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/stock-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/brew-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/recommendation-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/qa-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/analytics-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/notification-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/data.js?v=20260714-v43-commercial"></script>
+  <script src="assets/app.js?v=20260714-v43-commercial"></script>
 </body>
 </html>

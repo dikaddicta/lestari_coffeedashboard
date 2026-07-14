@@ -1,0 +1,26 @@
+<article class="public-article public-status-page">
+  <div class="public-hero">
+    <span class="public-kicker">Pemeriksaan Mandiri</span>
+    <h1>Status Sistem</h1>
+    <p>Halaman ini memeriksa komponen yang dapat dilihat dari browser. Status backend dan kebijakan database tetap perlu diverifikasi melalui dashboard Supabase.</p>
+  </div>
+
+  <section class="status-summary" id="publicStatusSummary" aria-live="polite">
+    <span class="status-orb" aria-hidden="true"></span>
+    <div><strong>Menjalankan pemeriksaan…</strong><p>Mohon tunggu beberapa detik.</p></div>
+  </section>
+
+  <section>
+    <div class="status-grid" id="publicStatusGrid"></div>
+  </section>
+
+  <section class="public-note">
+    <h2>Diagnostik lokal</h2>
+    <p>Diagnostik hanya memuat informasi teknis yang telah disanitasi. Kata sandi, token, dan isi workspace tidak disertakan.</p>
+    <div class="public-actions">
+      <button id="statusDownloadDiagnostics" type="button">Unduh Diagnostik</button>
+      <button id="statusClearDiagnostics" class="secondary" type="button">Hapus Riwayat Error</button>
+      <a class="button-link secondary" href="./">Kembali ke Dashboard</a>
+    </div>
+  </section>
+</article>

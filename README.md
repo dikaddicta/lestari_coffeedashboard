@@ -4,37 +4,35 @@ Coffee Brew OS adalah dashboard web untuk menyusun rekomendasi seduh, mencatat e
 
 ## Release aktif
 
-**v42.0.0 — Akses, Keamanan & Riwayat Aktivitas**
+**v43.0.0 — Commercial Readiness**
 
-Release ini memperkuat pengelolaan akun dan workspace dengan kontrol peran yang lebih jelas, ringkasan kondisi keamanan, serta audit trail append-only yang ditegakkan melalui Supabase.
+Release ini menyiapkan fondasi operasional sebelum produk dipakai secara lebih luas. Fokusnya adalah transparansi layanan, pemulihan data, diagnostik, status sistem, maintenance mode, SEO dasar, dan persetujuan kebijakan saat pendaftaran.
 
 Pembaruan utama:
 
-- halaman **Akun & Peran** diperbarui menjadi **Akses & Keamanan** dengan bahasa yang lebih natural;
-- matriks izin Admin, QA, Brewer, dan Guest;
-- pengelolaan role anggota workspace oleh Admin;
-- perlindungan agar admin aktif terakhir tidak dapat diturunkan, ditangguhkan, atau dihapus;
-- pilihan workspace publik atau privat;
-- ringkasan sesi dan security posture;
-- riwayat aktivitas untuk login, workspace, anggota, moderasi, stok, seduhan, dan QA;
-- tabel `audit_events` append-only dengan RLS dan RPC terkontrol;
-- policy workspace dan saran publik diperketat;
-- validasi password pendaftaran minimal delapan karakter serta mengandung huruf dan angka;
-- audit otomatis khusus keamanan melalui `npm run audit:security`.
+- halaman Kebijakan Privasi, Ketentuan Penggunaan, Batasan Rekomendasi, Status Sistem, dan Pemeliharaan;
+- persetujuan kebijakan yang wajib dicentang saat membuat akun;
+- backup lokal berformat terstruktur dengan checksum SHA-256 bila Web Crypto tersedia;
+- pemeriksaan format, versi, checksum, dan jumlah data sebelum pemulihan;
+- pencatatan maksimal 25 error lokal yang telah disanitasi;
+- ekspor diagnostik tanpa kata sandi, token, atau isi workspace;
+- konfigurasi maintenance mode melalui `assets/app-config.js`;
+- metadata title, description, Open Graph, dan canonical URL per clean route;
+- `robots.txt`, `sitemap.xml`, dan `.well-known/security.txt`;
+- halaman 404 yang lebih jelas;
+- audit otomatis melalui `npm run audit:commercial`.
 
 ## Fitur utama
 
-- Rekomendasi seduh berdasarkan varietas, pascapanen, profil sangrai, dripper, grinder, air, dosis, metode, dan target rasa.
-- Input seduhan manual dengan 1–3 varietas, proses manual, detail pour, Switch valve plan, QA, dan validasi resep.
-- Hasil seduhan publik dengan batas QA minimum 6.5.
-- Biji kopi dan stok privat per workspace.
-- Pengurangan stok saat seduhan menggunakan biji dari inventori serta pemulihan stok saat log dihapus.
-- Log Seduh & QA dengan diagnosis masalah rasa dan saran dial-in berikutnya.
-- Analitik kualitas, konsumsi, biaya per cangkir, dan insight otomatis.
+- Rekomendasi seduh berdasarkan profil biji, pascapanen, sangrai, dripper, grinder, air, dosis, metode, dan target rasa.
+- Input seduhan manual dengan validasi rasio, pour, suhu, waktu, bloom, dan Japanese Iced.
+- Log Seduh & QA dengan diagnosis rasa dan saran dial-in berikutnya.
+- Stok privat per workspace dengan estimasi cangkir dan pengurangan stok.
+- Analitik kualitas, konsumsi, biaya biji per cangkir, dan insight otomatis.
 - Role Admin, QA, Brewer, serta mode Guest dan Demo.
-- Matriks izin, keamanan sesi, dan audit trail workspace.
-- Pustaka data varietas, proses, dripper/setup, filter kertas, profil sangrai, air, dan grinder.
-- PWA dengan clean URL untuk 14 menu.
+- Matriks izin, RLS, perlindungan admin terakhir, dan audit trail workspace.
+- Pustaka data varietas, proses, dripper/setup, filter, sangrai, air, dan grinder.
+- PWA dengan clean URL untuk 14 menu dan lima halaman informasi publik.
 
 ## Data referensi
 
@@ -55,50 +53,53 @@ Pembaruan utama:
 ├─ index.html
 ├─ 404.html
 ├─ <route>/index.html
+├─ privasi/
+├─ ketentuan/
+├─ disclaimer/
+├─ status/
+├─ maintenance/
 ├─ src/
 │  ├─ shell.html
+│  ├─ public-shell.html
 │  ├─ routes.json
-│  └─ pages/
+│  ├─ public-pages.json
+│  ├─ pages/
+│  └─ public/
 ├─ assets/
 │  ├─ app.js
 │  ├─ app-config.js
-│  ├─ data.js
 │  ├─ core/
 │  ├─ pages/
+│  ├─ public/
 │  ├─ services/
-│  │  ├─ analytics-service.js
-│  │  ├─ audit-service.js
-│  │  ├─ auth-service.js
-│  │  ├─ brew-service.js
-│  │  ├─ notification-service.js
-│  │  ├─ qa-service.js
-│  │  ├─ recommendation-service.js
+│  │  ├─ backup-service.js
+│  │  ├─ error-service.js
 │  │  ├─ security-service.js
-│  │  ├─ stock-service.js
-│  │  ├─ storage-service.js
-│  │  └─ supabase-service.js
+│  │  └─ ...
 │  └─ css/
-│     ├─ analytics-insight.css
-│     ├─ intelligence.css
-│     ├─ security-audit.css
-│     ├─ welcome.css
-│     └─ workflow.css
+│     ├─ commercial-readiness.css
+│     ├─ public-pages.css
+│     └─ ...
 ├─ scripts/
-│  ├─ security-audit.mjs
+│  ├─ build-all.mjs
 │  ├─ build-pages.mjs
-│  ├─ functional-audit.mjs
+│  ├─ build-public-pages.mjs
+│  ├─ commercial-readiness-audit.mjs
 │  └─ release-check.mjs
 ├─ supabase/
-│  ├─ schema.sql
-│  └─ migration_v42_security_audit_rls.sql
 └─ docs/
 ```
 
 ## Mengubah halaman
 
-Edit isi menu melalui `src/pages/`, metadata route melalui `src/routes.json`, dan kerangka global melalui `src/shell.html`. Jangan mengedit `index.html` atau folder route hasil build secara langsung.
+- Menu dashboard: `src/pages/`
+- Metadata route: `src/routes.json`
+- Kerangka dashboard: `src/shell.html`
+- Halaman informasi publik: `src/public/`
+- Metadata halaman publik: `src/public-pages.json`
+- Kerangka halaman publik: `src/public-shell.html`
 
-Setelah perubahan:
+Jangan mengedit `index.html` atau folder route hasil build secara langsung.
 
 ```powershell
 npm run build
@@ -115,45 +116,45 @@ npm run check
 npm run serve
 ```
 
-Buka `http://127.0.0.1:4173/`.
-
-## Audit sebelum release
-
-`npm run check` menjalankan build dan seluruh audit modular page, clean URL, page module, service layer, core workflow, recommendation engine, QA diagnostics, analytics insight, security, asset, PWA, konfigurasi Supabase, dan validasi dataset.
-
-Hasil functional audit tersimpan pada:
+Buka:
 
 ```text
-docs/V42_AUDIT_RESULT.json
+http://127.0.0.1:4173/
+http://127.0.0.1:4173/status/
+http://127.0.0.1:4173/privasi/
 ```
 
-Audit khusus keamanan dapat dijalankan dengan:
+## Backup dan pemulihan
 
-```powershell
-npm run audit:security
+Gunakan menu **Ekspor & Laporan → Backup & pemulihan lokal**. Pemulihan mengganti data lokal browser, tetapi tidak otomatis menulis atau menghapus data Supabase.
+
+Panduan detail tersedia pada `docs/V43_BACKUP_RECOVERY_GUIDE.md`.
+
+## Maintenance mode
+
+Ubah nilai berikut pada `assets/app-config.js`:
+
+```js
+maintenance: {
+  enabled: true,
+  title: "Pemeliharaan terjadwal",
+  message: "Dashboard kembali tersedia setelah pemeliharaan selesai."
+}
 ```
+
+Jalankan `npm run build`, lalu deploy. Halaman privasi, ketentuan, disclaimer, status, dan maintenance tetap dapat dibuka.
 
 ## Supabase
 
-Frontend hanya boleh menggunakan Project URL dan `anon/public key` pada `assets/supabase-config.js`. Jangan meletakkan `service_role` key di frontend, repository, atau browser.
+Frontend hanya boleh menggunakan Project URL dan `anon/public key` pada `assets/supabase-config.js`. Jangan meletakkan `service_role` key di frontend.
 
-### Project baru
-
-Jalankan:
-
-```text
-supabase/schema.sql
-```
-
-### Project yang sudah aktif
-
-Backup database terlebih dahulu, kemudian jalankan:
+Untuk project aktif, migration keamanan v42 tetap wajib diterapkan dan diuji:
 
 ```text
 supabase/migration_v42_security_audit_rls.sql
 ```
 
-Migration tersebut wajib diterapkan agar audit trail cloud, policy workspace privat, perlindungan admin terakhir, dan policy saran v42 bekerja. Setelah migration, jalankan skenario pada `docs/V42_SECURITY_TEST_PLAN.md` menggunakan project staging sebelum produksi.
+v43 tidak menambahkan migration database baru.
 
 ## Workflow Git
 
@@ -161,7 +162,7 @@ Migration tersebut wajib diterapkan agar audit trail cloud, policy workspace pri
 powershell -ExecutionPolicy Bypass -File .\scripts\git-safe-update.ps1
 npm run check
 git add -A
-git commit -m "Release v42 access security and audit trail"
+git commit -m "Release v43 commercial readiness"
 git push origin main
 ```
 
@@ -169,20 +170,16 @@ Project menggunakan `fetch` dan `merge --ff-only`, bukan rebase otomatis.
 
 ## PWA dan cache
 
-Cache aktif:
-
 ```text
-coffee-brew-os-v42-security-audit
+coffee-brew-os-v43-commercial-readiness
 ```
 
-Setelah deployment besar, uji melalui Incognito atau hapus service worker lama satu kali apabila browser masih menampilkan aset versi sebelumnya.
+Setelah deployment besar, uji melalui Incognito atau hapus service worker lama satu kali bila browser masih menampilkan aset lama.
 
 ## Batasan release
 
-- Migration v42 belum dianggap selesai sampai dijalankan dan diuji pada Supabase staging milik pengguna.
-- Browser fallback audit hanya untuk development dan bukan sumber audit tepercaya.
-- IP address asli tidak dicatat dari browser; gunakan log platform atau Edge Function bila informasi jaringan diperlukan.
-- Audit trigger v42 menangkap aktivitas penting, bukan seluruh query database.
-- Rate limiting khusus saran publik memerlukan Edge Function atau gateway; RLS hanya membatasi akses dan struktur data.
-- Retensi, ekspor, dan pengarsipan audit jangka panjang belum diotomatisasi.
-- Audit otomatis tidak menggantikan pengujian end-to-end dengan akun, workspace, role, dan database Supabase aktif.
+- Dokumen kebijakan masih perlu review hukum dan identitas badan usaha sebelum layanan berbayar diluncurkan.
+- Backup v43 melindungi data lokal browser, bukan pengganti backup database Supabase.
+- Status Sistem hanya memeriksa komponen yang dapat dilihat dari browser.
+- Diagnostik disimpan lokal dan bukan sistem monitoring server terpusat.
+- Pengujian end-to-end tetap perlu dilakukan dengan akun, role, workspace, dan database Supabase aktif.

@@ -1,0 +1,43 @@
+{
+  "version": "43.0.0",
+  "siteUrl": "https://dikaddicta.github.io/lestari_coffeedashboard/",
+  "pages": [
+    {
+      "slug": "privasi",
+      "file": "public/privasi.html",
+      "title": "Kebijakan Privasi — Coffee Brew OS",
+      "description": "Penjelasan mengenai data yang diproses, tujuan penggunaan, penyimpanan, keamanan, dan pilihan pengguna Coffee Brew OS.",
+      "robots": "index,follow"
+    },
+    {
+      "slug": "ketentuan",
+      "file": "public/ketentuan.html",
+      "title": "Ketentuan Penggunaan — Coffee Brew OS",
+      "description": "Ketentuan penggunaan dashboard, akun, workspace, konten, dan tanggung jawab pengguna Coffee Brew OS.",
+      "robots": "index,follow"
+    },
+    {
+      "slug": "disclaimer",
+      "file": "public/disclaimer.html",
+      "title": "Batasan Rekomendasi — Coffee Brew OS",
+      "description": "Batasan penggunaan rekomendasi seduh, penilaian QA, dan estimasi biaya pada Coffee Brew OS.",
+      "robots": "index,follow"
+    },
+    {
+      "slug": "status",
+      "file": "public/status.html",
+      "title": "Status Sistem — Coffee Brew OS",
+      "description": "Pemeriksaan status browser, penyimpanan lokal, PWA, koneksi, dan konfigurasi Coffee Brew OS.",
+      "robots": "noindex,follow",
+      "script": "assets/public/status-page.js?v=20260714-v43-commercial"
+    },
+    {
+      "slug": "maintenance",
+      "file": "public/maintenance.html",
+      "title": "Pemeliharaan Sistem — Coffee Brew OS",
+      "description": "Informasi pemeliharaan dan jalur kembali ke Coffee Brew OS.",
+      "robots": "noindex,nofollow",
+      "script": "assets/public/maintenance-page.js?v=20260714-v43-commercial"
+    }
+  ]
+}

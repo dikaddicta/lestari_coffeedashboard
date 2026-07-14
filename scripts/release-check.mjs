@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const steps = [
-  ["Build modular pages", ["scripts/build-pages.mjs"]],
+  ["Build application and public pages", ["scripts/build-all.mjs"]],
   ["Audit modular pages", ["scripts/modular-pages-audit.mjs"]],
   ["Audit clean URLs", ["scripts/clean-url-audit.mjs"]],
   ["Audit page modules", ["scripts/page-modules-audit.mjs"]],
@@ -10,6 +10,7 @@ const steps = [
   ["Audit recommendation and QA engine", ["scripts/recommendation-qa-audit.mjs"]],
   ["Audit analytics and cost insight", ["scripts/analytics-insight-audit.mjs"]],
   ["Audit roles, RLS, and activity trail", ["scripts/security-audit.mjs"]],
+  ["Audit commercial readiness", ["scripts/commercial-readiness-audit.mjs"]],
   ["Functional audit", ["scripts/functional-audit.mjs"]]
 ];
 
@@ -25,4 +26,4 @@ for (const [label, args] of steps) {
   }
 }
 
-console.log("\nRelease check passed. Modular source, clean URLs, page modules, service layer, core workflow modules, recommendation reasoning, QA diagnostics, analytics insight, cost estimation, role safeguards, RLS hardening, append-only audit trail, validation feedback, and dashboard functionality are consistent.");
+console.log("\nRelease check passed. Modular source, clean URLs, page modules, service layer, core workflow modules, recommendation reasoning, QA diagnostics, analytics insight, cost estimation, role safeguards, RLS hardening, append-only audit trail, legal pages, verified backup, diagnostics, maintenance controls, validation feedback, and dashboard functionality are consistent.");

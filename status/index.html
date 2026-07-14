@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <base href="../" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Status Sistem — Coffee Brew OS</title>
+  <meta name="description" content="Pemeriksaan status browser, penyimpanan lokal, PWA, koneksi, dan konfigurasi Coffee Brew OS." />
+  <meta name="theme-color" content="#1F1D1A" />
+  <meta name="robots" content="noindex,follow" />
+  <link rel="canonical" href="https://dikaddicta.github.io/lestari_coffeedashboard/status/" />
+  <link rel="icon" href="assets/latte-art-icon.png" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/public-pages.css?v=20260714-v43-commercial" />
+</head>
+<body class="public-page" data-public-page="status">
+  <header class="public-header">
+    <a class="public-brand" href="./" aria-label="Kembali ke Coffee Brew OS">
+      <span><img src="assets/latte-art-icon.png" alt="" /></span>
+      <div><strong>Coffee Brew OS</strong><small>Lestari Coffee Dashboard</small></div>
+    </a>
+    <nav aria-label="Navigasi kebijakan">
+      <a href="privasi/">Privasi</a>
+      <a href="ketentuan/">Ketentuan</a>
+      <a href="disclaimer/">Batasan</a>
+      <a href="status/">Status Sistem</a>
+    </nav>
+  </header>
+
+  <main class="public-main">
+    <!-- PUBLIC_PAGE_CONTENT -->
+<article class="public-article public-status-page">
+  <div class="public-hero">
+    <span class="public-kicker">Pemeriksaan Mandiri</span>
+    <h1>Status Sistem</h1>
+    <p>Halaman ini memeriksa komponen yang dapat dilihat dari browser. Status backend dan kebijakan database tetap perlu diverifikasi melalui dashboard Supabase.</p>
+  </div>
+
+  <section class="status-summary" id="publicStatusSummary" aria-live="polite">
+    <span class="status-orb" aria-hidden="true"></span>
+    <div><strong>Menjalankan pemeriksaan…</strong><p>Mohon tunggu beberapa detik.</p></div>
+  </section>
+
+  <section>
+    <div class="status-grid" id="publicStatusGrid"></div>
+  </section>
+
+  <section class="public-note">
+    <h2>Diagnostik lokal</h2>
+    <p>Diagnostik hanya memuat informasi teknis yang telah disanitasi. Kata sandi, token, dan isi workspace tidak disertakan.</p>
+    <div class="public-actions">
+      <button id="statusDownloadDiagnostics" type="button">Unduh Diagnostik</button>
+      <button id="statusClearDiagnostics" class="secondary" type="button">Hapus Riwayat Error</button>
+      <a class="button-link secondary" href="./">Kembali ke Dashboard</a>
+    </div>
+  </section>
+</article>
+  </main>
+
+  <footer class="public-footer">
+    <div>
+      <strong>Coffee Brew OS</strong>
+      <p>Dashboard seduh untuk merancang resep, mencatat hasil, dan mengevaluasi kualitas secara lebih konsisten.</p>
+    </div>
+    <div class="public-footer-links">
+      <a href="./">Kembali ke Dashboard</a>
+      <a href="saran/">Kirim Saran</a>
+      <a href="privasi/">Kebijakan Privasi</a>
+      <a href="ketentuan/">Ketentuan Penggunaan</a>
+    </div>
+    <small>Versi dokumen 1.0 · Diperbarui 14 Juli 2026</small>
+  </footer>
+
+  <script src="assets/app-config.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/storage-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/error-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/public/status-page.js?v=20260714-v43-commercial"></script>
+</body>
+</html>

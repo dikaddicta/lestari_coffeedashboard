@@ -19,14 +19,24 @@
     costPerCup: true,
     securityHardening: true,
     auditTrail: true,
-    roleManagement: true
+    roleManagement: true,
+    commercialReadiness: true,
+    legalPages: true,
+    verifiedBackup: true,
+    diagnostics: true,
+    maintenanceMode: true
   });
 
   window.COFFEE_APP_CONFIG = Object.freeze({
-    version: "42.2.0",
-    release: "Browser Title Hotfix",
-    build: "20260713-v42-2-browser-title",
+    version: "43.0.0",
+    release: "Commercial Readiness",
+    build: "20260714-v43-commercial",
     environment: "production",
+    maintenance: Object.freeze({
+      enabled: false,
+      title: "Pemeliharaan terjadwal",
+      message: "Beberapa fitur untuk sementara tidak tersedia. Data lokal tetap tersimpan di browser."
+    }),
     features
   });
 })();

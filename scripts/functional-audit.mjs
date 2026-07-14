@@ -22,10 +22,13 @@ function checkSyntax(file) {
 
 for (const file of [
   "assets/app-config.js",
+  "assets/core/maintenance.js",
   "assets/core/routes.js",
   "assets/core/navigation.js",
   "assets/core/runtime.js",
   "assets/services/storage-service.js",
+  "assets/services/error-service.js",
+  "assets/services/backup-service.js",
   "assets/services/security-service.js",
   "assets/services/audit-service.js",
   "assets/core/event-bus.js",
@@ -41,6 +44,10 @@ for (const file of [
   "assets/services/analytics-service.js",
   "assets/services/notification-service.js",
   "assets/data.js",
+  "assets/public/status-page.js",
+  "assets/public/maintenance-page.js",
+  "scripts/build-public-pages.mjs",
+  "scripts/build-all.mjs",
   "assets/app.js",
   "sw.js"
 ]) checkSyntax(file);
@@ -80,10 +87,13 @@ record(unsafeBlankLinks.length === 0, "External new-tab links use rel=noopener")
 const scriptSources = [...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(match => match[1].split("?")[0]);
 const expectedScriptOrder = [
   "assets/app-config.js",
+  "assets/core/maintenance.js",
   "assets/core/routes.js",
   "assets/core/navigation.js",
   "assets/core/runtime.js",
   "assets/services/storage-service.js",
+  "assets/services/error-service.js",
+  "assets/services/backup-service.js",
   "assets/services/security-service.js",
   "assets/services/audit-service.js",
   "assets/core/event-bus.js",
@@ -119,14 +129,14 @@ const configContext = { window: {} };
 vm.createContext(configContext);
 vm.runInContext(read("assets/app-config.js"), configContext, { filename: "assets/app-config.js" });
 const appConfig = configContext.window.COFFEE_APP_CONFIG || {};
-record(appConfig.version === "42.2.0", "Application version is 42.2.0", String(appConfig.version || "missing"));
+record(appConfig.version === "43.0.0", "Application version is 43.0.0", String(appConfig.version || "missing"));
 record(appConfig.features?.debugTools === false, "Production debug tools are disabled");
 record(appConfig.features?.mascot === false, "Production mascot is disabled");
 
 const packageJson = JSON.parse(read("package.json"));
 record(packageJson.version === appConfig.version, "package.json version matches app config", String(packageJson.version || "missing"));
 record(html.includes(`v${appConfig.version} · ${appConfig.release}`), "Visible release label matches app config");
-record(read("sw.js").includes("coffee-brew-os-v42-2-browser-title"), "Service-worker cache name matches v42.2 release");
+record(read("sw.js").includes("coffee-brew-os-v43-commercial-readiness"), "Service-worker cache name matches v43 release");
 record(exists("supabase/schema.sql"), "Canonical Supabase schema exists");
 record(exists("supabase/README.md"), "Supabase setup guide exists");
 
@@ -149,10 +159,13 @@ const missingCoreAssets = coreAssets.filter(asset => asset !== "" && !exists(ass
 record(missingCoreAssets.length === 0, `${coreAssets.length} service-worker core assets exist`, missingCoreAssets.join(", "));
 for (const critical of [
   "assets/app-config.js",
+  "assets/core/maintenance.js",
   "assets/core/routes.js",
   "assets/core/navigation.js",
   "assets/core/runtime.js",
   "assets/services/storage-service.js",
+  "assets/services/error-service.js",
+  "assets/services/backup-service.js",
   "assets/services/security-service.js",
   "assets/services/audit-service.js",
   "assets/core/event-bus.js",
@@ -164,6 +177,8 @@ for (const critical of [
   "assets/css/workflow.css",
   "assets/css/intelligence.css",
   "assets/css/analytics-insight.css",
+  "assets/css/commercial-readiness.css",
+  "assets/css/public-pages.css",
   "assets/services/supabase-service.js",
   "assets/services/auth-service.js",
   "assets/services/stock-service.js",
@@ -227,6 +242,6 @@ const report = {
   },
   results
 };
-fs.writeFileSync(path.join(root, "docs/V42_AUDIT_RESULT.json"), JSON.stringify(report, null, 2));
+fs.writeFileSync(path.join(root, "docs/V43_AUDIT_RESULT.json"), JSON.stringify(report, null, 2));
 console.log(`\nAudit summary: ${report.summary.pass} passed, ${report.summary.fail} failed.`);
 if (failed) process.exit(1);

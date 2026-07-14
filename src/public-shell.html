@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <base href="{{BASE_HREF}}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{DOCUMENT_TITLE}}</title>
+  <meta name="description" content="{{DOCUMENT_DESCRIPTION}}" />
+  <meta name="theme-color" content="#1F1D1A" />
+  <meta name="robots" content="{{ROBOTS}}" />
+  <link rel="canonical" href="{{CANONICAL_URL}}" />
+  <link rel="icon" href="assets/latte-art-icon.png" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=20260714-v43-commercial" />
+  <link rel="stylesheet" href="assets/css/public-pages.css?v=20260714-v43-commercial" />
+</head>
+<body class="public-page" data-public-page="{{PAGE_SLUG}}">
+  <header class="public-header">
+    <a class="public-brand" href="./" aria-label="Kembali ke Coffee Brew OS">
+      <span><img src="assets/latte-art-icon.png" alt="" /></span>
+      <div><strong>Coffee Brew OS</strong><small>Lestari Coffee Dashboard</small></div>
+    </a>
+    <nav aria-label="Navigasi kebijakan">
+      <a href="privasi/">Privasi</a>
+      <a href="ketentuan/">Ketentuan</a>
+      <a href="disclaimer/">Batasan</a>
+      <a href="status/">Status Sistem</a>
+    </nav>
+  </header>
+
+  <main class="public-main">
+    <!-- PUBLIC_PAGE_CONTENT -->
+  </main>
+
+  <footer class="public-footer">
+    <div>
+      <strong>Coffee Brew OS</strong>
+      <p>Dashboard seduh untuk merancang resep, mencatat hasil, dan mengevaluasi kualitas secara lebih konsisten.</p>
+    </div>
+    <div class="public-footer-links">
+      <a href="./">Kembali ke Dashboard</a>
+      <a href="saran/">Kirim Saran</a>
+      <a href="privasi/">Kebijakan Privasi</a>
+      <a href="ketentuan/">Ketentuan Penggunaan</a>
+    </div>
+    <small>Versi dokumen 1.0 · Diperbarui 14 Juli 2026</small>
+  </footer>
+
+  <script src="assets/app-config.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/storage-service.js?v=20260714-v43-commercial"></script>
+  <script src="assets/services/error-service.js?v=20260714-v43-commercial"></script>
+  {{PAGE_SCRIPT}}
+</body>
+</html>
