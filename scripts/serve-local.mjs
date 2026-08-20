@@ -39,8 +39,21 @@ const server = http.createServer((request, response) => {
 
     fs.readFile(target, (error, content) => {
       if (error) {
-        response.writeHead(error.code === "ENOENT" ? 404 : 500, { "Content-Type": "text/plain; charset=utf-8" });
-        response.end(error.code === "ENOENT" ? "Not Found" : "Server Error");
+        if (error.code === "ENOENT") {
+          const fallback = path.join(root, "404.html");
+          fs.readFile(fallback, (fallbackError, fallbackContent) => {
+            if (fallbackError) {
+              response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+              response.end("Not Found");
+              return;
+            }
+            response.writeHead(404, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
+            response.end(fallbackContent);
+          });
+          return;
+        }
+        response.writeHead(500, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+        response.end("Server Error");
         return;
       }
       response.writeHead(200, {

@@ -1,0 +1,28 @@
+Lestari Coffee Dashboard v44.0.0-rc.4
+Routing Stability Hotfix
+Build: 20260820-v44-rc4-routing-stability
+
+Incident fixed
+- RC3 produced repeated RangeError: Maximum call stack size exceeded on /akun-role/.
+- Recursive chain involved admin page rendering, workspace/access rendering, showTab(), and page module activation.
+
+Fixes
+- Removed recursive renderWorkspaceUI() call from renderAdminWorkspaceModule().
+- Corrected guest/auth routing so the admin login panel does not redirect to itself.
+- Added same-tab page-module re-entrancy protection.
+- Status page now treats stored diagnostic history as historical context rather than an active outage by itself.
+- Added explicit /404/ route, root 404.html, .nojekyll, and matching local-server 404 behavior.
+- PWA cache namespace bumped to lestari-coffee-dashboard-v44-rc4-routing-stability.
+
+Validation
+- npm run check: PASS
+- Functional audit: 115/115 PASS
+- RC4 routing stability audit: 14/14 PASS
+- Local HTTP smoke test:
+  / = 200
+  /akun-role/ = 200
+  /status/ = 200
+  /404/ = 200
+  /alamat-yang-tidak-ada/ = 404 with branded HTML fallback
+- No new Supabase migration required.
+- Coffee reference data counts unchanged.

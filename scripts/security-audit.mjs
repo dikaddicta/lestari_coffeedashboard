@@ -120,7 +120,7 @@ const keyMatches = config.match(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-
 check(keyMatches.length <= 1, "Browser configuration exposes at most one public Supabase token");
 
 const sw = read("sw.js");
-check(sw.includes("lestari-coffee-dashboard-v44-rc3-brand"), "Service worker uses the RC3 brand cache name");
+check(sw.includes("lestari-coffee-dashboard-v44-rc4-routing-stability"), "Service worker uses the RC4 routing stability cache name");
 check(sw.includes("assets/services/security-service.js") && sw.includes("assets/services/audit-service.js"), "Service worker precaches security services");
 check(sw.includes("assets/css/security-audit.css"), "Service worker precaches security styles");
 

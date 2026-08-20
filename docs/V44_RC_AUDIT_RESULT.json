@@ -1,6 +1,6 @@
 {
-  "version": "44.0.0-rc.3",
-  "generatedAt": "2026-07-14T15:01:56.314Z",
+  "version": "44.0.0-rc.4",
+  "generatedAt": "2026-08-20T03:12:29.877Z",
   "passed": 99,
   "failed": 0,
   "checks": [
@@ -131,7 +131,7 @@
     },
     {
       "ok": true,
-      "label": "Versi sumber adalah v44.0.0-rc.3",
+      "label": "Versi sumber adalah v44.0.0-rc.4",
       "detail": ""
     },
     {
@@ -351,7 +351,7 @@
     },
     {
       "ok": true,
-      "label": "Runtime config menggunakan v44 RC3",
+      "label": "Runtime config menggunakan v44 RC4",
       "detail": ""
     },
     {
@@ -381,7 +381,7 @@
     },
     {
       "ok": true,
-      "label": "Service worker memakai cache RC3 brand",
+      "label": "Service worker memakai cache RC4 routing stability",
       "detail": ""
     },
     {

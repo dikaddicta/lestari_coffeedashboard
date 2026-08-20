@@ -1,8 +1,8 @@
 {
-  "version": "44.0.0-rc.3",
-  "generatedAt": "2026-07-14T15:01:56.466Z",
-  "passed": 29,
-  "failed": 0,
+  "version": "44.0.0-rc.4",
+  "generatedAt": "2026-08-20T03:12:30.012Z",
+  "passed": 28,
+  "failed": 1,
   "checks": [
     {
       "ok": true,
@@ -145,7 +145,7 @@
       "detail": ""
     },
     {
-      "ok": true,
+      "ok": false,
       "label": "Aset logo lama telah dihapus",
       "detail": ""
     }

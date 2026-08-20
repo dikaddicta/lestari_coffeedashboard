@@ -52,12 +52,19 @@ const notFound = (await readFile(path.join(src, "public/404.html"), "utf8")).tri
 // An absolute project-root base keeps CSS, scripts, and action links valid even for
 // deeply nested missing paths such as /foo/bar/baz/.
 const notFoundBaseHref = new URL(site.siteUrl).pathname;
-await writeFile(path.join(root, "404.html"), render(notFound, {
+const notFoundHtml = render(notFound, {
   slug: "404",
   title: `Halaman Tidak Ditemukan — ${site.productName}`,
   description: "Halaman yang diminta tidak tersedia.",
   robots: "noindex,nofollow"
-}, notFoundBaseHref), "utf8");
+}, notFoundBaseHref);
+await writeFile(path.join(root, "404.html"), notFoundHtml, "utf8");
+// Keep an explicit /404/ route too. GitHub Pages uses root 404.html for unknown
+// paths, while this alias makes direct links and local smoke tests deterministic.
+await mkdir(path.join(root, "404"), { recursive: true });
+await writeFile(path.join(root, "404", "index.html"), notFoundHtml, "utf8");
+// Disable Jekyll processing so generated folders and assets are served verbatim.
+await writeFile(path.join(root, ".nojekyll"), "", "utf8");
 
 const sitemapUrls = [
   site.siteUrl,
@@ -72,4 +79,4 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://w
 await writeFile(path.join(root, "sitemap.xml"), sitemap, "utf8");
 await writeFile(path.join(root, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${new URL("sitemap.xml", site.siteUrl)}\n`, "utf8");
 
-console.log(`Built ${manifest.pages.length} public release pages, 404, robots.txt, and sitemap.xml.`);
+console.log(`Built ${manifest.pages.length} public release pages, resilient 404 routes, .nojekyll, robots.txt, and sitemap.xml.`);

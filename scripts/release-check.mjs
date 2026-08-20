@@ -14,6 +14,7 @@ const steps = [
   ["Audit release candidate", ["scripts/release-candidate-audit.mjs"]],
   ["Audit visual contrast and public error states", ["scripts/visual-contrast-audit.mjs"]],
   ["Audit Lestari brand assets", ["scripts/brand-asset-audit.mjs"]],
+  ["Audit RC4 routing stability", ["scripts/rc4-routing-stability-audit.mjs"]],
   ["Functional audit", ["scripts/functional-audit.mjs"]]
 ];
 
@@ -29,4 +30,4 @@ for (const [label, args] of steps) {
   }
 }
 
-console.log("\nRelease check passed. Modular source, clean URLs, page modules, service layer, core workflow modules, recommendation reasoning, QA diagnostics, analytics insight, cost estimation, role safeguards, RLS hardening, append-only audit trail, legal pages, verified backup, diagnostics, maintenance controls, branded metadata, Lestari logo and favicon assets, release manifest, opt-in monitoring, public CTA contrast, resilient 404 routing, production runbooks, validation feedback, and dashboard functionality are consistent.");
+console.log("\nRelease check passed. Modular source, clean URLs, page modules, service layer, core workflow modules, recommendation reasoning, QA diagnostics, analytics insight, cost estimation, role safeguards, RLS hardening, append-only audit trail, legal pages, verified backup, diagnostics, maintenance controls, branded metadata, Lestari logo and favicon assets, release manifest, opt-in monitoring, public CTA contrast, resilient 404 routing, page-render re-entrancy protection, guest-auth routing stability, production runbooks, validation feedback, and dashboard functionality are consistent.");

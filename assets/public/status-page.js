@@ -30,7 +30,7 @@
       { label: "Versi Aplikasi", ok: true, value: `v${window.COFFEE_APP_CONFIG?.version || "unknown"}`, detail: [window.COFFEE_APP_CONFIG?.release || "Release tidak terdeteksi.", window.COFFEE_APP_CONFIG?.commit && window.COFFEE_APP_CONFIG.commit !== "not-recorded" ? window.COFFEE_APP_CONFIG.commit : ""].filter(Boolean).join(" · ") },
       { label: "Mode Pemeliharaan", ok: !window.COFFEE_APP_CONFIG?.maintenance?.enabled, value: window.COFFEE_APP_CONFIG?.maintenance?.enabled ? "Aktif" : "Tidak Aktif", detail: "Dikendalikan melalui src/site.json dan build release." },
       { label: "Monitoring", ok: true, value: monitorState.configured ? "Aktif" : "Lokal Saja", detail: monitorState.configured ? `${monitorState.sent} terkirim · ${monitorState.failed} gagal.` : "Tidak ada diagnostik yang dikirim keluar secara default." },
-      { label: "Riwayat Error", ok: (errors?.list?.().length || 0) === 0, value: `${errors?.list?.().length || 0} catatan`, detail: "Hanya diagnostik yang telah disanitasi dan disimpan lokal." }
+      { label: "Riwayat Diagnostik", ok: true, value: (errors?.list?.().length || 0) ? `${errors.list().length} catatan historis` : "Tidak ada catatan", detail: (errors?.list?.().length || 0) ? "Catatan lama tetap tersedia untuk troubleshooting, tetapi tidak dihitung sebagai gangguan aktif. Gunakan Hapus Riwayat Error setelah perbaikan terverifikasi." : "Belum ada diagnostik error yang tersimpan di browser." }
     ];
 
     if (grid) {

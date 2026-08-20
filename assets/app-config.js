@@ -8,11 +8,11 @@
   }
 
   window.COFFEE_APP_CONFIG = deepFreeze({
-  "version": "44.0.0-rc.3",
-  "release": "Release Candidate 3",
-  "build": "20260714-v44-rc3-brand-logo",
+  "version": "44.0.0-rc.4",
+  "release": "Release Candidate 4",
+  "build": "20260820-v44-rc4-routing-stability",
   "commit": "not-recorded",
-  "releasedAt": "2026-07-14T15:10:00Z",
+  "releasedAt": "2026-08-20T03:20:00Z",
   "environment": "production",
   "site": {
     "url": "https://dikaddicta.github.io/lestari_coffeedashboard/",

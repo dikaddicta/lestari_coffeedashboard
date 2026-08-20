@@ -6252,8 +6252,10 @@
     if (!privateReady && document.querySelector(".tab-btn.active")?.dataset.tab === "beans") {
       showTab("brew");
     }
-    if (!currentUser && GUEST_PRIVATE_TABS.includes(document.querySelector(".tab-btn.active")?.dataset.tab || "")) {
-      showTab("admin");
+    const activeTab = document.querySelector(".tab-btn.active")?.dataset.tab || "";
+    const authIntent = document.body?.dataset.accessMode === "login";
+    if (!currentUser && GUEST_PRIVATE_TABS.includes(activeTab) && !(activeTab === "admin" && authIntent)) {
+      showTab("guide", { replaceRoute: true });
     }
     if (currentUser && currentRole !== "admin" && document.querySelector(".tab-btn.active")?.dataset.tab === "admin" && $("workspacePanel")?.hidden) {
       return;
@@ -8189,7 +8191,11 @@ body{font-family:Inter,Arial,sans-serif;background:#f8efe3;color:#3d2a24;margin:
   });
 
   function renderAdminWorkspaceModule() {
-    renderWorkspaceUI();
+    // Page renderers must not call renderWorkspaceUI(): that routine can change the
+    // active tab and re-enter this page module. Workspace UI is refreshed by auth/
+    // workspace state changes before this renderer is activated.
+    renderAuthUI();
+    renderWorkspacePanelAccess();
     renderAdminProDashboard();
     renderSecurityAuditModule();
     if (canModerate()) loadModerationRows().catch(console.warn);

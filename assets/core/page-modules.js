@@ -3,6 +3,7 @@
 
   const registry = new Map();
   let activeTab = "";
+  const activatingTabs = new Set();
 
   function register(definition) {
     const tab = String(definition?.tab || "").trim();
@@ -19,17 +20,28 @@
 
   function activate(tab, context = {}) {
     const nextTab = String(tab || "");
+    const module = registry.get(nextTab);
+    if (!module) return false;
+
+    // A renderer can update auth/workspace chrome. Those updates must never
+    // recursively activate the same page module. Treat a nested activation as
+    // already handled and let the outer render finish.
+    if (activatingTabs.has(nextTab)) return true;
+
     if (activeTab && activeTab !== nextTab) {
       const previous = registry.get(activeTab);
       previous?.onLeave?.(context);
     }
     activeTab = nextTab;
-    const module = registry.get(nextTab);
-    if (!module) return false;
-    module.renderers.forEach(renderer => context.render?.(renderer));
-    module.onEnter?.(context);
-    document.documentElement.dataset.activeModule = nextTab;
-    return true;
+    activatingTabs.add(nextTab);
+    try {
+      module.renderers.forEach(renderer => context.render?.(renderer));
+      module.onEnter?.(context);
+      document.documentElement.dataset.activeModule = nextTab;
+      return true;
+    } finally {
+      activatingTabs.delete(nextTab);
+    }
   }
 
   function has(tab) {
@@ -41,7 +53,7 @@
   }
 
   window.COFFEE_PAGE_MODULES = Object.freeze({
-    version: "42.2.0",
+    version: "44.0.0-rc.4",
     register,
     activate,
     has,

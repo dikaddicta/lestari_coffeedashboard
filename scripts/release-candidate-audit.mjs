@@ -59,7 +59,7 @@ const site = JSON.parse(read("src/site.json"));
 const release = JSON.parse(read("release.json"));
 const packageJson = JSON.parse(read("package.json"));
 const manifest = JSON.parse(read("manifest.webmanifest"));
-check(site.version === "44.0.0-rc.3", "Versi sumber adalah v44.0.0-rc.3");
+check(site.version === "44.0.0-rc.4", "Versi sumber adalah v44.0.0-rc.4");
 check(packageJson.version === site.version, "Versi package sinkron dengan site config");
 check(release.version === site.version && release.build === site.build, "Release manifest sinkron dengan site config");
 check(release.releaseStage === "candidate", "Release manifest menandai tahap candidate");
@@ -83,14 +83,14 @@ for (const file of ["index.html", "beranda/index.html", "cara-pakai/index.html",
 const index = read("index.html");
 check(index.includes("assets/services/release-service.js"), "Dashboard memuat release service");
 check(index.includes("assets/services/monitoring-service.js"), "Dashboard memuat monitoring service");
-check(index.includes("v44.0.0-rc.3 · Release Candidate 3"), "Label release candidate terlihat dan sinkron");
+check(index.includes("v44.0.0-rc.4 · Release Candidate 4"), "Label release candidate terlihat dan sinkron");
 check(index.includes('href="rilis/"'), "Landing atau shell menautkan catatan rilis");
 
 const publicShell = read("src/public-shell.html");
 check(publicShell.includes('href="rilis/"'), "Navigasi publik menautkan catatan rilis");
 
 const appConfig = read("assets/app-config.js");
-check(appConfig.includes('"version": "44.0.0-rc.3"'), "Runtime config menggunakan v44 RC3");
+check(appConfig.includes('"version": "44.0.0-rc.4"'), "Runtime config menggunakan v44 RC4");
 check(appConfig.includes('"releaseCandidate": true'), "Feature flag release candidate aktif");
 check(appConfig.includes('"enabled": false'), "Monitoring cloud default nonaktif");
 
@@ -100,7 +100,7 @@ check(monitoring.includes("errors?.redact"), "Monitoring menggunakan sanitasi di
 check(!monitoring.includes("localStorage"), "Monitoring tidak membaca data workspace langsung");
 
 const sw = read("sw.js");
-check(sw.includes("lestari-coffee-dashboard-v44-rc3-brand"), "Service worker memakai cache RC3 brand");
+check(sw.includes("lestari-coffee-dashboard-v44-rc4-routing-stability"), "Service worker memakai cache RC4 routing stability");
 for (const asset of [
   "./assets/services/release-service.js",
   "./assets/services/monitoring-service.js",

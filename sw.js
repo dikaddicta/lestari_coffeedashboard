@@ -1,4 +1,4 @@
-const CACHE_NAME = "lestari-coffee-dashboard-v44-rc3-brand";
+const CACHE_NAME = "lestari-coffee-dashboard-v44-rc4-routing-stability";
 const ROUTE_ENTRIES = [
   "beranda",
   "cara-pakai",
@@ -43,6 +43,7 @@ const CORE_ASSETS = [
   "./",
   "./index.html",
   "./404.html",
+  "./404/",
   ...ROUTE_ENTRIES,
   "./assets/app-config.js",
   "./assets/core/routes.js",

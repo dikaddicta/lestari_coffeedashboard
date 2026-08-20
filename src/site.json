@@ -1,8 +1,8 @@
 {
-  "version": "44.0.0-rc.3",
-  "release": "Release Candidate 3",
-  "build": "20260714-v44-rc3-brand-logo",
-  "releasedAt": "2026-07-14T15:10:00Z",
+  "version": "44.0.0-rc.4",
+  "release": "Release Candidate 4",
+  "build": "20260820-v44-rc4-routing-stability",
+  "releasedAt": "2026-08-20T03:20:00Z",
   "environment": "production",
   "siteUrl": "https://dikaddicta.github.io/lestari_coffeedashboard/",
   "productName": "Lestari Coffee Dashboard",

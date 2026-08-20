@@ -30,7 +30,7 @@ for (const file of [
 }
 
 const config = read("assets/app-config.js");
-check(config.includes('\"version\": \"44.0.0-rc.3\"'), "Versi aplikasi v44.0.0-rc.3");
+check(config.includes('\"version\": \"44.0.0-rc.4\"'), "Versi aplikasi v44.0.0-rc.4");
 check(config.includes('"maintenance": {'), "Konfigurasi maintenance tersedia");
 check(config.includes('"commercialReadiness": true'), "Feature flag commercial readiness aktif");
 
@@ -59,7 +59,7 @@ check(app.includes("BACKUP_SERVICE.parse"), "Pemulihan memvalidasi backup");
 check(app.includes("ERROR_SERVICE?.capture"), "Runtime error dicatat secara tersanitasi");
 
 const sw = read("sw.js");
-check(sw.includes("lestari-coffee-dashboard-v44-rc3-brand"), "Cache PWA menggunakan namespace RC3 brand");
+check(sw.includes("lestari-coffee-dashboard-v44-rc4-routing-stability"), "Cache PWA menggunakan namespace RC4 routing stability");
 for (const route of ["privasi", "ketentuan", "disclaimer", "status", "maintenance"]) {
   check(sw.includes(`"${route}"`), `Service worker memuat route /${route}/`);
 }

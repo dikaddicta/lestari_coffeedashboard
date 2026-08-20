@@ -1,0 +1,76 @@
+{
+  "passed": 14,
+  "failed": 0,
+  "checks": [
+    {
+      "ok": true,
+      "label": "RC4 version configured",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "RC4 build id configured",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Admin page renderer no longer re-enters renderWorkspaceUI",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Guest login intent does not redirect the admin/auth panel into itself",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Invalid guest private route falls back to guide",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Page-module re-entrancy guard exists",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Page-module guard always releases",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Historical diagnostics are informational, not an active health failure",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Root GitHub Pages 404 exists",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Explicit /404/ alias exists",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": ".nojekyll exists for deterministic static publishing",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "PWA precaches the explicit 404 route",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "PWA cache namespace bumped for RC4",
+      "detail": ""
+    },
+    {
+      "ok": true,
+      "label": "Local server mirrors custom 404 behavior for regression testing",
+      "detail": ""
+    }
+  ]
+}
